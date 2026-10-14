@@ -1,9 +1,11 @@
-import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex } from './protocol.mjs';
+import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex,
+  DASH_EPD_SERVICE_UUID, DASH_EPD_CHARACTERISTIC_UUID, DASH_RXTX_SERVICE_UUID,
+  DASH_RXTX_CHARACTERISTIC_UUID, encodeDashTime, encodeDashMode, DASH_REFRESH } from './protocol.mjs';
 
 const $ = id => document.getElementById(id);
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const state = {
-  device: null, characteristic: null, notifications: false,
+  device: null, characteristic: null, rxtxCharacteristic: null, profile: null, notifications: false,
   busy: false, logCount: 0, loadedImage: null, previewTime: null,
   connectionStage: 'idle', connectionStartedAt: 0, intentionalDisconnect: false,
 };
@@ -39,7 +41,7 @@ function gattLinked() {
   return Boolean(state.device?.gatt?.connected);
 }
 function connected() {
-  return Boolean(gattLinked() && state.characteristic);
+  return Boolean(gattLinked() && state.characteristic && (state.profile !== 'dash' || state.rxtxCharacteristic));
 }
 function updateUi() {
   const online = connected();
@@ -50,7 +52,7 @@ function updateUi() {
   const status = online ? 'Connected' : linked ? 'GATT linked · service pending' : 'Disconnected';
   pill.innerHTML = '<span class="pill-dot"></span> ' + status;
   $('deviceName').textContent = linked ? (state.device.name || 'Unnamed BLE clock') : 'No clock connected';
-  $('deviceHint').textContent = online ? 'XLY95 service & characteristic found'
+  $('deviceHint').textContent = online ? (state.profile === 'dash' ? 'NRF- EPD + RXTX services found' : 'Legacy XLY95 service found')
     : linked ? 'GATT linked; try service discovery again'
       : ($('allDevices').checked ? 'Scanning all nearby BLE devices' : 'Scanning NRF- and NRF_ devices');
   for (const button of document.querySelectorAll('[data-requires-connection]')) {
@@ -60,6 +62,8 @@ function updateUi() {
   $('topConnect').disabled = state.busy;
   $('topConnect').textContent = linked ? 'Disconnect clock' : 'Connect clock ↗';
   $('disconnectBtn').disabled = !linked || state.busy;
+  $('queryInfo').disabled = !online || state.busy || state.profile === 'dash';
+  $('sendImage').disabled = !online || state.busy || state.profile === 'dash';
   $('discoverService').disabled = !linked || online || state.busy;
   $('allDevices').disabled = linked || state.busy;
   $('safeConnect').disabled = linked || state.busy;
@@ -103,6 +107,8 @@ function onDisconnect(event) {
   const previousStage = state.connectionStage;
   const intentional = state.intentionalDisconnect;
   state.characteristic = null;
+  state.rxtxCharacteristic = null;
+  state.profile = null;
   state.notifications = false;
   state.busy = false;
   state.intentionalDisconnect = false;
@@ -136,6 +142,7 @@ async function enableNotificationsCore() {
 }
 
 async function requestClockInfoCore() {
+  if (state.profile === 'dash') throw new Error('A9 information request belongs to the legacy NRF_ protocol, not NRF-');
   if (!connected()) throw new Error('Clock disconnected before A9 request');
   setConnectionStage('sending A9 information request');
   await send(commandPacket(COMMAND.INFO), true);
@@ -145,47 +152,52 @@ async function requestClockInfoCore() {
 async function discoverServiceCore() {
   const server = state.device?.gatt;
   if (!server?.connected) throw new Error('GATT link is no longer connected');
-  setConnectionStage('discovering XLY95 service ' + SERVICE_UUID);
+  const dash = state.profile === 'dash';
+  const targetService = dash ? DASH_EPD_SERVICE_UUID : SERVICE_UUID;
+  const targetCharacteristic = dash ? DASH_EPD_CHARACTERISTIC_UUID : CHARACTERISTIC_UUID;
+  setConnectionStage('discovering ' + (dash ? 'NRF- EPD' : 'legacy') + ' service ' + targetService);
   let service = null;
   try {
-    service = await server.getPrimaryService(SERVICE_UUID);
+    service = await server.getPrimaryService(targetService);
   } catch (error) {
-    const message = (error.name || 'Error') + ': ' + (error.message || String(error));
-    log('getPrimaryService failed: ' + message, 'error');
-    // Some Web Bluetooth browser implementations offer getPrimaryServices()
-    // even if selecting one service by UUID failed. Read-only diagnostic.
+    log('getPrimaryService failed: ' + (error.name || 'Error') + ': ' +
+      (error.message || error), 'error');
     if (typeof server.getPrimaryServices === 'function' && server.connected) {
       try {
         setConnectionStage('listing permitted GATT services');
         const services = await server.getPrimaryServices();
-        const uuids = services.map(item => String(item.uuid || '').toLowerCase());
-        log('Permitted services: ' + (uuids.join(', ') || '(none returned)'));
-        service = services.find(item =>
-          String(item.uuid || '').toLowerCase() === SERVICE_UUID.toLowerCase()) || null;
-        if (service) log('Matched XLY95 service via getPrimaryServices()', 'success');
-      } catch (listError) {
-        log('getPrimaryServices diagnostic failed: ' +
-          (listError.name || 'Error') + ': ' + (listError.message || listError), 'error');
+        log('Permitted services: ' + (services.map(x => x.uuid).join(', ') || '(none)'));
+        service = services.find(x => String(x.uuid).toLowerCase() === targetService) || null;
+      } catch (e) {
+        log('getPrimaryServices diagnostic failed: ' + (e.message || e), 'error');
       }
-    } else {
-      log('This browser does not expose getPrimaryServices() or the link already closed.');
     }
     if (!service) {
-      setConnectionStage('XLY95 service discovery failed', 'error');
+      setConnectionStage('service discovery failed', 'error');
       throw error;
     }
   }
-  setConnectionStage('XLY95 service discovered', 'success');
-  setConnectionStage('discovering XLY95 characteristic ' + CHARACTERISTIC_UUID);
-  state.characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
-  setConnectionStage('XLY95 characteristic discovered', 'success');
-  const props = state.characteristic.properties;
-  log('Characteristic capabilities: ' + [
-    props?.read && 'read',
-    props?.write && 'write',
+  setConnectionStage('EPD service discovered', 'success');
+  const epd = await service.getCharacteristic(targetCharacteristic);
+  setConnectionStage('EPD characteristic discovered', 'success');
+  let rxtx = null;
+  if (dash) {
+    setConnectionStage('discovering NRF- RXTX service ' + DASH_RXTX_SERVICE_UUID);
+    const rxtxService = await server.getPrimaryService(DASH_RXTX_SERVICE_UUID);
+    setConnectionStage('NRF- RXTX service discovered', 'success');
+    rxtx = await rxtxService.getCharacteristic(DASH_RXTX_CHARACTERISTIC_UUID);
+    setConnectionStage('NRF- RXTX characteristic discovered', 'success');
+  }
+  state.characteristic = epd;
+  state.rxtxCharacteristic = rxtx;
+  log('Protocol profile: ' + (dash ? 'NRF- EPD + RXTX (XLY95 main page)' : 'NRF_ legacy (XLY95 js.js)'), 'success');
+  const props = epd.properties;
+  log('EPD capabilities: ' + [
+    props?.read && 'read', props?.write && 'write',
     props?.writeWithoutResponse && 'writeWithoutResponse',
     props?.notify && 'notify'
   ].filter(Boolean).join(', '));
+  if (rxtx) log('RXTX write capability: ' + Boolean(rxtx.properties?.write));
   updateUi();
 }
 
@@ -227,6 +239,8 @@ async function connectClock() {
   state.intentionalDisconnect = false;
   state.device = null;
   state.characteristic = null;
+  state.rxtxCharacteristic = null;
+  state.profile = null;
   state.notifications = false;
   setBusy(true);
   try {
@@ -234,9 +248,10 @@ async function connectClock() {
     // Accept both NRF_ and NRF- device name formats as reported by the user.
     // XLY95's inspected source uses NRF_; the user's working device uses NRF-.
     // Bluetooth service authorization is requested explicitly for both.
+    const optionalServices = [SERVICE_UUID, DASH_EPD_SERVICE_UUID, DASH_RXTX_SERVICE_UUID, '0000221f-0000-1000-8000-00805f9b34fb'];
     const options = $('allDevices').checked
-      ? {acceptAllDevices: true, optionalServices: [SERVICE_UUID]}
-      : {filters: [{namePrefix: 'NRF-'}, {namePrefix: 'NRF_'}], optionalServices: [SERVICE_UUID]};
+      ? {acceptAllDevices: true, optionalServices}
+      : {filters: [{namePrefix: 'NRF-'}, {namePrefix: 'NRF_'}], optionalServices};
     log('Opening picker (' + ($('allDevices').checked ? 'all BLE devices' : 'NRF- or NRF_ names') +
       '); startup mode: ' + (safeMode ? 'SAFE' : 'normal'));
     const device = await navigator.bluetooth.requestDevice(options);
@@ -244,6 +259,8 @@ async function connectClock() {
       log('Selected ' + device.name + ' is outside the typical NRF clock name patterns; confirm it matches the device seen on XLY95.');
     }
     state.device = device;
+    state.profile = device.name?.startsWith('NRF-') ? 'dash' : 'legacy';
+    log('Detected profile: ' + (state.profile === 'dash' ? 'NRF- / XLY95 main-page protocol' : 'NRF_ / legacy protocol'));
     state.connectionStartedAt = performance.now();
     device.addEventListener('gattserverdisconnected', onDisconnect);
     setConnectionStage('device selected: ' + (device.name || 'unnamed'));
@@ -273,7 +290,7 @@ async function connectClock() {
     }
     if (!safeMode) {
       await enableNotificationsCore();
-      await requestClockInfoCore();
+      if (state.profile !== 'dash') await requestClockInfoCore();
     } else {
       log('Safe mode: notifications disabled; no A9 or other command sent.', 'success');
     }
@@ -316,9 +333,10 @@ async function testInformationRequest() {
   await runAction('Request clock info (A9)', requestClockInfoCore);
 }
 
-async function send(packet, withResponse = true) {
+async function send(packet, withResponse = true, channel = 'epd') {
   if (!connected()) throw new Error('Clock is not connected');
-  const characteristic = state.characteristic;
+  const characteristic = channel === 'rxtx' ? state.rxtxCharacteristic : state.characteristic;
+  if (!characteristic) throw new Error('Requested BLE characteristic is missing: ' + channel);
   if (withResponse) {
     if (typeof characteristic.writeValueWithResponse === 'function') {
       await characteristic.writeValueWithResponse(packet);
@@ -330,21 +348,38 @@ async function send(packet, withResponse = true) {
   } else if (typeof characteristic.writeValueWithoutResponse === 'function') {
     await characteristic.writeValueWithoutResponse(packet);
   } else {
-    await send(packet, true);
+    await send(packet, true, channel);
   }
 }
 
 async function syncClock() {
   await runAction('Time sync', async () => {
-    const packet = commandPacket(COMMAND.TIME, encodeTime());
-    await send(packet);
-    log(`TX A3 — current Unix time (4-byte big-endian)`);
+    if (state.profile === 'dash') {
+      const packet = encodeDashTime();
+      await send(packet, true, 'rxtx');
+      log('RXTX TX ' + bytesToHex(packet) + ' (XLY95 NRF- local-time format)');
+      await send(DASH_REFRESH, true, 'rxtx');
+      log('RXTX TX E2 — refresh');
+    } else {
+      const packet = commandPacket(COMMAND.TIME, encodeTime());
+      await send(packet);
+      log('Legacy TX A3 — Unix seconds');
+    }
   });
 }
 async function switchMode(mode, label) {
   await runAction(label, async () => {
-    await send(commandPacket(COMMAND.MODE, [mode]));
-    log(`TX AE ${mode.toString(16).padStart(2,'0').toUpperCase()}`);
+    if (state.profile === 'dash') {
+      const packet = encodeDashMode(mode);
+      await send(packet, true, 'rxtx');
+      log('RXTX TX ' + bytesToHex(packet));
+      await delay(300);
+      await send(DASH_REFRESH, true, 'rxtx');
+      log('RXTX TX E2 — refresh');
+    } else {
+      await send(commandPacket(COMMAND.MODE, [mode]));
+      log('Legacy TX AE ' + mode.toString(16).padStart(2, '0').toUpperCase());
+    }
   });
 }
 
@@ -508,6 +543,11 @@ function progress(percent,label){
 }
 async function uploadImage() {
   if (!connected() || state.busy) return;
+  if (state.profile === 'dash') {
+    log('NRF- image upload is temporarily disabled: the device uses 03/04 frame-offset packets, not legacy A1 chunks.', 'error');
+    toast('NRF- image uploads are not yet implemented. Clock controls are supported.', true);
+    return;
+  }
   if ($('template').value==='image' && !state.loadedImage) {toast('Choose an image file first.',true);return;}
   const {width,height}=getScreen();
   if(!confirm(`Upload this ${width} × ${height} ${$('colourMode').value==='tri'?'three-colour':'black-and-white'} image?\n\nThe clock's current live display will be replaced by a static image until you switch it back.`)) return;
@@ -617,7 +657,7 @@ function init(){
   setInterval(()=>{if(!state.busy && $('template').value==='clock')renderPreview();},15000);
   setTab(['overview','studio','activity','guide'].includes(location.hash.slice(1))?location.hash.slice(1):'overview');
   renderPreview();updateUi();log('InkLink Studio ready. Awaiting BLE connection.');
-  log('Discovery default: all nearby BLE devices. Select your NRF_ clock from the browser picker.');
+  log('Discovery default: NRF- and NRF_ BLE clocks. Protocol is chosen from device name.');
 }
 
 if (document.readyState === 'loading') {
