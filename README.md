@@ -2,7 +2,7 @@
 
 A browser-based, English-language control panel and image designer for desk clocks compatible with the [XLY95 BLE protocol](https://github.com/XLY95/xly95.github.io). Built with plain HTML, CSS and JavaScript; no dependencies or server-side account.
 
-> **Hardware-test beta.** Updated 14 October 2026: NRF- EPD/RXTX discovery, notification subscription and **physical clock time synchronization all succeeded**. The user's 19:46–19:47 Activity Log showed `DD` RXTX time packet + `E2` refresh and successful command completion; the user confirmed **time is synced**. The link disconnected later after 51.4s, similar to idle disconnects on both InkLink and original XLY95. **Clock/Calendar modes and NRF- image upload remain unverified.**
+> **Hardware-tested clock controls (14 October 2026):** The real NRF- clock successfully responds to time sync (`DD` + `E2`), Calendar mode (`E1 01` + `E2`), and Clock mode (`E1 02` + `E2`). The user explicitly confirmed each on the physical device; the mode changes were logged at 19:53:20 and 19:53:39. **NRF- custom image upload is not yet implemented or device-validated**. BLE can disconnect after around a minute on both InkLink and original XLY95; the underlying cause is unproven.
 
 ## Start here / continuing in a new chat
 
@@ -14,7 +14,7 @@ A browser-based, English-language control panel and image designer for desk cloc
 - [Roadmap](docs/ROADMAP.md) — current priorities, acceptance criteria and later features.
 - [Instructions for AI coding assistants](AGENTS.md) — how to work safely in the repo and keep documentation updated.
 
-**Next physical checkpoint:** clock time sync **confirmed working** on physical hardware at 19:46:28. Next test **Calendar mode** then **Clock mode** using the existing source-confirmed `E1`/`E2` RXTX commands, one step at a time. Keep NRF- image upload disabled.
+**Next engineering checkpoint:** Time, Calendar and Clock controls are **confirmed on hardware**. Begin **offline research and implementation of the separate NRF- e-paper image protocol** (pixel geometry, black/red planes, `03/04` frame offsets and safe refresh/return-to-clock). Keep the Upload Image button disabled on NRF- until validated.
 
 
 ## Device compatibility
@@ -74,20 +74,18 @@ Open `http://localhost:8000` in desktop Chrome/Edge. All program assets are loca
 - **Safari and Chrome (iOS/iPadOS):** standard browsers do not support Web Bluetooth, so use a desktop or Android device for BLE. You can still edit and export artwork on iPhone.
 - **GitHub Pages/HTTPS or `localhost`:** required for web-based Bluetooth. Using the standalone local HTML file may work in compatible Chromium browsers.
 
-## Next physical-device test (current checkpoint)
+## Next engineering milestone — NRF- custom image upload
 
-**Physically verified:** NRF- EPD/RXTX service and characteristic discovery; notification subscription; **RXTX DD time packet + E2 refresh successfully synchronized the clock's time** at 19:46:28 (user confirmed). Another unexpected BLE idle disconnection occurred after 51.4 seconds from selection; original XLY95 also disconnects around one minute, so don't treat this as solely an InkLink bug.
+**Completed on physical clock (14 October 2026):** GATT service discovery; EPD notification subscription; time sync via `DD` + `E2`; Calendar via `E1 01` + `E2`; Clock via `E1 02` + `E2`. User confirmed all three control effects; mode switching succeeded in the same BLE connection.
 
-**Next experiment — built-in display modes:**
+**Next:** trace original XLY95 `index.html`'s distinct e-paper image-conversion pipeline and `03/04` offset-frame transfer protocol. Identify the actual clock panel's pixel dimensions and red/black plane mapping, then write deterministic offline packet tests and verify the final refresh/return-to-clock sequence.
 
-1. Close the XLY95 and nRF Connect BLE sessions. Use [InkLink](https://lioncitydownunder.github.io/inklink-clock-studio/) on Android Chrome.
-2. Connect the same NRF- clock with **Safe connection** checked.
-3. Within ~20 seconds of connected and stable, click **Calendar mode** once. InkLink sends RXTX `E1 01`, waits 300ms and sends `E2`. Confirm the physical screen shows the calendar and capture the Activity Log.
-4. Reconnect if necessary and click **Clock mode** once; it sends `E1 02`, then `E2`. Confirm the usual clock face returns.
-5. Record actual physical results in [TEST_HISTORY.md](docs/TEST_HISTORY.md). Don't infer physical success just from BLE write acknowledgement.
-6. **NRF- image upload remains disabled** until the distinct EPD image transfer implementation is validated.
+- The XLY95 screenshot showed a selected 400×300 canvas, **not independently verified hardware resolution**.
+- The current A1-based upload belongs to legacy `NRF_` devices and **must not** be used with this `NRF-` clock.
+- Keep NRF- **Send image disabled** until the correct protocol is implemented, tested and ready for a supervised physical trial.
+- The BLE connection may time out near a minute on both InkLink and XLY95. We have not confirmed whether this is clock firmware idle behaviour, the Android stack or radio conditions.
 
-XLY95 previously displayed a 400×300 canvas selection; this is not independent proof of the physical panel resolution.
+See [Project Handoff](docs/PROJECT_HANDOFF.md), [BLE Protocols](docs/BLE_PROTOCOLS.md), [Testing History](docs/TEST_HISTORY.md) and [Roadmap](docs/ROADMAP.md).
 
 ## Legacy `NRF_` protocol summary (NOT for the user's `NRF-` clock)
 
