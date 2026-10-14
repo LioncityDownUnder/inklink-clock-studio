@@ -5,6 +5,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const state = {
   device: null, characteristic: null, notifications: false,
   busy: false, logCount: 0, loadedImage: null, previewTime: null,
+  connectionStage: 'idle', connectionStartedAt: 0, intentionalDisconnect: false,
 };
 
 function toast(message, error = false) {
@@ -51,6 +52,7 @@ function updateUi() {
   $('topConnect').textContent = online ? 'Disconnect clock' : 'Connect clock ↗';
   $('disconnectBtn').disabled = !online || state.busy;
   $('allDevices').disabled = online || state.busy;
+  $('safeConnect').disabled = online || state.busy;
   $('packetSize').disabled = state.busy;
   $('ackInterval').disabled = state.busy;
 }
@@ -75,76 +77,131 @@ async function runAction(title, work) {
   }
 }
 
-function onDisconnect() {
+
+function setConnectionStage(stage, level = 'info') {
+  state.connectionStage = stage;
+  $('connectionStage').textContent = 'Connection stage: ' + stage;
+  log('BLE stage: ' + stage, level);
+}
+
+function onDisconnect(event) {
+  // A previous device may disconnect after the user has selected a new device.
+  if (event?.target && state.device && event.target !== state.device) return;
+  const elapsed = state.connectionStartedAt
+    ? ((performance.now() - state.connectionStartedAt) / 1000).toFixed(1) + 's'
+    : 'unknown';
+  const previousStage = state.connectionStage;
+  const intentional = state.intentionalDisconnect;
   state.characteristic = null;
   state.notifications = false;
   state.busy = false;
+  state.intentionalDisconnect = false;
+  state.connectionStage = 'disconnected';
+  $('connectionStage').textContent = 'Connection stage: disconnected (after ' + previousStage + ')';
   updateUi();
-  log('Bluetooth device disconnected', 'info');
+  if (intentional) {
+    log('Bluetooth disconnected by request (' + elapsed + ' after selection)');
+  } else {
+    log('Unexpected GATT disconnect after ' + elapsed + '. Last completed stage: ' +
+      previousStage + '. Web Bluetooth does not expose a device disconnect reason.', 'error');
+    toast('Clock disconnected. Open Activity log: check the last BLE stage.', true);
+  }
+}
+
+async function enableNotificationsCore() {
+  if (!connected()) throw new Error('Clock disconnected before notifications could start');
+  if (state.notifications) {
+    log('Notifications already enabled');
+    return;
+  }
+  setConnectionStage('starting notifications');
+  await state.characteristic.startNotifications();
+  state.notifications = true;
+  state.characteristic.addEventListener('characteristicvaluechanged', event => {
+    const data = event.target.value;
+    const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    log('RX ' + bytesToHex(bytes));
+  });
+  setConnectionStage('notifications enabled', 'success');
+}
+
+async function requestClockInfoCore() {
+  if (!connected()) throw new Error('Clock disconnected before A9 request');
+  setConnectionStage('sending A9 information request');
+  await send(commandPacket(COMMAND.INFO), true);
+  setConnectionStage('A9 information request sent', 'success');
 }
 
 async function connectClock() {
   if (connected()) return;
   if (!navigator.bluetooth || typeof navigator.bluetooth.requestDevice !== 'function') {
-    log('Web Bluetooth is unavailable here. Open this site directly in Chrome on Android or Chrome/Edge on a computer, not in the ChatGPT in-app browser.', 'error');
-    toast('This browser cannot scan Bluetooth. Open the website in Chrome/Edge (not the in-app browser).', true);
+    log('This browser cannot use Web Bluetooth; open directly in Chrome or Edge.', 'error');
+    toast('Web Bluetooth unavailable: use Chrome or Edge, not an in-app browser.', true);
     detectSupport();
     return;
   }
   if (!window.isSecureContext) {
-    log('Not a secure browsing context. Web Bluetooth requires HTTPS or localhost.', 'error');
+    log('Web Bluetooth requires HTTPS or localhost.', 'error');
     toast('Web Bluetooth requires HTTPS or localhost.', true);
     return;
   }
   if (state.busy) return;
+  state.intentionalDisconnect = false;
+  state.device = null;
+  state.characteristic = null;
+  state.notifications = false;
   setBusy(true);
   try {
-    // The original XLY95 page matches NRF_ names and requests this exact service.
+    const safeMode = $('safeConnect').checked;
     const options = $('allDevices').checked
       ? {acceptAllDevices: true, optionalServices: [SERVICE_UUID]}
       : {filters: [{namePrefix: 'NRF_'}], optionalServices: [SERVICE_UUID]};
-    const scanMode = $('allDevices').checked ? 'ALL nearby BLE devices' : 'NRF_ devices (XLY95 filter)';
-    log(`Opening Bluetooth device picker: ${scanMode}`);
+    log('Opening device picker (' + ($('allDevices').checked ? 'all BLE devices' : 'NRF_ devices') +
+      '); startup mode: ' + (safeMode ? 'SAFE' : 'normal'));
     const device = await navigator.bluetooth.requestDevice(options);
     state.device = device;
-    state.device.addEventListener('gattserverdisconnected', onDisconnect);
-    log(`Selected ${device.name || 'unnamed BLE device'}`);
+    state.connectionStartedAt = performance.now();
+    device.addEventListener('gattserverdisconnected', onDisconnect);
+    setConnectionStage('device selected: ' + (device.name || 'unnamed'));
     const server = await device.gatt.connect();
+    setConnectionStage('GATT connected');
+    if (!server.connected) throw new Error('GATT link closed before service discovery');
     const service = await server.getPrimaryService(SERVICE_UUID);
+    setConnectionStage('XLY95 service discovered');
     state.characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
-    try {
-      await state.characteristic.startNotifications();
-      state.notifications = true;
-      state.characteristic.addEventListener('characteristicvaluechanged', evt => {
-        const data = evt.target.value;
-        const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-        log(`RX ${bytesToHex(bytes)}`);
-      });
-    } catch (error) {
-      log(`Notifications not enabled: ${error.message || error}. Other controls may still work.`);
+    setConnectionStage('XLY95 characteristic discovered');
+    const props = state.characteristic.properties;
+    log('Characteristic capabilities: ' + [
+      props?.read && 'read', props?.write && 'write',
+      props?.writeWithoutResponse && 'writeWithoutResponse',
+      props?.notify && 'notify'
+    ].filter(Boolean).join(', '));
+    if (!safeMode) {
+      await enableNotificationsCore();
+      await requestClockInfoCore();
+    } else {
+      log('Safe mode: no notifications started; no A9 or other command sent.', 'success');
     }
-    log(`Connected to ${device.name || 'BLE clock'}; service and characteristic found`, 'success');
-    try {
-      await send(commandPacket(COMMAND.INFO), true);
-      log('Requested clock information (A9)');
-    } catch (error) {
-      log(`Information query failed: ${error.message || error}`);
-    }
-    toast('Your clock is connected!');
+    setConnectionStage('idle connection test (1.5 seconds)');
+    await delay(1500);
+    if (!connected()) throw new Error('GATT connection ended during idle check');
+    setConnectionStage('connected and stable', 'success');
+    toast('Clock connection is stable. Next, try Enable notifications.');
   } catch (error) {
     if (error.name === 'NotFoundError') {
-      log('No Bluetooth device selected, or chooser was cancelled. Close XLY95, check the clock is advertising, and try again using the all-devices scan.', 'error');
-      toast('No clock selected. Disconnect XLY95, keep the clock nearby and retry with Show all nearby devices.', true);
-    } else if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
-      log(`Browser denied Bluetooth: ${error.name}: ${error.message || error}. Open in a full Chrome/Edge browser, not an embedded webview.`, 'error');
-      toast('Bluetooth blocked by browser or permissions. Try opening this site in Chrome/Edge.', true);
+      log('No device selected in the Bluetooth chooser.', 'error');
+      toast('No device selected. Try scanning again.', true);
     } else {
-      log(`Connection failed (${error.name || 'Error'}): ${error.message || error}`, 'error');
-      toast(`Could not connect: ${error.message || error}`, true);
+      log('Connection failed at stage "' + state.connectionStage + '": ' +
+        (error.name || 'Error') + ': ' + (error.message || error), 'error');
+      toast('Connection failed: see the Activity log for the last BLE stage.', true);
     }
-    if (state.device?.gatt?.connected) state.device.gatt.disconnect();
+    if (state.device?.gatt?.connected) {
+      state.intentionalDisconnect = true;
+      state.device.gatt.disconnect();
+    }
     state.characteristic = null;
-    state.device = null;
+    updateUi();
   } finally {
     setBusy(false);
   }
@@ -152,8 +209,20 @@ async function connectClock() {
 
 function disconnectClock() {
   if (state.busy) return;
-  if (state.device?.gatt?.connected) state.device.gatt.disconnect();
-  else onDisconnect();
+  if (state.device?.gatt?.connected) {
+    state.intentionalDisconnect = true;
+    state.device.gatt.disconnect();
+  } else if (state.characteristic) {
+    state.intentionalDisconnect = true;
+    onDisconnect();
+  }
+}
+
+async function testNotifications() {
+  await runAction('Enable notifications', enableNotificationsCore);
+}
+async function testInformationRequest() {
+  await runAction('Request clock info (A9)', requestClockInfoCore);
 }
 
 async function send(packet, withResponse = true) {
@@ -422,6 +491,8 @@ function init(){
     $('template').value=btn.dataset.design;setTab('studio');renderPreview();
   });
   $('mainConnect').addEventListener('click', connectClock);
+  $('enableNotifs').addEventListener('click', testNotifications);
+  $('queryInfo').addEventListener('click', testInformationRequest);
   $('checkBrowser').addEventListener('click', () => {
     detectSupport();
     const status=$('browserStatus').textContent;
