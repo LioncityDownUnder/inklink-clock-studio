@@ -372,6 +372,18 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next test:** User connects clock in Safe mode, navigates to Display Designer, taps the read-only capability inspector and shares the reported result. Do not send synthetic 244-byte probes. Recovery from an interrupted image remains unverified; original XLY95 has no confirmed mid-frame resume/rollback command.
 
+## Test V — connected Chrome EPD write-capability inspection PASSED
+
+**14 October 2026 ~22:03 Sydney (user screenshot).** On the live InkLink web app in Android Chrome, after connecting to the NRF- clock, user clicked **Inspect connected EPD capability — no writes**.
+
+**Exact visible diagnostic:** `Acknowledged EPD writes are exposed. Chrome Web Bluetooth does not provide a negotiated ATT MTU or a non-writing way to prove a 244-byte write will succeed. EPD characteristic write property: true; acknowledged write method: true; legacy write method: true; no-response property: false.`
+
+**Confirmed on the user's actual browser/session:** The NRF- EPD characteristic is discovered, exposes a writable-with-response property and both modern acknowledged-write and legacy write browser methods. There was **no test packet, data upload, MTU measurement or physical screen modification** during this check. Write-without-response is **not advertised**, and the eventual image implementation should use acknowledged writes as XLY95 does.
+
+**Not proven:** Chrome's negotiated ATT MTU, acceptance of a 244-byte characteristic write, 126-packet transfer throughput, safe refresh of a complete image, or mid-frame rollback. nRF Connect's earlier MTU 512 was reported in a separate BLE connection. This read-only milestone does not authorize sending an image.
+
+**Next:** Evaluate a transparent, manual, supervised **full-image** test with explicit user consent and abort handling only after a reversible/known-good recovery plan is documented. Avoid dummy characteristic writes (which might be interpreted as image commands). Keep actual `NRF-` upload disabled until agreed.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
