@@ -25,9 +25,10 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check src/protocol.mjs
+          node --check src/dash-image.mjs
           node --check src/app.mjs
-      - name: Test BLE protocol
-        run: node --test tests/protocol.test.mjs
+      - name: Test BLE and offline image protocols
+        run: node --test tests/*.test.mjs
 
   deploy:
     needs: test
