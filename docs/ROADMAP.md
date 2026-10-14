@@ -1,5 +1,8 @@
 # Roadmap and next-session checklist
 
+**Checkpoint AC — stalled-write UI warning built (not hardware):** pending-write observer distinguishes long-unresolved write from failure, mock 'packet 25 stalls 4.5s' and cancel-after-settle handling. Four new observer tests + two mock integration tests (target **64** total). Next browser check: run pending-write scenario; optionally Cancel while warning visible, confirm no automatic refresh and clear UI state. Real NRF- image uploading remains blocked; uncertain Chrome write length and half-frame recovery require explicit risk review.
+
+
 **Checkpoint AB — guarded BLE adapter review DONE in isolation:** `src/ble-guarded-writer.mjs`, eight mock tests (58 total). Rechecks connection, foreground visibility, cancellation, deadline and serialization around each acknowledged write; stops future traffic after failure. **Important:** cannot forcibly cancel a stuck in-flight Web Bluetooth write. Not imported into live app and NRF- image-upload remains disabled. Next: design non-misleading stalled-write UX and manual restoration/informed-consent boundary, then request separate permission for a physical upload.
 
 
