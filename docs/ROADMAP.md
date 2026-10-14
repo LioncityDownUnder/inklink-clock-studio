@@ -1,5 +1,8 @@
 # Roadmap and next-session checklist
 
+**Checkpoint AE (first-trial preparation approved, NOT execution):** user accepted the risks of considering a supervised real image transfer. Added strictly no-write readiness checklist and four tests (68 expected total). Chrome 244-byte packet acceptance, partial-image rollback and controller identity remain unverified. Physical NRF- image upload stays disabled, and a separate explicit start approval is required before transmitting any packets.
+
+
 **Checkpoint AC — stalled-write UI warning built (not hardware):** pending-write observer distinguishes long-unresolved write from failure, mock 'packet 25 stalls 4.5s' and cancel-after-settle handling. Four new observer tests + two mock integration tests (target **64** total). Next browser check: run pending-write scenario; optionally Cancel while warning visible, confirm no automatic refresh and clear UI state. Real NRF- image uploading remains blocked; uncertain Chrome write length and half-frame recovery require explicit risk review.
 
 
