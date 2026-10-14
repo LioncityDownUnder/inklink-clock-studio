@@ -689,10 +689,21 @@ async function startMockUpload() {
     resultNode.textContent='MOCK running; no Bluetooth calls. '+plan.packetCount+' image packets.';
     writeEvent('MOCK start: '+plan.packetCount+' packets; hardware image upload remains disabled');
     const value=$('mockUploadFailure').value;
-    const failAtPacket=value==='none'?null:Number(value);
+    const stallAtPacket=value==='stall25'?25:null;
+    const failAtPacket=value==='none'||stallAtPacket!==null?null:Number(value);
     const completed=await runMockSupervisedTransfer({
-      plan,audit,signal:mockUploadAbort.signal,failAtPacket,
-      delayMs:35,
+      plan,audit,signal:mockUploadAbort.signal,failAtPacket,stallAtPacket,
+      delayMs:35,stallDurationMs:4500,
+      onPendingStatus:p=>{
+        if(p.status==='stalled-warning'){
+          const msg='MOCK packet '+p.sequence+' still pending after '+(p.elapsedMs/1000).toFixed(1)+
+            's. This is NOT a confirmed timeout or cancelled write; please wait.';
+          $('mockUploadResult').textContent=msg;
+          writeEvent(msg);
+        }else if((p.status==='resolved'||p.status==='rejected')&&stallAtPacket===p.sequence){
+          writeEvent('MOCK pending packet '+p.sequence+' '+p.status+'.');
+        }
+      },
       onProgress:p=>{
         meter.value=p.percent;
         resultNode.textContent='MOCK '+p.stage+': '+p.completed+'/'+p.total+' packets ('+p.percent+'%). NO Bluetooth writes.';
