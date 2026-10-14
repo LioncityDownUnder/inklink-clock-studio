@@ -326,6 +326,17 @@ This was the actual root cause of the persistent service-not-found errors. See [
 
 **Next engineering step:** evaluate original XLY95 main-page transfer/refresh process, duration of 126 packets, BLE write-with-response capacity as exposed via Web Bluetooth, a failure-safe disconnect/recovery/clock-mode restoration plan, and independent byte-exact image packet fixtures. **Keep actual NRF- image upload disabled** until a supervised reversible trial is defined. Never probe by sending dummy frames.
 
+## Engineering checkpoint Q — offline interrupted-transfer simulator (no hardware writes)
+
+**14 October 2026.** Added `src/dash-simulator.mjs` and 6 deterministic tests for MTU capacity, packet pacing, simulated connection-window cutoff, interrupted image packet sequence, interrupted refresh, and input validation. Simulator uses existing offline image packet plan and intentionally has **no BLE API, no timer, no characteristic write, no physical transfer**.
+
+The web Display Designer now exposes a **Simulate transfer — no Bluetooth** button and editable assumptions (MTU 23/247/512, 100–1000 ms per packet, 30–90 second link window). It estimates completed packets, image and refresh duration, checks `MTU - 3` against 244-byte packets, and treats incomplete transfers as requiring a validated restart rather than blindly resuming.
+
+**Illustrative 400×300 default:** 126 packets × 200 ms = 25.2 s image data, plus an assumed 4 s refresh = **29.2 s** total. This is a model only: 200 ms/packet and refresh duration are NOT measured on this device, nRF Connect MTU does not verify Chrome MTU, and an idle disconnect window is NOT a confirmed timer. Actual 244-byte Chrome writes, transfer correctness and recovery remain unverified. **NRF- Send to Clock upload stays blocked.**
+
+**Next:** user checks offline simulator in Android Chrome, explores slower packet scenarios and reports its output. Follow with source analysis of refresh/recovery and BLE write capability before any supervised image upload.
+
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
