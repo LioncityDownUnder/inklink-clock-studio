@@ -17,6 +17,8 @@
 
 > **NEW 20:52 Android BLE evidence (14 Oct, Test P):** nRF Connect reports `Requested MTU not supported. MTU changed to: 512` on the physical NRF- clock (twice). This is encouraging for 244-byte packets **in that session only**; Chrome effective MTU/write capability is not verified. The same app logged `Error 8 (0x8): GATT CONN TIMEOUT` on disconnect, supporting link supervision timeout as the immediate failure rather than proof of any application idle timer. Visible screen measured ~84 × 62 mm, consistent with 4.2-inch 400×300 tri-colour active area (~84.8 × 63.6 mm). **Next: source-check image refresh/restore and transfer timing, design reversible supervised test. Upload remains disabled.**
 
+> **Browser simulation milestone (14 Oct 2026 ~21:26, Test R):** Android Chrome screenshots verified **both** no-Bluetooth scenarios. With 400×300 image (126 packets), assumed MTU 512 and 55s lifetime: 200 ms/packet yields 29.2s estimated total and 126/126 complete; 600 ms/packet yields 79.6s and 91/126 packets before simulated interruption. These are **arithmetic scenarios, not measured radio speed**, and do not authorize image upload. Next: verify exact original XLY95 refresh/recovery flow, Chrome characteristic write limits and interruption safety; keep `NRF-` Send to clock disabled.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
