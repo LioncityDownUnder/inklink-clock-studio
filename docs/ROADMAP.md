@@ -1,5 +1,7 @@
 # Roadmap and next-session checklist
 
+**Browser preflight milestone CONFIRMED (Test T, 14 Oct 2026 ~21:41):** user screenshot shows offline audit PASS in Android Chrome for 126 ordered packets/30,000 image bytes/BW→red→300ms→EPD refresh. Simulator 29.2s under assumed MTU 512, 200ms/packet and 55s lifetime. No BLE writes were sent. **Next P1:** establish actual Chrome GATT write size, source-based partial-frame recovery and safe restoration; do not enable physical upload without deliberate supervised approval.
+
 **Preflight research (14 Oct 2026, Test S):** Original XLY95 transmits BW then red `03/04` image chunks through EPD acknowledged writes, waits 300 ms and sends EPD `01` (full) / `AA` (partial) refresh; it does **not** document safe resume of partial image transfers. Added offline `dash-preflight.mjs` order/offset/MTU/refresh audit and five tests, intended **30 total**; Display Designer simulation reports audit result. NRF- image upload stays disabled until browser write-size and recovery validation.
 
 
