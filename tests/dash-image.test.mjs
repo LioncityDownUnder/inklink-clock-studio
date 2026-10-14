@@ -114,7 +114,7 @@ test('full 800x480 profile offset remains inside 16 bits',()=>{
   assert.equal(plan.redBytes,48000);
   assert.equal(plan.packetCount,400);
   assert.equal(plan.packets[199][2],0xBA);
-  assert.equal(plan.packets[199][3],0xB0);
+  assert.equal(plan.packets[199][3],0x90);
 });
 
 test('invalid plane inputs cannot produce packets',()=>{
