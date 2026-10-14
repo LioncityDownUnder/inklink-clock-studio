@@ -1,5 +1,11 @@
 # InkLink Studio — English BLE E-Paper Clock App
 
+### Supervised image upload rehearsal (offline only)
+
+Click **Prepare dry-run upload checklist** in Display Designer to build an ordered no-write checklist for the current image, audit/assumed MTU and failure-handling steps. It never connects or writes, and **does not authorize** an actual upload. Four additional unit tests bring the suite to 38 tests. The `NRF-` live Send to Clock control remains disabled until explicitly approved and the interruption recovery risks are understood. Read [Upload Safety Plan](docs/UPLOAD_SAFETY_PLAN.md).
+
+
+
 ### Read-only EPD write-capability inspection
 
 Connect to the `NRF-` clock, then select **Inspect connected EPD capability — no writes** in Display Designer. This reads browser-side characteristic properties and method availability only; it never calls a BLE characteristic read or write. **Chrome Web Bluetooth does not provide a negotiated ATT MTU value**, so an MTU of 512 reported by nRF Connect in a separate connection does *not* guarantee Chrome can send 244-byte image packets. The physical image-upload action remains disabled.
