@@ -15,20 +15,21 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 - **DONE (hardware, observation only):** two physical BLE sessions: **33.5 seconds** after selection with notifications, **57.2 seconds** in Safe mode without notifications or commands; both unexpectedly disconnected.
 - **DONE (hardware comparison):** original XLY95 on the same Android Chrome also disconnected at ~19:38:07, **~59 seconds after EPD/RXTX services were discovered**; this makes an InkLink-exclusive timeout less likely. Cause is still unknown; no confirmed fixed one-minute timeout.
 - **DONE (hardware):** EPD `startNotifications()` succeeded at 19:21:57 on Android Chrome. No incoming notification payload has been observed.
+- **DONE (hardware):** Clock time synchronised successfully at 19:46:28 via RXTX `DD ...` + `E2`, confirmed by user. Another expected-type idle disconnect occurred after 51.4s; no proved causal relationship to command.
 - **OPEN ISSUE:** session disconnected at 19:22:07, around 10 seconds after notification subscription; a separate no-notification baseline disconnected after 57.2 seconds. **Notification is not required for the disconnect; causal role unproven**.
 - **PENDING (hardware):** test whether intermittent `gatt.connect()` NetworkError recurs. XLY95 connects to same device, but both applications also disconnect after around a minute of idle time.
 
-**Next user action:** XLY95 comparison completed. Disconnect original XLY95, connect [live InkLink](https://lioncitydownunder.github.io/inklink-clock-studio/) in Android Chrome with **Safe connection**, then **within ~20 seconds after stable connection** click **Sync date & time** once. Report Activity Log and actual physical clock date/time. Do not add speculative keepalives or attempt NRF- image upload.
+**Next user action:** DD/E2 physical time sync is **confirmed**. Open [InkLink](https://lioncitydownunder.github.io/inklink-clock-studio/) in Android Chrome, connect with Safe connection, and within ~20s press **Calendar mode** once (`E1 01` then `E2`). Confirm physical screen; reconnect if needed and press **Clock mode** once (`E1 02` then `E2`) to return to normal clock. Do not upload NRF- images.
 
-**Next acceptance gate:** physical DD/E2 time write successful and clock display accurately reflects the local date/time. XLY95's ~one-minute idle disconnect comparison is recorded in [TEST_HISTORY.md](TEST_HISTORY.md), record J. Do not mistake BLE write acknowledgment for visible success. Long-running connection reliability is still unproven.
+**Next acceptance gate:** both calendar and clock-mode RXTX commands visibly switch built-in physical display to the intended layout and back. `DD`/`E2` time-sync acceptance completed (record K in [TEST_HISTORY.md](TEST_HISTORY.md)). Long-running BLE stability remains unproven, and the new 51.4s disconnect is documented.
 
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
 - **DONE (code):** NRF- clock `E1 02` / calendar `E1 01` + E2 with 300 ms delay.
 - **DONE (code):** automated tests cover the exact packet shape and mode bytes; tests run in GitHub Actions.
-- **PENDING (hardware):** clicking **Sync date & time** updates the physical clock correctly, including timezone/date.
-- **PENDING (hardware):** clock/calendar mode changes work and device remains stable.
+- **DONE (hardware):** InkLink's NRF- `DD` local-time packet and `E2` refresh succeeded at 19:46:27–28 on 14 Oct 2026; **user confirmed displayed time was synchronised**. The date/weekday component of the display was not separately described.
+- **PENDING (hardware):** Calendar mode `E1 01` + `E2` and Clock mode `E1 02` + `E2` visibly switch the real clock; test each separately. A ~one-minute GATT idle disconnect is already observed on InkLink and XLY95.
 - **PENDING (hardware):** determine if notifications contain meaningful acknowledgements/response formats.
 
 **Safety:** only try one command at a time once BLE connection works. Image upload is disabled for NRF- and should remain disabled.
