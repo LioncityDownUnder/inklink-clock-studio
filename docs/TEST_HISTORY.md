@@ -273,13 +273,39 @@ This was the actual root cause of the persistent service-not-found errors. See [
 
 **Next:** Confirm the offline packet inspector actually renders its summary in Android Chrome and obtain more reliable panel/model identification. Then use independent upstream-derived fixtures and protocol research to work toward supervised upload—not yet an automatic BLE write.
 
-## Next engineering work — validate offline inspector and device image geometry (PENDING)
+## Test record N — SUCCESS: offline NRF- image packet inspector ran in Android Chrome
 
-1. On Android Chrome, open live InkLink -> Display Designer and click **Inspect encoded packets (offline)** with 400×300 selected. This should report 126 packets and 30,504 total transmitted bytes, and should not request BLE connection.
-2. Verify the preview now uses exact black/white/red (instead of earlier dark blue/muted red); inspect the generated summary and note any error.
-3. Confirm the *real* screen resolution/driver/model, independently of XLY95's selected 400×300 canvas before considering physical uploads.
-4. Determine BLE write MTU/maximum size vs the 244-byte packet assumption, transfer timing vs the observed one-minute disconnections, and image-mode/refresh/return-to-clock behaviour.
-5. Keep the **NRF- Send to clock** action disabled until protocol and screen geometry are validated and a supervised trial is approved.
+**Date:** 14 October 2026, approximately 20:34 Sydney local time. **Evidence:** User screenshot of live InkLink Display Designer in Android Chrome, with the English clock face preview and the new **Inspect encoded packets (offline)** result displayed. Original screenshot stays in the chat, not this public GitHub repository.
+
+**Observed inspector output for selected 400×300 source preset:**
+
+| Field | Browser result |
+|---|---|
+| Profile | 400 × 300 full |
+| Transfer packets | **126** |
+| BW plane | **15,000 bytes** |
+| Red plane | **15,000 bytes** |
+| Total characteristic bytes including framing headers | **30,504** |
+| Largest characteristic write / image packet | **244 bytes** |
+| First packet header | **03 FF 00 00** (BW, offset 0) |
+| Last packet header | **03 00 3A 20** (red, offset 14880, derived from 62×240) |
+| Expected EPD refresh | **01** |
+| BLE performed by inspector | **None**; app explicitly reported no Bluetooth transmission |
+
+**What this confirms:** the offline image-packet code runs in the user's actual Android Chrome and produces its expected source-derived dimensions, plane lengths, chunk count, headers and report without touching the clock. The snapshot shows the English image preview rendering. This is an **offline browser/runtime check**, not independent validation of the physical clock's image encoding, panel geometry or a successful GATT image write.
+
+**Critical outstanding size issue:** original XLY95 sends up to **244 bytes per EPD characteristic write** (240 image bytes + 4 header bytes). According to Bluetooth ATT, an ordinary acknowledged characteristic Write Request can carry at most **ATT_MTU − 3** value bytes, so a 244-byte write requires an effective **ATT MTU ≥ 247**. The actual negotiated MTU between the clock and Android Chrome has **not** been measured. nRF Connect for Android can request an MTU and report the connection's result, but its negotiation is a **different session** and does not prove Chrome negotiated the same value. Do not send a dummy write or image frame merely to probe capacity.
+
+**Other outstanding issue:** the observed XLY95 400×300 setting is a canvas preset, **not** proof of the clock's real display resolution/controller; a device label or documentation would improve identification. No physical NRF- image data has been transmitted by InkLink; the upload action remains disabled.
+
+**Next safe user check:** In nRF Connect for Android (with InkLink/XLY95 disconnected), connect to the same clock, open the device ⋮ menu, choose **Request MTU**, request **247** if permitted, and inspect the connection log for the **negotiated/updated MTU**. Do not write characteristics or flash firmware. Record the returned MTU and any error. Follow up separately with a photo/model of the clock's back or packaging (hide serial/MAC) to confirm physical panel size. Do not enable image upload yet.
+
+## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
+
+1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
+2. Independently identify the clock's panel resolution and controller (photo of rear model label or packaging, removing/hiding any serial/MAC details). The 400×300 web preset is not enough.
+3. Validate whether the clock accepts full transfer framing, elapsed time vs approximately one-minute idle disconnections, original refresh/image activation and Clock-mode return. Do not send test image packets until those are resolved and the user agrees to a supervised attempt.
+4. Keep the dual-profile BLE controls and NRF- upload safety guard unchanged during research.
 
 ### Outcome template for future sessions
 
@@ -299,6 +325,6 @@ Copy and fill this in when the user reports results:
 | Time sync affects screen? | **YES — user confirmed time was synced at 19:46:28 (Test K)** |
 | Mode controls affect screen? | **YES — user confirmed Calendar E1 01/E2 and Clock E1 02/E2 switched physically at ~19:53 (Test L)** |
 | Actual error/log excerpt | **Time sync DD/E2 succeeded 19:46:28; GATT dropped after 51.4s. Earlier idle drops: InkLink 33.5s/57.2s, XLY95 ~59s after discovery.** |
-| Next engineering action | **Offline encoder + 10 new tests implemented; next test Android Chrome inspector and verify physical panel geometry/MTU before enabling image writes** |
+| Next engineering action | **Android Chrome offline inspector PASSED (record N). Next request nRF Connect MTU 247 (read-only negotiation) and independently verify clock panel dimensions.** |
 
 **Change history discipline:** append only verified new evidence, mark hypotheses accordingly, and update [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) current status and [ROADMAP.md](ROADMAP.md) accordingly.
