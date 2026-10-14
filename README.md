@@ -99,6 +99,12 @@ The Display Designer now includes **Inspect encoded packets (offline)**. It conv
 - Example for **selected 400 × 300 preset**: 15,000-byte BW and 15,000-byte red planes, **126 packets**, **30,504 BLE bytes** including headers, full packet **244 bytes**, refresh command `01` (metadata only). **This is NOT proof the actual clock is 400×300 or accepts 244-byte writes.**
 - `NRF-` image uploads are **still blocked**. Independent screen/MTU/refresh/restore verification and a supervised hardware test are required first.
 
+### Offline transfer simulator (no device write)
+
+InkLink now has **Simulate transfer — no Bluetooth** under Display Designer. It uses the offline `NRF-` image packet plan and adjustable ATT MTU, assumed time per packet, and simulated connection lifetime. It reports projected duration and whether an interrupted transfer stops inside image data or refresh. The default 400×300 scenario at **200 ms/packet** and **4 s hypothetical refresh** takes **29.2 seconds**; neither speed nor refresh time has been measured. MTU 512 is reported by Android nRF Connect, **not independently confirmed in Chrome**. Incomplete transfers should never be resumed blindly.
+
+New pure module `src/dash-simulator.mjs` and 6 new tests bring the suite to 25 cases. **This tool has no Bluetooth writes; `NRF-` image uploads are still disabled.**
+
 ## Legacy `NRF_` protocol summary (NOT for the user's `NRF-` clock)
 
 **Do not use the following command table for `NRF-` devices.** The actual clock instead uses EPD service `13187b10...`, RXTX service `1F10`, and `DD`/`E1`/`E2` commands. See [BLE_PROTOCOLS.md](docs/BLE_PROTOCOLS.md) for its complete service/characteristic details.
