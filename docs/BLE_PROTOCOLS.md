@@ -151,6 +151,17 @@ User also physically observes **three built-in Clock mode face styles**, cycling
 
 Safe future research: photograph each layout and look for manufacturer-documented characteristic read/notify interfaces for battery or temperature. Avoid writing guessed BLE requests or attempting undocumented firmware configuration. The static English custom-image upload currently cannot display continuously updated on-device telemetry.
 
+## Photo evidence of three firmware display modes — Test AP
+
+Three user-supplied photos directly show one firmware Clock mode command cycling these screen variants:
+- **Large digital clock** with seven-segment time, Chinese date/weekday, lunar date and seasonal countdown; top-right battery glyph and **3.9V** numeric readout, **21°C**.
+- **Analog/digital clock + calendar split dashboard** with clock (left), month grid (right), battery glyph and other Chinese information. Small `21` appears beside the bottom left panel and likely denotes temperature but unit/source is not verified from that region alone.
+- **Full Chinese lunar-month calendar** with time, voltage/battery glyph, **21°C**, highlighted date and solar-term/holiday annotations.
+
+The display of **3.9V** is a voltage indicator, **not a verified charge percentage**; don't map this to battery percent without calibration. A local panel reading does **not** prove any GATT sensor/voltage service, nor identify the measurement device. The exact style state/order is seen in photos and user-described cycling, but the application currently sends the same RXTX `E1 02` then `E2` for every press and cannot query the active style index.
+
+**Nuance:** some faint older 7-segment images appear on the dashboard/full-calendar photographs, so native style transitions may also ghost. Earlier user testimony that large-clock restoration cleaned the display remains valid for that observed state, but there is no evidence of a universally ghost-free waveform. No additional BLE commands in this checkpoint.
+
 ## Software implementation map
 
 - `src/dash-image.mjs`: **offline-only** image size profiles, strict pure-colour BW/red encoding, image packet framing, and plan calculation. No BLE APIs or writes.
