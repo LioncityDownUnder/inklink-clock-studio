@@ -356,6 +356,16 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next:** independently establish Chrome actual characteristic write capacity, practical throughput, and a safe restore path on partial transfer before supervised first upload. XLY95 source uses acknowledged writes but acknowledgment does not guarantee complete display refresh.
 
+## Test record T — Android Chrome offline image preflight PASS
+
+**Date/time:** 14 October 2026 ~21:41 (screenshot provided in conversation). The user ran **Simulate transfer — no Bluetooth** on the deployed InkLink site using the 400×300 preview, assumed ATT MTU 512, assumed 200 ms per packet, and simulated 55-second link lifetime.
+
+**Visible result:** 126 packets, 30,000 image payload bytes, simulated image time 25.2 seconds plus *hypothetical* 4-second refresh = 29.2 seconds; 126/126 complete within assumptions. The new **Offline sequence audit PASS** independently reported 126 ordered packets, 30,000 image bytes, **BW chunks → red chunks → 300 ms wait → EPD refresh**, and **No BLE writes**.
+
+**Confirmed:** the latest deployed Android Chrome app executes the source-derived sequence auditor and simulator successfully. This is a browser functional test only. The audit assumes MTU 512 based on nRF Connect, not Chrome; neither timing nor 244-byte accepted writes nor actual panel rendering have been measured on the hardware.
+
+**Next milestone:** validate Android Chrome's actual GATT write capacity and develop a safe interrupted-upload restoration plan, preferably by researching read-only device capabilities and documented XLY95 behavior. No experimental payloads or uploads until risks/rollback path are understood and user expressly approves a supervised trial.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
