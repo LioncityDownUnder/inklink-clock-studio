@@ -122,15 +122,46 @@ This was the actual root cause of the persistent service-not-found errors. See [
 
 **Next requested check:** With the same Android Chrome session and correct clock, leave it connected for 10–15 seconds to confirm longer stability. Then press `1. Enable notifications`; wait and capture the log. If that succeeds, press `Sync date & time` once and visually confirm the physical clock changes to the right local date/time. Test built-in Clock/Calendar modes separately afterward. Do not upload an image to `NRF-` yet.
 
-## Next physical test — notifications and controlled clock writes (PENDING)
+## Test record H — notifications enabled, followed by unrequested disconnect after 33.5 seconds
 
-**Date/time:** TBD. **Browser:** Android Chrome. **Hardware:** same NRF- desk clock. Initial connection success already observed in Test record G; do not reclassify it as untested.
+**Date/time:** 14 October 2026, approximately 19:21–19:22 Australia/Sydney. **Environment:** user's Android Chrome, corrected NRF- dual-profile InkLink, using on-device Activity Log (45 events). This new evidence supersedes the earlier "notification subscription untested" status, but does **not** prove reliable sustained BLE communication.
 
-1. If still connected, observe the connection remains stable for 10–15 seconds; otherwise reconnect in Safe mode. Do not open XLY95 or nRF Connect simultaneously.
-2. Press **1. Enable notifications** and wait several seconds. Capture success/error log.
-3. If still connected, press **Sync date & time** once and verify the actual screen's local time/date. The app sends DD payload and E2 on RXTX.
-4. Optionally test the built-in **Clock mode** and **Calendar mode** buttons one at a time, checking the actual display.
-5. Record any new errors and the verified device changes below; do not upload an image (unsupported for NRF-).
+**Exact visible log progression, transcribed from screenshot:**
+
+- `19:21:39 SUCCESS BLE stage: connected and stable`
+- `19:21:56 INFO BLE stage: starting notifications`
+- `19:21:57 SUCCESS BLE stage: notifications enabled`
+- `19:21:57 SUCCESS Enable notifications: command completed`
+- `19:22:07 ERROR Unexpected GATT disconnect after 33.5s. Last completed stage: notifications enabled. Web Bluetooth does not expose a device disconnect reason.`
+
+**Verified findings:**
+
+- The corrected physical NRF- EPD+RXTX connection works; the device remained available long enough to initiate notification setup.
+- `startNotifications()` **succeeded** on the actual EPD characteristic. This is a successful *subscription*, not proof that any notification payload arrived; none is visible in this screenshot.
+- GATT subsequently disconnected unexpectedly, at **33.5 seconds measured from device selection**, roughly **10 seconds after notifications succeeded**. The app did not log an intentional disconnect.
+- Cause **unknown**. A roughly 30-second idle policy, clock sleep, BLE/link interruption or Android stack issue are hypotheses only. Temporal association alone does **not** establish that `startNotifications()` triggered the disconnect.
+- Connection continued more than 10 seconds after the earlier successful `connected and stable` log (19:21:39 to 19:22:07), but **uninterrupted long-term reliability is not proven**. A single 33.5-second session subsequently ended unexpectedly.
+- **No time sync or clock/calendar mode change** has yet been observed on hardware.
+
+**Source follow-up:** Inspected XLY95's main `index.html` again. It does not implement an obvious periodic BLE keepalive. Its `setInterval(..., 1000)` updates text on the web page, not the BLE clock. This does not prove there is no firmware idle timeout, and is **not a reason to start sending speculative commands**. Original source also contains manual retry handling, not evidence of automatic sustained reconnection after disconnect.
+
+**Next controlled comparison — do not skip:**
+
+1. Disconnect XLY95 and nRF Connect, keep Android Chrome foreground and phone awake.
+2. Connect InkLink in **Safe mode**, then **do not press Enable notifications or any other controls**. Keep the page open for **60 seconds**, and note if/when it disconnects. Capture the final Activity Log including `Unexpected GATT disconnect after ...`, or confirm it remains connected at 60 seconds.
+3. Compare the connection duration to the 33.5-second notification-enabled session. If it drops at roughly the same interval *without* notifications, a timeout independent of notification setup becomes more likely. If it remains connected substantially longer (e.g. 60+ seconds), focus on notification effects, firmware expectations or other differences; repeat before concluding causality.
+4. If needed, run an equivalent idle test on XLY95 in the **same Android Chrome** (disconnect InkLink first), observing whether the site stays connected. Do not alter firmware.
+5. Only after clarifying stability, test DD/E2 time sync, checking physical clock display. `NRF-` image upload remains disabled.
+
+## Next physical test — Safe-mode idle connection, without notifications (PENDING)
+
+**Goal:** Separate baseline connection timeout from a potential notification-related disconnect.
+
+1. Reconnect physical `NRF-` clock in Android Chrome with **Safe connection checked**; close XLY95/nRF Connect.
+2. Leave the page in the foreground and **do not press any buttons**, including Enable notifications, for **60 seconds**.
+3. Report whether GATT stays linked. If it disconnects, share the exact duration and log entries. If it survives 60 seconds, record that as a positive observation.
+4. If necessary, repeat with notifications enabled and/or compare with XLY95 in the same browser, changing only one factor at a time.
+5. Do not send keepalive packets speculatively, reset firmware, or upload images.
 
 ### Outcome template for future sessions
 
@@ -146,10 +177,10 @@ Copy and fill this in when the user reports results:
 | `gatt.connect()` success? | **Yes (verified at 19:01)** |
 | EPD service/characteristic found? | **Yes (verified at 19:01)** |
 | RXTX service/characteristic found? | **Yes (verified at 19:01)** |
-| Notifications work? | Yes / No / not tested |
+| Notifications work? | **Subscription succeeded at 19:21:57; no incoming payload verified; disconnect 10s later** |
 | Time sync affects screen? | Yes / No / not tested |
 | Mode controls affect screen? | Yes / No / not tested |
-| Actual error/log excerpt | TBD |
-| Next engineering action | TBD |
+| Actual error/log excerpt | **Unexpected GATT disconnect after 33.5s, 19:22:07** |
+| Next engineering action | **60-second Safe-mode idle baseline without notifications** |
 
 **Change history discipline:** append only verified new evidence, mark hypotheses accordingly, and update [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) current status and [ROADMAP.md](ROADMAP.md) accordingly.
