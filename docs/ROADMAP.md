@@ -1,5 +1,7 @@
 # Roadmap and next-session checklist
 
+**Phase 2 Q (simulation-only, 14 Oct 2026):** Implemented independent NRF- transfer simulator with MTU capacity validation, projected packet throughput, hypothetical disconnect and refresh interruption, and explicit warning not to resume partial frames. Six new offline tests; intended total **25 tests**. Browser simulation is read-only. Next: validate in Android Chrome and research actual browser write size, image refresh and failure recovery. No physical image writes.
+
 **Project:** InkLink Clock Studio — English BLE interface for Chinese e-paper desk clocks.
 
 **Last reviewed:** 14 October 2026. **P0 clock controls are physically verified; next priority is safe NRF- image protocol research and offline-tested implementation, not firmware flashing.**
