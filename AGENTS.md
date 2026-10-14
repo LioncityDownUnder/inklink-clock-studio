@@ -1,5 +1,11 @@
 # Project instructions for AI coding assistants and future ChatGPT sessions
 
+## Phase 2 preflight audit (14 Oct 2026)
+
+XLY95 main-page `upload_image()` sends EPD BW packets then red packets via `writeValueWithResponse`, waits 300 ms, then sends EPD `01` or `AA` refresh by acknowledged write. It supplies no verified mid-frame resume/rollback. New `src/dash-preflight.mjs` validates packet plane order, offsets, bytes, assumed MTU-3 capacity and final opcode **offline only**, with five tests; simulation UI reports audit outcome. Existing time/mode RXTX controls must not be conflated with image EPD writes. Do NOT enable NRF- physical image upload or create probing writes until browser write-capacity and safe restoration are addressed.
+
+
+
 ## Current simulator milestone (14 October 2026)
 
 `src/dash-simulator.mjs` is a **pure, no-BLE** NRF- image-transfer simulator. User-facing Display Designer controls adjust assumed ATT MTU, per-packet latency and connection lifetime and report expected completion, image-vs-refresh interruption and unsafe restart caveats. Six new tests in `tests/dash-simulator.test.mjs`; suite intended total 25. 29.2 seconds for the 400×300 default is **hypothetical** (126×200ms + assumed 4s refresh), not observed throughput. The real NRF- image upload remains disabled. Continue with Android Chrome browser simulator validation and research into write size, refresh sequence and incomplete-frame recovery before supervised physical tests.
