@@ -1,5 +1,11 @@
 # Project instructions for AI coding assistants and future ChatGPT sessions
 
+## Checkpoint W — Supervised image-upload rehearsal, not an upload
+
+`src/upload-rehearsal.mjs` and `tests/upload-rehearsal.test.mjs` add a pure offline rehearsal/checklist, exposed as **Prepare dry-run upload checklist** in Display Designer. This only assembles source-grounded procedural steps and never transmits data. Four new tests (38 total). **Do not enable the physical NRF- upload button, send dummy packets, or claim the first upload has occurred.** Need separate user approval and improved recovery confidence first.
+
+
+
 ## Chrome read-only EPD capability inspection checkpoint
 
 `src/ble-capabilities.mjs` and its four tests provide a zero-write browser-side BLE inspection of the connected NRF- EPD characteristic; Display Designer has an **Inspect connected EPD capability — no writes** button. This confirms characteristic properties/method exposure but **cannot** verify a numerical MTU or successful 244-byte writes. Do not introduce dummy/probing BLE packets or enable NRF- image writes without a deliberate user-approved supervised image test and interruption recovery plan.
