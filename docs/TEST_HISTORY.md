@@ -498,6 +498,12 @@ Possible explanations include incomplete erasure/refresh waveform or residual im
 
 **Conclusion:** no source-grounded extra EPD cleaning command can responsibly be added yet. We should not claim that another `01` or a guessed `00` code will cure persistent ghosting. Keep device in clean original mode and seek controller/firmware documentation; prepare typography improvements offline if desired. No BLE commands or image writes occurred in this research.
 
+## Checkpoint AM — controller research and offline English clock typography
+
+**14 October 2026; NO HARDWARE WRITES.** Public XLY95 page recognizes a 4.2-inch 400×300 profile but no literal common controller part identifiers (`SSD1683`, `SSD1680`, `UC8176`, `UC8276`, `JD796`, `IL0398`). The actual clock's controller, waveform and reliable panel-wide erase protocol remain unknown. This cannot be reverse-engineered from a screenshot alone. Existing normal Clock mode returns a clean display; static English image produced persistent ghosting.
+
+Implemented `src/clock-typography.mjs` and checkbox `High-contrast English clock layout (preview only)` in Display Designer. The clock preview and downloaded PNG now allow a larger, black, 1–2-line footer. It does NOT add any new BLE operation or attempt ghosting repair. Five new offline tests bring suite to **77**. Review the layout on Android Chrome; no need to touch the physical clock.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
