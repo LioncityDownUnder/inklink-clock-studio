@@ -58,6 +58,8 @@
 
 > **Test AJ — uniform ghosting report:** User confirms persistent ghosting appears **approximately evenly across the entire panel**, not mainly around former large Chinese numerals. Suggests prioritising **global erase/waveform/refresh** investigation, but cause remains unverified; this is observational and no new BLE writes were issued. Do not send undocumented clear commands, or blindly reupload. Next: safely research panel-wide erasure behaviour and improve offline typography.
 
+> **LATEST TEST AK — CLEAN RESTORATION CONFIRMED:** Following first live English image upload (126/126 packets, 9.3s) and persistent uniform ghosting, user selected **Clock mode** in InkLink; the physical Chinese clock face returned **clean, without ghosting**. Thus normal-mode restoration is now **verified after a completed custom-image upload**. This does NOT prove recovery of a partial EPD buffer or the underlying difference in full refresh behavior. Prioritize safely researching built-in refresh/erase sequences against EPD image refresh `01`. **No speculative clear commands or repeated uploads.** User's current screen is original clean Chinese Clock mode.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
