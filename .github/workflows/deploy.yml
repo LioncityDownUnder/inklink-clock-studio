@@ -32,6 +32,7 @@ jobs:
           node --check src/upload-rehearsal.mjs
           node --check src/dash-supervised-transfer.mjs
           node --check src/mock-transfer-runner.mjs
+          node --check src/ble-guarded-writer.mjs
           node --check src/app.mjs
       - name: Test BLE and offline image protocols
         run: node --test tests/*.test.mjs
