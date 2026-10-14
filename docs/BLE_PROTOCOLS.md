@@ -184,6 +184,12 @@ The public XLY95 `index.html` includes the `0000221f-...` UUID **once**, solely 
 
 Recommendation: before any 331F value inspection, clearly label it an unknown proprietary read and require a separate deliberate single-read consent. Do not auto-read unknown values, subscribe to notifications, or infer temperature/voltage from the output.
 
+## Checkpoint AS — opt-in bounded read of 221F/331F
+
+New module `src/raw-331f-read.mjs`: requires user consent, connection and `read` property, looks up exact `0000221f-0000-1000-8000-00805f9b34fb` / `0000331f-0000-1000-8000-00805f9b34fb` and performs exactly **one standard `readValue()`** per explicit action. The UI enforces one attempted read per page session, with separate native confirmation. The returned DataView is displayed in uppercase hexadecimal (up to 64 bytes), and byte count is reported without decoding, battery/temperature guesswork, subscriptions or any writes.
+
+**Not yet hardware tested.** The original XLY95 main page only includes 221F as an optional service and does not describe 331F format. A read on unknown proprietary firmware is not guaranteed side-effect-free, so user must explicitly accept this before tapping. Current verified telemetry remains Battery Level 2A19 = 0% on Test AR (possibly placeholder), while 3.9V/21°C were visible on physical display.
+
 ## Software implementation map
 
 - `src/dash-image.mjs`: **offline-only** image size profiles, strict pure-colour BW/red encoding, image packet framing, and plan calculation. No BLE APIs or writes.
