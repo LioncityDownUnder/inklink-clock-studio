@@ -492,6 +492,12 @@ Possible explanations include incomplete erasure/refresh waveform or residual im
 
 **New development priority:** read-only compare built-in mode commands (RXTX `E1 02`, `E2`) with the custom image EPD `01` refresh. Investigate verified firmware behavior or documented waveform/refresh parameters; avoid speculative EPD `00+cmd` commands. Optionally improve English footer legibility offline, but only undertake another image write with separate deliberate user approval.
 
+## Checkpoint AL — XLY95 source audit finds NO validated ghosting-clear command
+
+**14 October 2026, research only:** Reviewed XLY95's original public `index.html` after Test AK's clean hardware Clock-mode restoration. `upload_image()` sends BW/red planes then EPD `01` after 300ms, exactly the style used for InkLink's successful first English image. `clearScreen(cmd)` occurs once as a function **definition only**, with no call site showing a safe `cmd` argument; it would write EPD `00+cmd` followed by `01`. `clear_canvas()` clears the web canvas only. The clean built-in Clock mode occurs via RXTX `E1 02` then `E2` and its internal waveform/erase behaviour is not revealed by the webpage's source.
+
+**Conclusion:** no source-grounded extra EPD cleaning command can responsibly be added yet. We should not claim that another `01` or a guessed `00` code will cure persistent ghosting. Keep device in clean original mode and seek controller/firmware documentation; prepare typography improvements offline if desired. No BLE commands or image writes occurred in this research.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
