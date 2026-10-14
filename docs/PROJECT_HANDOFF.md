@@ -4,9 +4,9 @@
 >
 > **Last consolidated:** 14 October 2026 (Australia/Sydney).
 >
-> **Status:** GitHub Pages deployed, automated tests passing; **NRF- EPD+RXTX two-service discovery physically confirmed** at 19:01 on 14 Oct 2026. **EPD notifications physically enabled successfully** at 19:21:57. However, a later session **unexpectedly disconnected after 33.5 seconds from selection** (at 19:22:07), about 10 seconds after enabling notifications. This does not establish the cause of the disconnect. Incoming notification payloads and DD/E2 time sync or mode changes remain unverified.
+> **Status:** GitHub Pages deployed; corrected NRF- EPD+RXTX connection and EPD notification subscription confirmed on real hardware. **Two separate GATT sessions disconnected unexpectedly:** 33.5 seconds after selection with notifications enabled (~19:22), **57.2 seconds after selection with Safe mode and NO notifications or commands** (~19:31 on 14 Oct 2026). Thus notification subscription is not required for a disconnect. Cause remains undetermined. Notification payload reception, DD/E2 time sync and clock/calendar mode effects have not been tested.
 >
-> **Next action:** Run a **60-second Safe-mode idle baseline with NO notifications or writes**, Android Chrome foreground, XLY95 and nRF Connect disconnected. Report whether it disconnects at roughly 30–35 seconds or remains connected 60+ seconds, then compare to the 33.5-second notification-enabled session. Do not add speculative keepalive or enable NRF- image transfer.
+> **Next action:** Compare with the **original XLY95 site on the SAME Android Chrome phone**. Disconnect InkLink, connect to the same NRF- clock using XLY95, leave it in the foreground 90–120 seconds WITHOUT pressing time/mode/image controls. Record whether the original remains connected, disconnects and after how long, or reconnects automatically. Do not add speculative keepalive or enable NRF- image transfer.
 
 ## Canonical links
 
@@ -69,6 +69,7 @@ More exact wire-level details, source references and caveats are in [BLE_PROTOCO
 9. Added automatic profile selection in `src/app.mjs` and protocol-specific helpers in `src/protocol.mjs`, new tests, app safety guard disabling NRF- image uploads, and corrected README. GitHub Actions finished successfully with **9 protocol tests**.
 10. **New first hardware SUCCESS at approximately 19:01 on 14 Oct:** user Activity Log confirmed `NRF- RXTX characteristic discovered`, `Protocol profile: NRF- EPD + RXTX (XLY95 main page)`, `EPD capabilities: write, notify`, `RXTX write capability: true`, and `BLE stage: connected and stable` after the 1.5-second idle test. In Safe mode, **no notifications and no writes were sent**. Details in [TEST_HISTORY.md](TEST_HISTORY.md), Test record G.
 11. **New physical notification SUCCESS / link failure at 19:21–19:22:** after stable connection at 19:21:39, EPD `startNotifications()` returned success at 19:21:57. At 19:22:07, GATT disconnected unexpectedly **33.5 seconds after BLE selection**, about 10 seconds after subscription. Notification subscription itself is verified; actual incoming notifications, idle-timeout cause and time/mode writes are unverified. See Test record H in [TEST_HISTORY.md](TEST_HISTORY.md).
+12. **New Safe-mode idle baseline at 19:30–19:31:** no notifications or commands, stable at 19:30:14, then **unexpected GATT disconnect after 57.2 seconds** at 19:31:07. Confirms the disconnect can happen WITHOUT notification subscription. A fixed timeout or cause remains unknown. See Test record I in [TEST_HISTORY.md](TEST_HISTORY.md).
 
 See [TEST_HISTORY.md](TEST_HISTORY.md) for more precise evidence and how to interpret old logs.
 
@@ -85,23 +86,21 @@ See [TEST_HISTORY.md](TEST_HISTORY.md) for more precise evidence and how to inte
 
 ## EXACT next test / acceptance checkpoint
 
-**PHYSICAL RESULTS:** EPD and RXTX services/characteristics discovered in Android Chrome (~19:01). In a later connection, EPD notification subscription succeeded (19:21:57), but there was an unexpected GATT disconnect at 19:22:07, **33.5 seconds after device selection**, ~10 seconds following notifications. The reason is **unknown**, and no actual notification payload has been confirmed. This must not be described as fully stable BLE operation.
+**PHYSICAL RESULTS SO FAR:** Both EPD and RXTX services/characteristics discovered on actual `NRF-` hardware, and `startNotifications()` succeeded. However, GATT disconnected unexpectedly on **two independent runs**: **33.5s** after selection with notifications enabled, and **57.2s** in Safe mode with no notification subscription and no commands. Notification setup is **not necessary for the disconnect**, but its effect on timing is undetermined. These are connection lifetimes from device selection, not proven protocol timeout constants.
 
-**Next experiment (one variable at a time):**
+**Next controlled test (compare original website):**
+1. On the **same Android phone in Chrome**, disconnect InkLink and close nRF Connect sessions. Open https://xly95.github.io/ and select the same NRF- clock.
+2. Keep XLY95 in foreground/phone awake for **90–120 seconds**, without pressing any time/mode/image controls. XLY95 does enable EPD notifications as part of its initial connection; record this difference.
+3. Observe whether XLY95 remains connected for 120s, disconnects and at what duration, or reconnects automatically.
+4. If XLY95 behaves similarly, investigate peripheral idle behaviour/Android BLE stack and repeat tests. If XLY95 stays connected much longer, inspect connection/recovery sequencing and command traffic differences before changing InkLink.
+5. Avoid speculative BLE keepalive writes, destructive commands or NRF- image upload. Physical time and mode controls remain for a later, separately observed test.
 
-1. Close XLY95 and nRF Connect BLE sessions. Open InkLink in Android Chrome, foreground, phone awake.
-2. Connect to `NRF-` device with **Safe connection** checked. **Do not enable notifications, sync time, or press any other controls.**
-3. Observe for **60 seconds**. Capture the Activity Log if it disconnects, including `Unexpected GATT disconnect after ...`, or report still connected at 60 seconds.
-4. Compare with prior **33.5s** notification-enabled session; only then decide whether testing notifications again, comparison in XLY95, or more detailed Android BLE logs is warranted.
-5. Do not introduce a periodic BLE keepalive until tests indicate what the clock expects. The XLY95 main page's once-per-second timer changes its **on-page text**, not the BLE clock.
-6. Once stable enough, test DD/E2 time sync once and visually verify physical local time, then test modes separately. **NRF- image uploads remain disabled**.
-
-**Verified milestones:** service discovery and notification subscription. **Pending:** idle connection reliability, notification payload reception, DD/E2 effect, E1/E2 mode effect, safe image protocol.
+**Verified milestones:** correct services/characteristics and notification subscription. **Pending:** reliable sustained connectivity, notification payload arrival, RXTX time/mode screen effects, NRF- image transfer.
 
 ## Remaining work, in order
 
-P0. **DONE (physical):** Correct NRF- EPD and RXTX characteristics discovered; EPD notifications enabled successfully at 19:21:57. **OPEN ISSUE:** unexpected disconnect after 33.5 seconds; 60-second Safe-mode/no-notification comparison pending.
-P0. **NEXT:** Establish baseline BLE idle-disconnection behaviour without notifications. Once sufficiently stable, verify physical DD/E2 time and E1/E2 mode writes, one at a time.
+P0. **DONE (physical):** Correct NRF- EPD and RXTX characteristics discovered; EPD notifications enabled. **OPEN ISSUE:** disconnect after 33.5s with notifications and **57.2s without notifications/commands**. NEXT: XLY95 90–120s same-phone comparison.
+P0. **NEXT:** Compare connection stability against original XLY95 in Android Chrome. Then verify physical DD/E2 time and E1/E2 mode writes, one at a time.
 P1. Implement `NRF-` image upload using upstream page's EPD framing, plane conversions and its supported display dimensions; add offline unit tests / byte-for-byte references before using hardware. Keep uploads disabled until validated.
 P1. Fix any UI or connection regressions found by device logs, and keep the two profiles separate.
 P2. Identify exact physical display geometry, implement accurate English designs and optional display-related controls.
@@ -116,7 +115,7 @@ Give the next assistant this repository and tell it **to read this handoff first
 
 Suggested message to paste:
 
-> Continue my InkLink Clock Studio project at https://github.com/LioncityDownUnder/inklink-clock-studio . Read docs/PROJECT_HANDOFF.md, docs/BLE_PROTOCOLS.md, docs/TEST_HISTORY.md, docs/ROADMAP.md and AGENTS.md from the current main branch before making changes. We have an NRF- e-paper desk clock; the old 32120001 protocol was wrong for this model. The correct XLY95 index.html protocol (13187b10 EPD service + 1F10 RXTX service) connects to the physical clock. Notifications enabled at 19:21:57, but the link dropped unexpectedly after 33.5s at 19:22:07. Next: run a 60s Safe-mode idle baseline *without* enabling notifications and compare; only then test clock time sync. Update GitHub docs with results.
+> Continue my InkLink Clock Studio project at https://github.com/LioncityDownUnder/inklink-clock-studio . Read docs/PROJECT_HANDOFF.md, docs/BLE_PROTOCOLS.md, docs/TEST_HISTORY.md, docs/ROADMAP.md and AGENTS.md from the current main branch before making changes. We have an NRF- e-paper desk clock; the old 32120001 protocol was wrong for this model. The correct XLY95 index.html protocol (13187b10 EPD service + 1F10 RXTX service) connects to the physical clock. Notifications enabled at 19:21:57 and the link dropped after 33.5s; another session without notifications or commands dropped after 57.2s at 19:31. Next: compare XLY95 idle connection for 90–120s in the same Android Chrome, then proceed with controlled commands. Update GitHub docs with results.
 
 ## Rules for future project updates
 
