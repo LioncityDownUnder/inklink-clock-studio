@@ -11,6 +11,8 @@
 
 > **14 Oct 2026 ~20:34 USER SCREENSHOT — OFFLINE INSPECTOR VERIFIED IN ANDROID CHROME:** User tapped Inspect encoded packets (offline) with 400×300 preset. Visible result: 126 packets, BW 15,000 bytes, red 15,000 bytes, total 30,504 BLE bytes, max packet 244 bytes, first header `03 FF 00 00`, last header `03 00 3A 20`, EPD refresh `01`, and explicit `No Bluetooth data was transmitted.` This validates browser execution/summary, NOT physical panel resolution or device image transfer. **Next: establish real panel dimensions and BLE MTU/write limit before any supervised transfer.**
 
+> **New hardware observation (14 Oct 2026, Test O):** User provided full front photo and confirmed the white enclosure is **3D printed without any model label**. Active visible screen is roughly 4:3 and shows black/white/red output. **4.2-inch 400×300 B/W/R is plausible but NOT verified.** Generic active area for that class is ~84.8 × 63.6 mm, reference only. **Next ask user to measure the visible active display width and height in mm** (exclude case). Do not request disassembly. nRF Connect 0x180A Device Information may help if measurements are ambiguous. Still check BLE negotiated MTU before any 244-byte writes and keep NRF- image upload disabled.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
