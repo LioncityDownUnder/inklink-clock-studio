@@ -22,6 +22,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check src/protocol.mjs
+          node --check src/app.mjs
       - name: Test BLE protocol
         run: node --test tests/protocol.test.mjs
 
