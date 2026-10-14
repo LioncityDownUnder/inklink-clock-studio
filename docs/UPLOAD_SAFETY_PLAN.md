@@ -48,6 +48,14 @@ An isolated `src/ble-guarded-writer.mjs` now provides a fail-closed wrapper arou
 
 **Unresolved prerequisites:** actual Chrome 244-byte acceptance, source-specific incomplete-image recovery (not verified), panel driver identity, and separate informed user authorization. Before enabling uploads, perform a threat/failure review for stalled pending writes, display/page backgrounding, and clock restoration—not merely passing mock tests.
 
+## Pending-write stall warning review (14 October 2026, mock-only)
+
+A new pure `src/pending-write-monitor.mjs` tracks a pending acknowledged write and emits a **stalled-warning** after a configurable threshold. The observer **does not cancel, reject, resolve or time out** an underlying characteristic write. It distinguishes an unresolved promise from a failed write. The mock upload UI now offers **Packet 25 stalls for 4.5 seconds (mock only)**; with a 1-second warning, the interface makes the user wait for the fake write to settle. Pressing Cancel during the stall requests cancellation but does **not** claim to have stopped the in-flight operation.
+
+Key policy: **timeout warning ≠ cancelled Bluetooth write ≠ recovered e-paper buffer**. Never issue an EPD refresh, reconnect/retry, or another packet merely because a UI watchdog has elapsed. A future real upload would require explicit, separate informed authorization after hardware risks are reviewed; no such approval has been given.
+
+**Final preflight review status:** controlled mock and isolated adapter tests cover packet ordering, acknowledged-write failure, cancellation at write boundaries, page visibility, deadline gating and warning-only stalled writes. Remaining unknown: true Chrome 244-byte characteristic write acceptance, device refresh and recovery from half-written frame. Clock-mode E1 02/E2 is not a proven rollback.
+
 ## Current next task
 
 Have the user connect in Android Chrome and click **Inspect connected EPD capability — no writes**. This will establish whether acknowledged-write capability is exposed; it cannot establish real write-length support. From there design a gated, user-confirmed hardware experiment if desired, with the above safeguards.
