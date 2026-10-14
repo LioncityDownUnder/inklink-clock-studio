@@ -1,4 +1,5 @@
 import { createDashTransferPlan } from './dash-image.mjs';
+import { simulateDashTransfer } from './dash-simulator.mjs';
 import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex,
   DASH_EPD_SERVICE_UUID, DASH_EPD_CHARACTERISTIC_UUID, DASH_RXTX_SERVICE_UUID,
   DASH_RXTX_CHARACTERISTIC_UUID, encodeDashTime, encodeDashMode, DASH_REFRESH } from './protocol.mjs';
@@ -577,6 +578,33 @@ function inspectDashImageOffline() {
   }
 }
 
+function simulateDashImageOffline() {
+  try {
+    if ($('template').value === 'image' && !state.loadedImage) throw new Error('Choose an image first.');
+    const canvas=$('previewCanvas');
+    const pixels=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,canvas.width,canvas.height);
+    const plan=createDashTransferPlan(pixels);
+    const result=simulateDashTransfer(plan,{
+      mtu:Number($('simMtu').value),
+      millisecondsPerPacket:Number($('simPacketMs').value),
+      disconnectAfterSeconds:Number($('simTimeoutSec').value)
+    });
+    const msg='SIMULATION ONLY — no Bluetooth writes. '+result.packets+' packets, image '+result.estimatedImageSeconds.toFixed(1)+
+      's, including hypothetical 4s refresh '+result.estimatedTotalSeconds.toFixed(1)+
+      's. Assumed ATT characteristic capacity '+result.characteristicLimit+' bytes. Outcome: '+
+      (result.feasibleWithinScenario?'fits assumptions':result.stopsAt==='mtu'?
+        'blocked: packet exceeds MTU':'interrupted during '+result.stopsAt)+
+      '. Estimated complete packets before stop: '+result.estimatedCompletePackets+'/'+result.packets+
+      '. '+result.restartRecommendation+
+      ' Estimates are not measured BLE throughput, browser MTU, or firmware recovery behavior.';
+    $('dashSimulationSummary').textContent=msg;
+    log(msg,result.feasibleWithinScenario?'info':'error');
+  } catch(e) {
+    $('dashSimulationSummary').textContent='Simulation unavailable: '+(e.message||e);
+    log('Offline simulation: '+(e.message||e),'error');
+  }
+}
+
 function progress(percent,label){
   $('transferStatus').hidden=false;
   $('transferProgress').value=percent;
@@ -681,6 +709,7 @@ function init(){
   $('clockMode').addEventListener('click',()=>switchMode(1,'Clock mode'));
   $('calendarMode').addEventListener('click',()=>switchMode(2,'Calendar mode'));
   $('inspectDash').addEventListener('click',inspectDashImageOffline);
+  $('simulateDash').addEventListener('click',simulateDashImageOffline);
   $('sendImage').addEventListener('click',uploadImage);
   $('downloadPng').addEventListener('click',downloadPng);
   $('clearLog').addEventListener('click',()=>{
