@@ -4,6 +4,19 @@ A browser-based, English-language control panel and image designer for desk cloc
 
 > **Hardware-test beta.** Updated 14 October 2026 to support two separate XLY95 BLE protocols. The code passes automated tests; the updated NRF- connection and commands still need verification on the user's physical clock.
 
+## Start here / continuing in a new chat
+
+**This GitHub repository is the permanent project record.** To resume the project in any future ChatGPT chat, provide the repository URL and ask the assistant to read these files on the current `main` branch **before taking action**:
+
+- **[Project handoff / current checkpoint](docs/PROJECT_HANDOFF.md)** — current status, hardware evidence, confirmed discoveries, next exact test and ready-to-copy continuation prompt. **Read first.**
+- [BLE protocol reference](docs/BLE_PROTOCOLS.md) — both `NRF-` and `NRF_` UUIDs, characteristic channels, command bytes, image upload limits.
+- [Testing history / failure log](docs/TEST_HISTORY.md) — observed screenshots and errors, what we tried, why older attempts failed, pending result template.
+- [Roadmap](docs/ROADMAP.md) — current priorities, acceptance criteria and later features.
+- [Instructions for AI coding assistants](AGENTS.md) — how to work safely in the repo and keep documentation updated.
+
+**Next physical checkpoint:** test the latest `NRF-` EPD+RXTX two-service connection in Android Chrome using Safe connection, then record the Activity Log. The corrected profile has not yet been tested on the user's clock. **NRF- image upload remains deliberately disabled.**
+
+
 ## Device compatibility
 
 The public XLY95 site includes **two different BLE implementations**. InkLink now selects the profile by the device's advertised name:
@@ -61,19 +74,21 @@ Open `http://localhost:8000` in desktop Chrome/Edge. All program assets are loca
 - **Safari and Chrome (iOS/iPadOS):** standard browsers do not support Web Bluetooth, so use a desktop or Android device for BLE. You can still edit and export artwork on iPhone.
 - **GitHub Pages/HTTPS or `localhost`:** required for web-based Bluetooth. Using the standalone local HTML file may work in compatible Chromium browsers.
 
-## First physical-device test
+## Next physical-device test (current checkpoint)
 
-1. On the original [XLY95 website](https://xly95.github.io/), check which **display driver/resolution** is selected for the clock. The photographed desk clock looks close to 4.2 inches, but **400 × 300 is only a guess**.
-2. Disconnect the original XLY95 site before attempting to connect here.
-3. Open InkLink Studio → **Connect clock** → select the `NRF_...` device.
-4. Try **Sync date & time**; check the clock's display for correct local time.
-5. Try **Clock mode** / **Calendar mode**.
-6. Open **Display studio**, verify screen dimensions and colour mode, and start with a small trial using the safest `20 byte` write size.
-7. Once uploaded, the e-paper display may take additional seconds to refresh. If the image appears distorted or fails, do **not** keep sending repeated transfers; confirm model resolution and protocol version first.
+1. Disconnect the clock from XLY95 and nRF Connect; close their BLE sessions.
+2. Reload [live InkLink](https://lioncitydownunder.github.io/inklink-clock-studio/) in **Android Chrome**.
+3. Leave **Safe connection** checked and the broad "Show all" scan unchecked; select the clock showing `NRF-...`.
+4. In **Activity Log**, verify discovery of EPD service `13187b10...` and characteristic `4b646063...` **and** RXTX service `1F10` and characteristic `1F1F`. Remain connected for at least 10 seconds.
+5. After confirmed stable connection, deliberately test **Enable notifications**, then **Sync date & time** and check the physical clock. Test built-in Clock/Calendar modes individually if time sync works.
+6. If anything fails, record the precise **first** error/stage and whether XLY95 works on the same phone. See [TEST_HISTORY.md](docs/TEST_HISTORY.md). Do **not** try image upload on `NRF-` clocks yet.
 
-**Important:** An image upload is a **static bitmap**. It does not update itself each minute. Switch back to **Clock mode** to resume the firmware's built-in live clock. Automatic custom English clock faces require additional support, such as periodic BLE refresh with a connected browser or modified device firmware.
+**Important:** An uploaded custom image is a **static bitmap**; it will not update minute-by-minute on its own. Automatic custom English clock faces need ongoing BLE image updates or device-side firmware support.
 
-## Protocol summary
+## Legacy `NRF_` protocol summary (NOT for the user's `NRF-` clock)
+
+**Do not use the following command table for `NRF-` devices.** The actual clock instead uses EPD service `13187b10...`, RXTX service `1F10`, and `DD`/`E1`/`E2` commands. See [BLE_PROTOCOLS.md](docs/BLE_PROTOCOLS.md) for its complete service/characteristic details.
+
 
 | Item | Value |
 |---|---|
@@ -87,15 +102,17 @@ Open `http://localhost:8000` in desktop Chrome/Edge. All program assets are loca
 | Image data | `A1` + flag + packed byte stream |
 | Refresh screen | `A5` |
 
-First B/W image packet uses flag `0F`; subsequent B/W packets `FF`. First red-plane packet uses `00`; subsequent red packets `F0`. In black/white plane, pixel bit `1` means white, `0` means black. In the red plane, `0` means a red pixel, `1` means not red. Pack MSB first, row by row. For tri-colour images, black/white data is sent first and red data second. The full characteristic packet must fit within the negotiated BLE write length. Default is the conservative 20 bytes.
+First B/W image packet uses flag `0F`; subsequent B/W packets `FF`. First red-plane packet uses `00`; subsequent red packets `F0`. In black/white plane, pixel bit `1` means white, `0` means black. In the red plane, `0` means a red pixel, `1` means not red. Pack MSB first, row by row. For tri-colour images, black/white data is sent first and red data second. On legacy `NRF_` devices, the full characteristic packet must fit within the negotiated BLE write length. Default is the conservative 20 bytes.
 
 The source site uses a mixture of writes with and without response during image transfer. This app replicates that transfer strategy, with a brief delay for unacknowledged writes. For greater reliability choose **Every packet — reliable / slow**. Receiving an acknowledged GATT write does not prove the e-ink panel was successfully refreshed.
 
 ## Development/tests
 
-Tests need Node.js 18+ (no installation of dependencies):
+Tests need Node.js 18+ (no installation of dependencies); these test packet encoders, not a physical BLE connection:
 
 ```bash
+node --check src/protocol.mjs
+node --check src/app.mjs
 node --test tests/protocol.test.mjs
 ```
 
@@ -106,16 +123,21 @@ index.html            Main app
 src/styles.css        App design
 src/protocol.mjs      BLE packet encoding + image conversion
 src/app.mjs           UI, canvas, Bluetooth and transfer logic
-tests/                Unit tests
-README.md             This document
+tests/                9 protocol unit tests
+AGENTS.md             Instructions for coding assistants
+docs/PROJECT_HANDOFF.md  Continuity + current status
+docs/BLE_PROTOCOLS.md    Both BLE profiles and commands
+docs/TEST_HISTORY.md     Chronological experiment log
+docs/ROADMAP.md          Prioritized next steps
+README.md             Project overview
 ```
 
 ## Limitations and safety
 
 - Not a firmware flasher. It does not erase or update MCU flash.
-- Screen dimensions, hardware drivers and red-plane mapping may differ between models. Confirm on original XLY95 site before uploading.
+- Screen dimensions, hardware drivers and red-plane mapping may differ between models. The user's actual `NRF-` display geometry has not been verified; uploading images to that profile is disabled.
 - Device notifications are displayed as raw hexadecimal; the response format has not been reverse engineered.
-- Packet size larger than 20 bytes requires support by the browser/device connection. If uploads fail, reduce packet size to 20 and use acknowledged writes.
+- For legacy `NRF_` image transfer, packet size larger than 20 bytes requires support by browser/device. If legacy uploads fail, reduce to 20 and use acknowledged writes. Do not apply this legacy image protocol to `NRF-`.
 - Web Bluetooth may be blocked by corporate browser policy, OS permissions or an existing BLE pairing/connection.
 - E-paper updates consume power and take time; avoid repeated fast refreshes. The app deliberately does not perform automatic image updates in v1.
 - No source code from the XLY95 repository is copied here. This implementation references publicly visible command formats and is not affiliated with XLY95.
@@ -123,4 +145,5 @@ README.md             This document
 ## Source protocol reference
 
 - https://xly95.github.io/
-- https://github.com/XLY95/xly95.github.io/blob/main/js.js
+- https://github.com/XLY95/xly95.github.io/blob/main/index.html (NRF-)
+- https://github.com/XLY95/xly95.github.io/blob/main/js.js (NRF_)
