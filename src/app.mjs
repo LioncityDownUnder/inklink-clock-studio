@@ -562,6 +562,7 @@ function inspectDashImageOffline() {
       ' · Red '+plan.redBytes.toLocaleString()+' bytes'+
       ' · '+plan.transmissionBytes.toLocaleString()+' total BLE bytes (including headers)'+
       ' · max packet '+plan.maxPacketBytes+' bytes'+
+      ' · estimated minimum ATT MTU '+(plan.maxPacketBytes+3)+' (not verified on hardware)'+
       ' · first header '+header(first)+
       ' · last header '+header(last)+
       ' · EPD refresh '+plan.refreshCommand[0].toString(16).toUpperCase().padStart(2,'0')+
