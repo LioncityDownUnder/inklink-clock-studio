@@ -117,6 +117,22 @@ For a *hypothetical* 400×300 two-plane image: 15,000 bytes per plane, 30,000 im
 4. Perform a supervised, user-approved test with a simple reversible image only after complete validation. Keep old built-in Clock mode available as a fallback.
 5. **Do not enable physical NRF- image upload or send the new offline packets automatically.**
 
+## Ghosting investigation after first real image upload — source inspection (14 Oct 2026)
+
+**Physical evidence:** user successfully uploaded a custom English 400×300 image, 126/126 packets, refresh acknowledged in ~9.3 s. Persistent, approximately uniform ghosting remained after minutes. User then selected built-in **Clock mode**, which restored a **clean physical Chinese clock face** (Test AK). The display is therefore demonstrably capable of a clean normal-mode redraw.
+
+**What XLY95 public main `index.html` actually establishes:**
+
+- `upload_image()` emits BW plane then red plane, waits **300 ms**, then sends EPD **`01`** for the full-frame 400×300 path. InkLink already reproduces this. Merely repeating EPD `01` is **not** a newly sourced anti-ghosting technique.
+- `clearScreen(cmd)` is defined **once** and invokes `triggerEpdCmd('00'+cmd)` followed by `triggerEpdCmd('01')`. Searching the downloaded source for `clearScreen(` found **only its definition**, no invocations or examples of the `cmd` parameter. A separate `clear_canvas()` helper modifies only the browser's canvas, not the clock.
+- The main page provides `triggerEpdCmd()`, which dispatches EPD bytes via an acknowledged write. It does **not** expose the firmware's internal e-paper waveform or a documented clear-screen argument.
+- The known working mode controls `E1 02` and `E2` write to **RXTX**, not the EPD image characteristic. Their physical effect is confirmed but the device-side clearing procedure remains unknown.
+- XLY95 has optional RXTX contrast / partial-refresh calibration controls, but their interaction with this exact panel/firmware was not established. **Do not guess calibration or clear values.**
+
+**Working interpretation, not proven root cause:** the difference between persistent ghosting after an otherwise successful custom-image refresh and a clean built-in Clock mode suggests firmware-selected full-refresh/waveform/erase behaviour, potentially involving internal state. Neither the exact command nor waveform is available from inspected public JS.
+
+**Next:** preserve the currently clean normal clock. Do not repeatedly upload or send unverified EPD `00+cmd`, RXTX calibration, or random refresh commands. Look for verifiable manufacturer firmware/driver information before defining a new hardware experiment. English layout/text legibility may be refined **offline** with no device changes.
+
 ## Software implementation map
 
 - `src/dash-image.mjs`: **offline-only** image size profiles, strict pure-colour BW/red encoding, image packet framing, and plan calculation. No BLE APIs or writes.
