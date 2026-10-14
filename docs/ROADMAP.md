@@ -71,6 +71,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Checkpoint AL (14 Oct 2026, ghosting research):** XLY95 full-frame image upload already uses EPD `01` after BW/red +300ms; standalone `clearScreen(cmd)` is defined **without a single call site** or known safe parameter, so DO NOT call it. RXTX Clock mode restores a clean display but firmware waveform sequence unknown from JS. No safe alternate clear operation yet. Next: identify controller/firmware or consult official driver behaviour; improve English text offline while preserving clean Clock mode.
 
+**Checkpoint AM — safe controller research and preview typography:** XLY95 public HTML names a 4.2-inch/400×300 preset but no grounded EPD controller chip model. Unknown chipset/firmware-specific full refresh waveform; do not guess `clearScreen(cmd)`. Added optional high-contrast 2-line black footer for the clock-face **browser preview/PNG only**; five new tests (77 total). Next user action: review updated preview on Android Chrome and offer feedback. No new BLE image transfer is needed.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
