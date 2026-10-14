@@ -5,6 +5,9 @@ import { describeEpdWriteCapabilities } from './ble-capabilities.mjs';
 import { createUploadRehearsal } from './upload-rehearsal.mjs';
 import { runMockSupervisedTransfer } from './mock-transfer-runner.mjs';
 import { prepareFirstHardwareTrial } from './first-trial-readiness.mjs';
+import { transferDashImageSupervised } from './dash-supervised-transfer.mjs';
+import { makeGuardedEpdWriter } from './ble-guarded-writer.mjs';
+import { createPendingWriteMonitor } from './pending-write-monitor.mjs';
 import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex,
   DASH_EPD_SERVICE_UUID, DASH_EPD_CHARACTERISTIC_UUID, DASH_RXTX_SERVICE_UUID,
   DASH_RXTX_CHARACTERISTIC_UUID, encodeDashTime, encodeDashMode, DASH_REFRESH } from './protocol.mjs';
@@ -60,7 +63,7 @@ function updateUi() {
   pill.innerHTML = '<span class="pill-dot"></span> ' + status;
   $('deviceName').textContent = linked ? (state.device.name || 'Unnamed BLE clock') : 'No clock connected';
   $('protocolNote').textContent = online && state.profile === 'dash'
-    ? 'NRF- profile active: correct EPD and RXTX services found. Time and clock/calendar controls available; image upload disabled pending separate packet encoding.'
+    ? 'NRF- profile active: correct EPD and RXTX services found. Time and clock/calendar controls available; first image upload requires explicit supervised confirmation.'
     : online && state.profile === 'legacy'
       ? 'Legacy NRF_ profile active. Clock controls and A1-format image upload are available.'
       : linked ? 'GATT linked. Checking the clock\'s BLE services…'
@@ -82,6 +85,7 @@ function updateUi() {
   $('safeConnect').disabled = linked || state.busy;
   $('packetSize').disabled = state.busy;
   $('ackInterval').disabled = state.busy;
+  updateLiveUploadUi();
 }
 
 function setBusy(value) {
@@ -650,6 +654,136 @@ function rehearseDashUpload() {
   }
 }
 
+// Explicit single-attempt image upload, restricted to the NRF- profile.
+let liveUploadController=null;
+let liveUploadAttempted=false;
+let liveUploadBusy=false;
+function addLiveUploadEvent(message) {
+  const parent=$('liveUploadEvents');
+  const line=document.createElement('div');
+  line.textContent=new Date().toLocaleTimeString('en-AU',{hour12:false})+' — '+message;
+  parent.appendChild(line);
+  while(parent.children.length>75) parent.firstElementChild.remove();
+  parent.scrollTop=parent.scrollHeight;
+  log('NRF- supervised: '+message);
+}
+function updateLiveUploadUi(){
+  const authorized=connected() && state.profile==='dash' && !state.busy &&
+    !liveUploadAttempted && !liveUploadBusy && document.visibilityState==='visible' &&
+    $('liveUploadRisk').checked && $('liveUploadConfirmText').value.trim()==='UPLOAD';
+  $('liveUploadStart').disabled=!authorized;
+  $('liveUploadCancel').disabled=!liveUploadBusy;
+}
+function requestLiveUploadCancel(){
+  if(!liveUploadBusy||!liveUploadController)return;
+  liveUploadController.abort();
+  $('liveUploadStatus').textContent='STOP REQUESTED. If a BLE write is pending, it cannot be forcibly cancelled. No new packets or refresh will be intentionally scheduled after it settles.';
+  addLiveUploadEvent('Stop requested by user; waiting for any pending write.');
+  updateLiveUploadUi();
+}
+async function startLiveUpload(){
+  if(liveUploadAttempted||liveUploadBusy)return;
+  if(state.busy || !connected() || state.profile!=='dash' || document.visibilityState!=='visible' ||
+     !$('liveUploadRisk').checked || $('liveUploadConfirmText').value.trim()!=='UPLOAD')
+    {toast('Connect your NRF- clock and complete the hardware-risk confirmation.',true);return;}
+  if($('template').value==='image' && !state.loadedImage){
+    toast('Choose a source image first.',true);return;
+  }
+  const image=$('previewCanvas').getContext('2d',{willReadFrequently:true})
+    .getImageData(0,0,$('previewCanvas').width,$('previewCanvas').height);
+  let plan,audit;
+  try{
+    plan=createDashTransferPlan(image);
+    audit=auditDashSequence(plan,{attMtu:247}); // conservative assumed minimum, not measured Chrome MTU
+    if(plan.profile.width!==400||plan.profile.height!==300||
+       plan.packetCount!==126 || !audit.passed)
+      throw new Error('Trial restricted to the audited 400×300 two-plane/126-packet profile');
+    if(!state.characteristic?.properties?.write ||
+       typeof state.characteristic.writeValueWithResponse!=='function')
+      throw new Error('Required EPD acknowledged-write interface unavailable');
+  }catch(error){toast('Upload preflight blocked: '+error.message,true);return;}
+  const name=state.device?.name||'unknown device';
+  // This prompt is distinct from the user's earlier approval to PREPARE the experiment.
+  const proceed=confirm('FIRST REAL HARDWARE IMAGE UPLOAD to '+name+'\n\n'+
+    'This will send '+plan.packetCount+' acknowledged BLE image packets ('+plan.transmissionBytes+
+    ' bytes including headers) and request an e-paper refresh.\n\n'+
+    'RISKS: Chrome may reject the 244-byte writes; Bluetooth may disconnect around a minute;'+
+    ' an incomplete image buffer may not be recoverable using Clock mode.\n\n'+
+    'Do NOT switch apps or allow phone to sleep. Keep the clock powered and nearby.'+
+    '\n\nStart this SINGLE attempt now?');
+  if(!proceed)return;
+  liveUploadAttempted=true; // fail-closed for entire page session, regardless of result
+  liveUploadBusy=true;
+  liveUploadController=new AbortController();
+  setBusy(true);
+  updateLiveUploadUi();
+  $('liveUploadEvents').replaceChildren();
+  $('liveUploadProgress').value=0;
+  const startTime=performance.now();
+  let acknowledged=0;
+  let waitingForWrite=false;
+  const monitor=createPendingWriteMonitor({
+    warnAfterMs:1500,onStatus:p=>{
+      if(p.status==='stalled-warning'){
+        const msg='Write '+p.sequence+' STILL PENDING ('+Math.round(p.elapsedMs)+'ms). Not a timeout or cancellation. Stop requested? Wait for browser response.';
+        $('liveUploadStatus').textContent=msg;addLiveUploadEvent(msg);
+      }
+    }
+  });
+  // Monitor observes pending promises; it NEVER settles or cancels them.
+  const monitorTimer=setInterval(()=>{if(monitor.pending)monitor.inspect()},250);
+  try{
+    const writer=makeGuardedEpdWriter({
+      characteristic:state.characteristic,
+      isConnected:()=>connected()&&state.profile==='dash',
+      isVisible:()=>document.visibilityState==='visible',
+      signal:liveUploadController.signal,
+      deadlineMs:48000,
+      onEvent:e=>{if(e.kind==='stop')addLiveUploadEvent('BLE writer stopped: '+e.reason);}
+    });
+    addLiveUploadEvent('FIRST PHYSICAL ATTEMPT START; 400×300, '+plan.packetCount+' packets. No auto retries.');
+    const result=await transferDashImageSupervised({
+      plan,audit,consent:true,signal:liveUploadController.signal,
+      isConnected:()=>connected()&&state.profile==='dash',
+      write:async packet=>{
+        waitingForWrite=true;
+        monitor.begin(acknowledged+1);
+        try {
+          await writer.write(packet);
+          monitor.finish(true);
+          acknowledged++;
+        } catch(err) {
+          monitor.finish(false);
+          throw err;
+        } finally{waitingForWrite=false;}
+      },
+      onProgress:p=>{
+        $('liveUploadProgress').value=p.percent;
+        $('liveUploadStatus').textContent=p.stage+': '+p.completed+'/'+p.total+
+          ' image packets (final physical display not yet verified).';
+        if(p.stage!=='image'||p.completed%10===0||p.completed===p.total)
+          addLiveUploadEvent(p.stage+' '+p.completed+'/'+p.total);
+      }
+    });
+    $('liveUploadStatus').textContent='EPD refresh write acknowledged after '+result.completed+
+      ' packets. Check the PHYSICAL clock now; screen content is not yet verified.';
+    addLiveUploadEvent('Refresh write acknowledged in '+((performance.now()-startTime)/1000).toFixed(1)+'s. Observe screen manually.');
+  } catch(error) {
+    const msg='STOPPED after '+acknowledged+' acknowledged writes: '+(error.message||error)+
+      '. Do not retry or issue an EPD refresh. Check clock display; Clock mode is not a proven image-buffer rollback.';
+    $('liveUploadStatus').textContent=msg;
+    addLiveUploadEvent(msg);
+    toast('Supervised image transfer stopped. Inspect activity log and clock.',true);
+  }finally{
+    clearInterval(monitorTimer);
+    liveUploadController=null;liveUploadBusy=false;setBusy(false);updateLiveUploadUi();
+  }
+}
+document.addEventListener('visibilitychange',()=>{
+  if(liveUploadBusy && document.visibilityState!=='visible')requestLiveUploadCancel();
+  updateLiveUploadUi();
+});
+
 let mockUploadAbort = null;
 let mockUploadRunning = false;
 function setMockUploadUi(active) {
@@ -863,6 +997,10 @@ function init(){
   $('mockUploadStart').addEventListener('click',startMockUpload);
   $('mockUploadCancel').addEventListener('click',cancelMockUpload);
   $('reviewTrialReadiness').addEventListener('click',reviewFirstHardwareTrial);
+  $('liveUploadRisk').addEventListener('change',updateLiveUploadUi);
+  $('liveUploadConfirmText').addEventListener('input',updateLiveUploadUi);
+  $('liveUploadStart').addEventListener('click',startLiveUpload);
+  $('liveUploadCancel').addEventListener('click',requestLiveUploadCancel);
   $('sendImage').addEventListener('click',uploadImage);
   $('downloadPng').addEventListener('click',downloadPng);
   $('clearLog').addEventListener('click',()=>{
