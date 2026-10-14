@@ -426,6 +426,12 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Limit:** if Chrome's characteristic write promise hangs, neither AbortSignal nor a local timer can forcibly terminate its underlying radio operation; checks can only stop further traffic when control returns. The adapter does not independently solve actual negotiated MTU, 244-byte write acceptance, recovery of half-written e-paper buffers, or a possible indefinite pending BLE write. No live upload approved or performed. User previously confirmed 3/3 browser mock scenarios; no new physical test required yet.
 
+## Engineering checkpoint AC — stalled acknowledged-write warnings (NO BLE image writes)
+
+**14 Oct 2026:** Implemented pure `src/pending-write-monitor.mjs` which emits a warning after configured elapsed time without forcibly settling an in-flight promise. Added UI mock scenario 'Packet 25 stalls for 4.5 seconds (mock only)', with 1-second warning. Cancellation during pending mock write requests stop, but no new packet or refresh occurs after the fake write settles. Four monitor unit tests and two runner integration tests target total **64 automated tests**.
+
+**Crucial distinction:** warning threshold is **not** a radio write timeout, device acknowledgement failure, safe disconnection, image-buffer rollback or proof a pending browser promise can be terminated. Actual `NRF-` Send to clock is STILL DISABLED. User browser validation of the stall scenario pending.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
