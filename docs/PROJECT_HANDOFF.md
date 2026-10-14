@@ -8,6 +8,9 @@
 >
 > **Next action:** **The first Phase 2 offline-only image encoder and packet inspector are implemented** and all 19 tests pass (10 new). On Android Chrome try **Inspect encoded packets (offline)** using the selected 400×300 preset; expect 126 packets / 30,504 total BLE bytes. This validates source-derived encoding, NOT the physical panel size or a successful image upload. Verify physical panel geometry, MTU/write size and safe refresh/restore before sending anything. The NRF- upload remains disabled.
 
+
+> **14 Oct 2026 ~20:34 USER SCREENSHOT — OFFLINE INSPECTOR VERIFIED IN ANDROID CHROME:** User tapped Inspect encoded packets (offline) with 400×300 preset. Visible result: 126 packets, BW 15,000 bytes, red 15,000 bytes, total 30,504 BLE bytes, max packet 244 bytes, first header `03 FF 00 00`, last header `03 00 3A 20`, EPD refresh `01`, and explicit `No Bluetooth data was transmitted.` This validates browser execution/summary, NOT physical panel resolution or device image transfer. **Next: establish real panel dimensions and BLE MTU/write limit before any supervised transfer.**
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
