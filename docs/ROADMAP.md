@@ -1,5 +1,7 @@
 # Roadmap and next-session checklist
 
+**Dry-run checklist confirmed on Android Chrome (Test X, 14 Oct ~22:15):** User screenshot shows "Packet plan is internally valid for the chosen MTU assumption" and the full 8-step abort and restoration checklist. NO BLE writes; browser actual 244-byte acceptance and image-buffer rollback remain unknown. Next: design/test explicitly gated supervised image upload implementation, retaining NRF- Send to Clock disabled until user separately approves the risk and trial.
+
 **Supervised upload DRY-RUN tooling implemented (Checkpoint W):** Browser Display Designer now generates a preflight/interruption checklist with `src/upload-rehearsal.mjs`, four offline unit tests (38 intended total). No image packets transmitted, actual upload remains blocked. Next: user checks dry-run output, then review real Chrome 244-byte write uncertainty and unproven EPD rollback before a separately approved first hardware trial.
 
 **Read-only capability CHECK PASSED on Android Chrome (Test V, 14 Oct ~22:03):** EPD write property=true, acknowledged-write API=true, legacy-write API=true, write-without-response=false. User screenshot validates in-browser connection capabilities; **no actual write, negotiated Chrome MTU or 244-byte acceptance** has been tested. Next evaluate a deliberate reversible full-image trial with clear stop/recovery process; no dummy writes, no automatic resume, keep NRF- upload disabled until explicit consent.
