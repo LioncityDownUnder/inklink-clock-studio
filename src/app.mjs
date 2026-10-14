@@ -44,7 +44,7 @@ function updateUi() {
   pill.classList.toggle('disconnected', !online);
   pill.innerHTML = `<span class="pill-dot"></span> ${online ? 'Connected' : 'Disconnected'}`;
   $('deviceName').textContent = online ? (state.device.name || 'Unnamed BLE clock') : 'No clock connected';
-  $('deviceHint').textContent = online ? 'XLY95-compatible BLE service found' : 'Looking for nearby NRF_ devices';
+  $('deviceHint').textContent = online ? 'XLY95-compatible BLE service found' : ($('allDevices').checked ? 'Scanning all nearby BLE devices' : 'Scanning NRF_ clock devices only');
   for (const button of document.querySelectorAll('[data-requires-connection]')) button.disabled = !online || state.busy;
   $('mainConnect').disabled = online || state.busy;
   $('topConnect').disabled = state.busy;
@@ -85,11 +85,14 @@ function onDisconnect() {
 
 async function connectClock() {
   if (connected()) return;
-  if (!navigator.bluetooth) {
-    toast('Web Bluetooth is unavailable in this browser. Use Chrome/Edge on desktop or Chrome on Android.', true);
+  if (!navigator.bluetooth || typeof navigator.bluetooth.requestDevice !== 'function') {
+    log('Web Bluetooth is unavailable here. Open this site directly in Chrome on Android or Chrome/Edge on a computer, not in the ChatGPT in-app browser.', 'error');
+    toast('This browser cannot scan Bluetooth. Open the website in Chrome/Edge (not the in-app browser).', true);
+    detectSupport();
     return;
   }
   if (!window.isSecureContext) {
+    log('Not a secure browsing context. Web Bluetooth requires HTTPS or localhost.', 'error');
     toast('Web Bluetooth requires HTTPS or localhost.', true);
     return;
   }
@@ -100,6 +103,8 @@ async function connectClock() {
     const options = $('allDevices').checked
       ? {acceptAllDevices: true, optionalServices: [SERVICE_UUID]}
       : {filters: [{namePrefix: 'NRF_'}], optionalServices: [SERVICE_UUID]};
+    const scanMode = $('allDevices').checked ? 'ALL nearby BLE devices' : 'NRF_ devices (XLY95 filter)';
+    log(`Opening Bluetooth device picker: ${scanMode}`);
     const device = await navigator.bluetooth.requestDevice(options);
     state.device = device;
     state.device.addEventListener('gattserverdisconnected', onDisconnect);
@@ -127,10 +132,19 @@ async function connectClock() {
     }
     toast('Your clock is connected!');
   } catch (error) {
-    if (error.name === 'NotFoundError') log('No BLE device selected (or selection cancelled)');
-    else { log(`Connection failed: ${error.message || error}`, 'error'); toast(`Could not connect: ${error.message || error}`, true); }
+    if (error.name === 'NotFoundError') {
+      log('No Bluetooth device selected, or chooser was cancelled. Close XLY95, check the clock is advertising, and try again using the all-devices scan.', 'error');
+      toast('No clock selected. Disconnect XLY95, keep the clock nearby and retry with Show all nearby devices.', true);
+    } else if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
+      log(`Browser denied Bluetooth: ${error.name}: ${error.message || error}. Open in a full Chrome/Edge browser, not an embedded webview.`, 'error');
+      toast('Bluetooth blocked by browser or permissions. Try opening this site in Chrome/Edge.', true);
+    } else {
+      log(`Connection failed (${error.name || 'Error'}): ${error.message || error}`, 'error');
+      toast(`Could not connect: ${error.message || error}`, true);
+    }
     if (state.device?.gatt?.connected) state.device.gatt.disconnect();
     state.characteristic = null;
+    state.device = null;
   } finally {
     setBusy(false);
   }
@@ -379,6 +393,11 @@ async function uploadImage() {
 }
 
 function detectSupport(){
+  const hasBle = Boolean(navigator.bluetooth && typeof navigator.bluetooth.requestDevice === 'function');
+  const secure = Boolean(window.isSecureContext);
+  const appleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const status = $('browserStatus');
+  status.textContent = `${secure ? 'Secure HTTPS' : 'Insecure page'} · Web Bluetooth ${hasBle ? 'available' : 'unavailable'} · ${appleMobile ? 'iPhone/iPad browser' : 'Browser capability check'}`;
   const banner=$('compatBanner');
   const isAppleMobile=/iPad|iPhone|iPod/.test(navigator.userAgent);
   if(isAppleMobile){
@@ -386,7 +405,7 @@ function detectSupport(){
     banner.textContent='On iPhone/iPad, standard Safari and Chrome do not provide Web Bluetooth. You can design and download images here, but connect from Chrome/Edge on a computer or Chrome on Android.';
   } else if(!navigator.bluetooth){
     banner.hidden=false;
-    banner.textContent='This browser does not expose Web Bluetooth. Use Chrome or Edge on a desktop, or Chrome on Android, over HTTPS or localhost. Image design still works here.';
+    banner.textContent='Web Bluetooth is unavailable in this browser. If you followed this link inside ChatGPT or another app, use the browser menu to Open in Chrome. Use Chrome/Edge on desktop or Chrome on Android over HTTPS.';
   } else if(!window.isSecureContext){
     banner.hidden=false;
     banner.textContent='Bluetooth requires a secure HTTPS or localhost address. Your image designer remains available.';
@@ -403,6 +422,14 @@ function init(){
     $('template').value=btn.dataset.design;setTab('studio');renderPreview();
   });
   $('mainConnect').addEventListener('click', connectClock);
+  $('checkBrowser').addEventListener('click', () => {
+    detectSupport();
+    const status=$('browserStatus').textContent;
+    log(`Browser check: ${status}. URL: ${location.origin}. For the clock, select the NRF_ entry from the device picker.`);
+    if (!navigator.bluetooth || !window.isSecureContext) toast('Open this site directly in Chrome/Edge over HTTPS before connecting.', true);
+    else toast('Bluetooth API is available. Close XLY95, then press Connect via Bluetooth.');
+  });
+  $('allDevices').addEventListener('change', () => {updateUi();log($('allDevices').checked ? 'Discovery filter: all nearby BLE devices' : 'Discovery filter: NRF_ devices only');});
   $('topConnect').addEventListener('click',()=>connected()?disconnectClock():connectClock());
   $('disconnectBtn').addEventListener('click',disconnectClock);
   $('syncTime').addEventListener('click',syncClock);
@@ -427,6 +454,7 @@ function init(){
   setInterval(()=>{if(!state.busy && $('template').value==='clock')renderPreview();},15000);
   setTab(['overview','studio','activity','guide'].includes(location.hash.slice(1))?location.hash.slice(1):'overview');
   renderPreview();updateUi();log('InkLink Studio ready. Awaiting BLE connection.');
+  log('Discovery default: all nearby BLE devices. Select your NRF_ clock from the browser picker.');
 }
 
 if (document.readyState === 'loading') {
