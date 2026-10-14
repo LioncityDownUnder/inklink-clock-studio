@@ -408,6 +408,18 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next:** test a separately gated UI adapter and deliberate consent/cancellation flow, without activating a real write path until explicit informed user approval.
 
+## Test record AA — ALL THREE mock supervised upload UI tests PASSED on Android Chrome
+
+**14 October 2026, ~22:30–22:31 Sydney.** User supplied three screenshots of the deployed InkLink Display Designer **MOCK MODE ONLY** controls. These confirm the actual Android Chrome UI execution of the previously automated-tested in-memory transfer code. Screenshots remain in conversation and are not published to the public repository.
+
+1. **Successful mock transfer (~22:30:05):** "All mock packets succeed" → full progress bar, `126/126` image packets, `waiting-to-refresh`, `refreshing`, `refresh-write-acknowledged`; final text: `MOCK completed: 126/126 and mock refresh acknowledged. Physical display NOT verified; no Bluetooth writes.` **PASS**.
+2. **Injected write failure at packet 25 (~22:30:41):** `24/126` packets previously acknowledged, then `stopped-incomplete-or-unknown`, with `SIMULATED packet failure at 25`. No refresh step appears. **PASS**.
+3. **User cancellation (~22:31:25):** mock writer stopped after pending write, `30/126` packets completed; log shows `stopped-incomplete-or-unknown` and no refresh operation. **PASS**.
+
+**Interpretation:** manual cancellation and failed acknowledged writes halt subsequent packets and suppress the simulated refresh; complete mock transfers progress through refresh. This does **NOT** verify physical BLE uploads, negotiated Chrome MTU, firmware reaction to 03/04 image frames, screen update or recovery of half-written image buffers. The current `NRF-` Send to clock button remains disabled.
+
+**Next:** Review the actual BLE adapter design for operation timeouts, cancellation between in-flight writes, browser visibility, user consent and manual Clock-mode restoration. Do NOT enable device transmission merely on the basis of the mock test results. Any first hardware trial requires separately informed and explicit approval.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
