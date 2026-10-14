@@ -553,6 +553,12 @@ The live page now has explicit opt-in **Inspect GATT services & standard values 
 
 **Next:** investigate **0x221F / 0x331F**, the only newly identified proprietary readable characteristic, starting with documentation/source lookup. Consider adding a **separate, opt-in bounded readValue-only raw hex inspector**, disabled by default; absolutely NO guessed commands, writes, or auto-notification subscriptions. A read may theoretically have device-specific side effects, which must be considered before an actual test. Preserve raw bytes without inventing temperature/voltage meanings.
 
+## Checkpoint AS — opt-in single proprietary 331F read built (physical test pending)
+
+**15 October 2026.** With user's approval, added `src/raw-331f-read.mjs` and corresponding manually triggered Studio UI. Requirements: connected `NRF-` clock, explicit native consent dialog, one attempt per browser page session. It obtains service `0000221f-...`, characteristic `0000331f-...`, checks `read` property, then calls **one** `readValue()`. Returns hex bytes without interpreting them; displays first **64 bytes max** and reports full returned byte count. It does NOT write, subscribe to notifications, retry or automatically read anything. A proprietary GATT read may have device-specific side effects despite being read-only at ATT level. Seven tests on fake services/characteristics verify gating, hex, bounds, empty values, and absence of writes/notifications (expected 90 total tests).
+
+**No 331F physical read has happened in this checkpoint.** Wait for the user to test and report exactly what the diagnostic displays. If the value is empty, errors, or unrelated to telemetry, do not invent a decoder or issue speculative commands.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
