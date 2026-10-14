@@ -5,6 +5,7 @@ import { describeEpdWriteCapabilities } from './ble-capabilities.mjs';
 import { createUploadRehearsal } from './upload-rehearsal.mjs';
 import { runMockSupervisedTransfer } from './mock-transfer-runner.mjs';
 import { prepareFirstHardwareTrial } from './first-trial-readiness.mjs';
+import { getClockLayout, wrapFooterText } from './clock-typography.mjs';
 import { transferDashImageSupervised } from './dash-supervised-transfer.mjs';
 import { makeGuardedEpdWriter } from './ble-guarded-writer.mjs';
 import { createPendingWriteMonitor } from './pending-write-monitor.mjs';
@@ -444,8 +445,18 @@ function drawClock(ctx, w, h) {
   const dateString = new Intl.DateTimeFormat('en-AU', {weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(now).toUpperCase();
   ctx.fillStyle=accent;
   fillTextFitted(ctx, dateString, w/2, h*(portrait?.66:.73), h*(portrait?.043:.051), w-side*1.5,'750');
-  ctx.fillStyle='#3D4650';
-  fillTextFitted(ctx, footer, w/2, h*(portrait?.84:.91), h*(portrait?.033:.033), w-side*1.8,'600');
+  const contrast=$('highContrastLayout').checked;
+  const layout=getClockLayout(w,h,contrast);
+  ctx.fillStyle=layout.footerInk;
+  if(contrast && footer) {
+    const lines=wrapFooterText(footer, portrait?21:29, layout.footerMaxLines);
+    const lineHeight=layout.footerSize*1.15;
+    const firstY=layout.footerY-(lines.length-1)*lineHeight/2;
+    lines.forEach((line,i)=>fillTextFitted(ctx,line,w/2,firstY+i*lineHeight,
+      layout.footerSize,w-side*1.7,'800'));
+  } else {
+    fillTextFitted(ctx, footer, w/2, layout.footerY, layout.footerSize, w-side*1.8,'600');
+  }
 }
 function wrappedLines(ctx, text, maxWidth, maxLines = 4) {
   const words = text.split(/\s+/).filter(Boolean);
@@ -1007,13 +1018,13 @@ function init(){
     $('logEntries').replaceChildren();state.logCount=0;$('logCount').textContent='0 events';log('Log cleared');
   });
   $('imageInput').addEventListener('change',e=>loadImage(e.target.files?.[0]));
-  ['template','screenSize','colourMode','headline','subtitle','timeFormat','imageFit','imageDither'].forEach(id=>{
+  ['template','screenSize','colourMode','headline','subtitle','timeFormat','imageFit','imageDither','highContrastLayout'].forEach(id=>{
     $(id).addEventListener('input',renderPreview);
   });
   $('resetDesign').addEventListener('click',()=>{
     $('template').value='clock';$('screenSize').value='4.2';$('colourMode').value='tri';
     $('headline').value='SYDNEY TIME';$('subtitle').value='A GOOD DAY TO GET THINGS DONE';
-    $('timeFormat').value='24';$('imageFit').value='contain';$('imageDither').checked=true;
+    $('timeFormat').value='24';$('imageFit').value='contain';$('imageDither').checked=true;$('highContrastLayout').checked=true;
     state.loadedImage=null;$('imageInput').value='';renderPreview();toast('Design reset');
   });
   // Preview updates while this page is open; image sent to clock remains static.
