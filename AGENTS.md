@@ -10,7 +10,7 @@ InkLink is an English browser BLE controller for a battery-powered Chinese e-pap
 - `NRF-` clock (actual device): original XLY95 *main index.html*; EPD service `13187b10-eba9-a3ba-044e-83d3217d9a38` plus RXTX service `00001f10-0000-1000-8000-00805f9b34fb`. Details and characteristics in [BLE_PROTOCOLS.md](docs/BLE_PROTOCOLS.md).
 - `NRF_` legacy: original separate `js.js`; service `32120001-0bf6-448a-9608-1b01a1a8f75c`. Its commands and image framing differ.
 
-The latest code implements both profiles and passes 9 unit tests and JS syntax checks in GitHub Actions. **Physical connection/time-setting against the corrected NRF- profile has not yet been confirmed.** Next step: get a fresh Android Chrome Activity Log from a Safe connection to the actual clock. Do not claim fixed without user observation.
+The latest code implements both profiles and passes 9 unit tests and JS syntax checks in GitHub Actions. **Physical connection with the corrected NRF- profile IS NOW CONFIRMED:** user-provided Android Chrome Activity Log at approximately 19:01 on 14 Oct 2026 shows EPD and RXTX characteristics discovered, correct NRF- profile, EPD write/notify and RXTX write supported, and the initial 1.5-second idle test passed in Safe mode. **Not yet verified:** 10+ seconds stability, notifications, physical time sync or mode changes. Next step: enable notifications in a stable Android Chrome connection; then time sync once and visually confirm.
 
 ## Read before editing
 
@@ -46,4 +46,4 @@ The latest code implements both profiles and passes 9 unit tests and JS syntax c
 
 ## First response in a new chat
 
-When asked to continue this project, inspect the current GitHub handoff and source files, then say succinctly which hardware test remains. **Do not restart BLE discovery research, suggest buying a programmer, or treat the earlier missing `32120001` service as a new failure.** The protocol mismatch is already understood; what remains is confirming the corrected NRF- implementation on the actual clock.
+When asked to continue this project, inspect the current GitHub handoff and source files, then say succinctly which hardware test remains. **Do not restart BLE discovery research, suggest buying a programmer, or treat the earlier missing `32120001` service as a new failure.** The protocol mismatch is resolved for service discovery on the actual clock; the initial corrected physical connection succeeded. What remains is longer connection stability, notification subscription and validating time/mode commands on the physical screen.
