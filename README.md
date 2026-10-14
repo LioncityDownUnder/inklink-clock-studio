@@ -1,5 +1,10 @@
 # InkLink Studio — English BLE E-Paper Clock App
 
+### Pending Bluetooth write watchdog — mock only
+
+The mock supervised-transfer UI now offers **Packet 25 stalls for 4.5 seconds (mock only)**. A warning appears after ~1 second explaining that a pending write has NOT failed or been cancelled. Cancel requests a stop, but the fake in-flight write must settle before the engine prevents further packets/refresh. The pure `src/pending-write-monitor.mjs` never touches BLE and does not impose a false Promise timeout. Actual NRF- image uploads remain disabled.
+
+
 ### Guarded BLE adapter (engineering review only)
 
 A separate `src/ble-guarded-writer.mjs` now checks connection, foreground visibility, AbortSignal cancellation, operation deadline and serialization before and after each acknowledged EPD write, with fail-closed behaviour after errors. Eight new mock tests bring the suite to **58 tests**. This module is **NOT used by the live upload UI**, and `NRF-` image transfer is still disabled. A pending Web Bluetooth write cannot be forcibly cancelled by a timer; any apparent timeout cannot guarantee the underlying write stopped. See [Upload Safety Plan](docs/UPLOAD_SAFETY_PLAN.md).
