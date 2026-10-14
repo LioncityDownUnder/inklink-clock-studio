@@ -63,6 +63,8 @@ Main page buttons explicitly use:
 
 Do not confuse these with the NRF_ legacy `AE 01` / `AE 02` commands.
 
+**Physical validation (14 Oct 2026):** Calendar `E1 01` + `E2` and Clock `E1 02` + `E2` were logged as completed by InkLink and explicitly confirmed to switch the real clock display. This is stronger evidence than source inspection or unit tests alone.
+
 ### EPD image data — NOT IMPLEMENTED for NRF- yet
 
 From the main XLY95 page's `sendBufferData(value, type)`:
@@ -90,7 +92,8 @@ Before implementing NRF- image upload, derive byte-exact test vectors from the o
 - **Confirmed from upstream source:** all UUIDs in table, time DD format, clock/calendar E1/E2 operations, differences between main page and standalone js.js, EPD image packet skeleton.
 - **Automated-tested locally/on Actions:** encoder outputs and JavaScript syntax. This does not establish physical compatibility.
 - - **Confirmed on real hardware (14 Oct 2026, Test K):** InkLink sent RXTX `DD 6A CF DC 13 07 EA 0A 0E 03` followed by `E2`, both writes completed and user confirmed the physical clock's displayed time synchronised. Notification subscription had also succeeded in Test H; actual incoming notification payloads not verified.
-- **Pending verification on real hardware:** E1/E2 Clock/Calendar mode visual changes, incoming notification data and NRF- image transfer. Link disconnects after 33.5s, 57.2s and 51.4s on InkLink, with similar ~1-minute idle disconnect on XLY95. Cause unknown.
+- **Confirmed on real hardware (14 Oct 2026, Test L):** RXTX Calendar mode `E1 01` then `E2` succeeded at ~19:53:20 and Clock mode `E1 02` then `E2` succeeded at ~19:53:39 in one session; user explicitly confirmed both on-screen switches. Together with Test K time sync, **all three core controls are verified physically**.
+- **Pending verification:** notification payload decoding and **NRF- EPD image transfer** (`03/04` offset frames), correct display pixel geometry/planes, safe image-mode activation/refresh and return to built-in clock. The GATT disconnects after ~33.5s/57.2s/51.4s (InkLink) and ~59s after XLY95 service discovery remain of unknown cause.
 - **Unknown:** BLE chip/firmware version, exact e-paper display controller and resolution, sleep and pairing behaviour, device security/bonding requirements, overall reliability.
 
 ## Common failure signatures
