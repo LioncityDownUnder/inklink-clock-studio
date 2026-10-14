@@ -1,6 +1,7 @@
 import { createDashTransferPlan } from './dash-image.mjs';
 import { simulateDashTransfer } from './dash-simulator.mjs';
 import { auditDashSequence } from './dash-preflight.mjs';
+import { describeEpdWriteCapabilities } from './ble-capabilities.mjs';
 import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex,
   DASH_EPD_SERVICE_UUID, DASH_EPD_CHARACTERISTIC_UUID, DASH_RXTX_SERVICE_UUID,
   DASH_RXTX_CHARACTERISTIC_UUID, encodeDashTime, encodeDashMode, DASH_REFRESH } from './protocol.mjs';
@@ -546,6 +547,21 @@ function downloadPng() {
   log('Exported current display as PNG');
 }
 
+function inspectBleCapabilities() {
+  const report=describeEpdWriteCapabilities(
+    state.profile === 'dash' ? state.characteristic : null,
+    connected() && state.profile === 'dash'
+  );
+  const msg=report.message+(report.status === 'inspected'
+    ? ' EPD characteristic write property: '+report.acknowledgedProperty+
+      '; acknowledged write method: '+report.withResponseMethod+
+      '; legacy write method: '+report.legacyMethod+
+      '; no-response property: '+report.withoutResponseProperty+'.'
+    : '');
+  $('bleCapacitySummary').textContent=msg;
+  log('READ-ONLY Chrome BLE capability check: '+msg);
+}
+
 function inspectDashImageOffline() {
   if ($('template').value === 'image' && !state.loadedImage) {
     toast('Choose an image file before inspecting its encoding.', true);
@@ -715,6 +731,7 @@ function init(){
   $('clockMode').addEventListener('click',()=>switchMode(1,'Clock mode'));
   $('calendarMode').addEventListener('click',()=>switchMode(2,'Calendar mode'));
   $('inspectDash').addEventListener('click',inspectDashImageOffline);
+  $('inspectBleCapacity').addEventListener('click',inspectBleCapabilities);
   $('simulateDash').addEventListener('click',simulateDashImageOffline);
   $('sendImage').addEventListener('click',uploadImage);
   $('downloadPng').addEventListener('click',downloadPng);
