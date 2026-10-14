@@ -32,7 +32,7 @@ Source flow: `requestDevice()` with NRF- filter and optional services; `gatt.con
 | Image chunks | `A1` plus flags / packed data |
 | Refresh | `A5` |
 
-Those `NRF_` command bytes **must never be applied to NRF-**. The initial wrong-profile implementation produced `getPrimaryService(...32120001...): NotFoundError`, not evidence of faulty hardware.
+Those `NRF_` command bytes **must never be applied to NRF-**. The initial wrong-profile implementation produced `getPrimaryService(...32120001...): NotFoundError`, not evidence of faulty hardware. **The corrected EPD+RXTX connection has since been observed working on real hardware** (19:01 on 14 Oct); notification subscription and command effects remain unverified.
 
 ## NRF- clock commands from main index.html
 
@@ -86,10 +86,10 @@ Before implementing NRF- image upload, derive byte-exact test vectors from the o
 
 ## Evidence/confidence conventions
 
-- **Observed on real device:** nRF Connect listed 13187b10/1F10/221F; initial InkLink with wrong UUID could discover `NRF-6CD319` and sometimes connect GATT but could not access 32120001 service.
+- **Observed on real device:** nRF Connect listed 13187b10/1F10/221F; initial InkLink with wrong UUID could discover `NRF-6CD319` and sometimes connect GATT but could not access 32120001 service. **After correction, InkLink at ~19:01 on 14 October 2026 successfully discovered both EPD and RXTX characteristics and completed the 1.5-second idle connection test on the physical clock, using Safe mode.** EPD write/notify and RXTX write properties were exposed.
 - **Confirmed from upstream source:** all UUIDs in table, time DD format, clock/calendar E1/E2 operations, differences between main page and standalone js.js, EPD image packet skeleton.
 - **Automated-tested locally/on Actions:** encoder outputs and JavaScript syntax. This does not establish physical compatibility.
-- **Pending verification on real hardware:** new dual-service connection, characteristic notifications, RXTX time/mode writes, any NRF- image transfer.
+- - **Pending verification on real hardware:** longer-term link stability (10+ seconds), characteristic notifications, RXTX time/mode writes with correct visible results, and any NRF- image transfer.
 - **Unknown:** BLE chip/firmware version, exact e-paper display controller and resolution, sleep and pairing behaviour, device security/bonding requirements, overall reliability.
 
 ## Common failure signatures
