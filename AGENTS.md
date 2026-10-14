@@ -1,5 +1,11 @@
 # Project instructions for AI coding assistants and future ChatGPT sessions
 
+## Checkpoint Y — guarded transfer implementation (NOT ACTIVE)
+
+`src/dash-supervised-transfer.mjs` is a separable, injection-based sequential EPD image transfer engine requiring explicit consent and a passed audit; it performs acknowledged writes via a supplied callback, emits packet progress, honours AbortSignal at write boundaries, stops immediately on rejected write or lost link, never refreshes partial image, and never auto-retries/resumes/restores. Eight mocked tests bring suite to 46. **No import or invocation from `src/app.mjs` exists and `NRF-` Send Image remains disabled.** Consent to build was not permission to send an image. Next engineer a gated UI adapter and review unrecoverable-partial-buffer risk and Chrome MTU, then ask for explicit permission for a supervised on-device trial.
+
+
+
 ## Checkpoint W — Supervised image-upload rehearsal, not an upload
 
 `src/upload-rehearsal.mjs` and `tests/upload-rehearsal.test.mjs` add a pure offline rehearsal/checklist, exposed as **Prepare dry-run upload checklist** in Display Designer. This only assembles source-grounded procedural steps and never transmits data. Four new tests (38 total). **Do not enable the physical NRF- upload button, send dummy packets, or claim the first upload has occurred.** Need separate user approval and improved recovery confidence first.
