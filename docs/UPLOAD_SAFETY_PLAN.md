@@ -13,6 +13,16 @@ User accepted the described risks to **prepare** a supervised first image upload
 
 User approved preparing and offering a first live supervised image-transfer attempt. The app now has a separate user-confirmed one-attempt flow that is not started automatically. It requires the connected NRF- clock, a 400×300 validated offline plan, a risk checkbox, typed `UPLOAD`, and a final confirmation. The guarded adapter checks connection, foreground visibility, cancellation and a 48-second scheduling budget; it never automatically retries or resumes. An in-flight write cannot be force-cancelled. Acknowledged refresh is not proof of a correctly updated display. **No physical image upload has yet been observed.** The Chrome write-size and incomplete-image recovery remain unverified. The user must decide to start the attempt in their own browser.
 
+## First live upload result and future write caution (14 October 2026)
+
+**Physical result now verified:** User's Android Chrome screenshot reports 126/126 acknowledged image packets and final EPD refresh write in 9.3 seconds. User's photograph visibly confirms the first InkLink English 400×300 image displayed on the actual NRF- clock. Thus an actual 244-byte write and subsequent full image transmission/refresh succeeded in this session.
+
+**Unresolved visual quality:** heavy ghosting from original built-in Chinese face, particularly background digits and footer; English footer is small and imperfect. This is **not a clean image refresh**. The new time is a static image. Future trials should prioritize non-destructive research, not repeated blind screen writes.
+
+**Potential manufacturer clear command:** XLY95 main site includes a `clearScreen(cmd)` helper issuing EPD `00+cmd` followed by EPD `01`. Its acceptable arguments/side effects have NOT been verified on this specific panel. Do not transmit it without further investigation and explicit approval.
+
+**Caution:** the successful run does not prove recovery from an interrupted write, persistent long-term connectivity or safe firmware reset. For any subsequent physical EPD changes request a new supervised action; never auto-repeat.
+
 ## What has been verified
 
 - Actual clock accepts RXTX time sync DD/E2, Calendar E1 01/E2 and Clock E1 02/E2. Built-in Clock mode provides a **verified normal-mode command**, but is **NOT verified as a cure for a half-written EPD buffer**.
