@@ -35,6 +35,8 @@
 
 > **LATEST USER TEST (Test X, 14 Oct ~22:15):** Android Chrome screenshot confirms **Prepare dry-run upload checklist** works and shows "Packet plan is internally valid for the chosen MTU assumption"; the eight-step safety/abort checklist rendered correctly. No device writes occurred. The UI explicitly says browser MTU/write and rollback are NOT verified; Upload NOT authorized. This concludes offline preflight/browser capability/dry-run milestones. **Next priority:** plan a user-approved, supervised physical image transfer with transparent progress, first-error abort, no blind resume, no refresh after incomplete packets, manual Clock mode as an *unproven* partial-buffer recovery attempt. Keep NRF- image upload disabled pending explicit informed consent and implementation testing.
 
+> **LATEST HARDWARE-NEUTRAL TEST (Test AA, 14 Oct 2026 ~22:30–22:31):** All THREE mock-only supervised upload scenarios passed in real Android Chrome: full `126/126` with mock refresh acknowledged; simulated packet-25 failure stopped after `24/126` and **no refresh**; manual Cancel stopped after `30/126` and **no refresh**. Thus the live browser mock UI/progress/failure/abort behavior is now user-verified. **No real BLE image writes**; physical `NRF-` upload remains disabled. Next: review separately gated BLE adapter/timeouts, visibility and recovery before requesting explicit informed permission for a supervised first real image transfer.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
