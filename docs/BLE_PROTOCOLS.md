@@ -168,6 +168,16 @@ After the three native clock face photos showed `3.9V` battery voltage and `21°
 
 No hardware telemetry discovered yet. A blank permitted-service list may be due to firmware implementation or Web Bluetooth authorization; never infer absence of a built-in temperature/voltage measurement from a blank standard GATT result. Even a Battery Level reading is percent, **not** the on-screen 3.9V voltage; conversion would be unjustified.
 
+## Test AR — real observed service inventory (15 October 2026)
+
+User ran InkLink's explicit read-only GATT inspector on their real NRF- clock in Android Chrome. **4 visible permitted services**:
+- `0000221f-0000-1000-8000-00805f9b34fb` with `0000331f-0000-1000-8000-00805f9b34fb` **read, write, notify** — only known additional proprietary readable characteristic.
+- `00001f10-0000-1000-8000-00805f9b34fb` with `00001f1f-0000-1000-8000-00805f9b34fb` **write**.
+- `13187b10-eba9-a3ba-044e-83d3217d9a38` with `4b646063-6264-f3a7-8941-e65356ea82fe` **write, notify** (custom pair).
+- Standard Battery Service `0000180f-0000-1000-8000-00805f9b34fb` with Battery Level `00002a19-0000-1000-8000-00805f9b34fb` **read, notify**. Standard read returned **0%**.
+
+The firmware's physically displayed **3.9V** cannot be converted to accurate percent from this single read. Battery GATT 0% is an *observed raw value*, not independently verified charge state (possibly placeholder). Standard environmental service `181A` was not in the Chrome-authorized returned service list, but this does **not** establish whether the firmware internally reads a temperature sensor. The existing inspector DID NOT read any proprietary characteristic or perform any write/notification setup. Proprietary `331F` is a promising future candidate, but no safe decoder or side effects established. Next review public XLY95 source for usages of `221F` and `331F` before requesting a controlled raw read.
+
 ## Software implementation map
 
 - `src/dash-image.mjs`: **offline-only** image size profiles, strict pure-colour BW/red encoding, image packet framing, and plan calculation. No BLE APIs or writes.
