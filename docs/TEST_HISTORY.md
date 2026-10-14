@@ -257,13 +257,29 @@ This was the actual root cause of the persistent service-not-found errors. See [
 
 **Next engineering checkpoint:** inspect the *entire* original XLY95 main `index.html` image-conversion and `sendBufferData()` implementation; derive byte-exact offline tests for packet framing, color/bitplane mapping, dimensions, and refresh sequence. Build safe source/test coverage **without sending new image data to the physical clock until the protocol, dimensions and restore path are verified**. See [BLE_PROTOCOLS.md](BLE_PROTOCOLS.md) and [ROADMAP.md](ROADMAP.md).
 
-## Next engineering work — NRF- e-paper image transfer (PENDING)
+## Engineering checkpoint M — source-derived offline NRF- image packet encoder (NO device transfer)
 
-1. Review source-confirmed NRF- EPD packet framing, pixel encoding, screen-driver options and image refresh commands in original XLY95 main `index.html`.
-2. Confirm the clock's actual panel resolution. XLY95 once displayed a selected **400×300 canvas**, but that is not independent hardware confirmation.
-3. Implement pure offline image-conversion and packet-encoding helpers, with deterministic tests against upstream-derived vectors and bounds/safety checks.
-4. Do **not** enable the real `Send image` button for NRF- until transfer layout, final refresh, return-to-clock mode, and a supervised test plan are validated.
-5. Retain the now-working RXTX time/Calendar/Clock controls as a regression baseline.
+**Date:** 14 October 2026. **Scope:** GitHub code and automated tests only; not a physical image upload.
+
+**Upstream inspected:** XLY95 main `index.html`: `canvas2bytes`, `canvas2bytes_bw`, `upload_image`, `sendBufferData`, plus EPD write/refresh helpers. This is the `NRF-` protocol, **not** legacy `NRF_` A1 uploads.
+
+**Code created:** `src/dash-image.mjs` exports an explicit table of seven original XLY95 image geometries and safe, pure RGB quantisation requirements, the BW/positive-red bitplane builder (row-major or reverse-column order by display profile), a `03/04 + colour + 16-bit BE byte offset + up to 240 image bytes` packet iterator, and a read-only transfer-plan calculator. `src/app.mjs` now renders pure black/white/red pixels so original XLY95's zero-component tests encode them correctly. A new `Inspect encoded packets (offline)` button in the Display Designer computes the count, sizes, first/last headers and refresh command **without touching BLE**.
+
+**Automated verification:** `tests/dash-image.test.mjs` adds 10 tests for palette/packing, reverse-column orientation, strict validation, both plane header flags, 03/04 selection, 240-byte chunks, profile-dependent refresh and full 400×300/800×480 plan sizes. The existing 9 tests remain. GitHub Actions now checks syntax of `src/dash-image.mjs` and runs **all 19 tests** before deployment. The tests are source-derived algorithm checks, not captured-packet hardware fixtures.
+
+**Example plan for 400×300 PRESET (not physically verified screen size):** two 15,000-byte planes, 126 packets, 30,504 characteristic bytes including headers, max packet 244 bytes, full-screen EPD refresh `01`. This may not fit the real BLE MTU and could exceed the observed ~1-minute connection window; no physical transfer attempt has occurred.
+
+**Safety checkpoint:** Keep the current NRF- upload button disabled. Original XLY95 selected canvas 400×300 on the user's screenshot, but no independent hardware panel resolution/driver confirmation. We still need verify reliable write length/MTU, image control state, exact refresh/restore conditions and an agreed supervised upload plan.
+
+**Next:** Confirm the offline packet inspector actually renders its summary in Android Chrome and obtain more reliable panel/model identification. Then use independent upstream-derived fixtures and protocol research to work toward supervised upload—not yet an automatic BLE write.
+
+## Next engineering work — validate offline inspector and device image geometry (PENDING)
+
+1. On Android Chrome, open live InkLink -> Display Designer and click **Inspect encoded packets (offline)** with 400×300 selected. This should report 126 packets and 30,504 total transmitted bytes, and should not request BLE connection.
+2. Verify the preview now uses exact black/white/red (instead of earlier dark blue/muted red); inspect the generated summary and note any error.
+3. Confirm the *real* screen resolution/driver/model, independently of XLY95's selected 400×300 canvas before considering physical uploads.
+4. Determine BLE write MTU/maximum size vs the 244-byte packet assumption, transfer timing vs the observed one-minute disconnections, and image-mode/refresh/return-to-clock behaviour.
+5. Keep the **NRF- Send to clock** action disabled until protocol and screen geometry are validated and a supervised trial is approved.
 
 ### Outcome template for future sessions
 
@@ -283,6 +299,6 @@ Copy and fill this in when the user reports results:
 | Time sync affects screen? | **YES — user confirmed time was synced at 19:46:28 (Test K)** |
 | Mode controls affect screen? | **YES — user confirmed Calendar E1 01/E2 and Clock E1 02/E2 switched physically at ~19:53 (Test L)** |
 | Actual error/log excerpt | **Time sync DD/E2 succeeded 19:46:28; GATT dropped after 51.4s. Earlier idle drops: InkLink 33.5s/57.2s, XLY95 ~59s after discovery.** |
-| Next engineering action | **Research and unit-test NRF- image conversion, 03/04 frame packets, panel dimensions, and safe refresh/restore; no physical image writes yet** |
+| Next engineering action | **Offline encoder + 10 new tests implemented; next test Android Chrome inspector and verify physical panel geometry/MTU before enabling image writes** |
 
 **Change history discipline:** append only verified new evidence, mark hypotheses accordingly, and update [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) current status and [ROADMAP.md](ROADMAP.md) accordingly.
