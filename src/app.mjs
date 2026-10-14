@@ -193,6 +193,8 @@ async function retryServiceDiscovery() {
   if (!gattLinked() || connected() || state.busy) return;
   setBusy(true);
   try {
+    log('Retry requested: waiting 400 ms before another read-only GATT service query');
+    await delay(400);
     await discoverServiceCore();
     setConnectionStage('service and characteristic ready', 'success');
     toast('Clock service discovered! Try Enable notifications.');
@@ -241,9 +243,18 @@ async function connectClock() {
     state.connectionStartedAt = performance.now();
     device.addEventListener('gattserverdisconnected', onDisconnect);
     setConnectionStage('device selected: ' + (device.name || 'unnamed'));
+    // XLY95 waits ~300 ms after the device picker before calling gatt.connect().
+    // A short pause also gives Android Chrome time to dismiss the chooser.
+    log('Waiting 300 ms after Bluetooth selection (matching XLY95)');
+    await delay(300);
     const server = await device.gatt.connect();
     setConnectionStage('GATT connected');
     if (!server.connected) throw new Error('GATT link closed before service discovery');
+    // Diagnostic compatibility pause: test whether early discovery raced with
+    // Android's GATT service database becoming available.
+    log('Waiting 350 ms for Android GATT service discovery to settle');
+    await delay(350);
+    if (!server.connected) throw new Error('GATT disconnected while awaiting service discovery');
     // Keep GATT open if service discovery fails; the user can retry without
     // opening a picker or repeating pairing.
     try {
