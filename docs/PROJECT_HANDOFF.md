@@ -25,6 +25,8 @@
 
 > **Android Chrome confirmation, Test T (14 Oct 2026 ~21:41):** The deployed *offline* preflight audit visibly **PASSED**: 126 ordered packets, 30,000 image bytes, BW→red→300ms wait→EPD refresh, 126/126 packets in the assumed 29.2s/55s scenario (MTU 512 assumption, 200ms/packet). No Bluetooth writes were made. This validates client-side operation only—not browser GATT write capacity, radio timing, actual refresh or a safe recovery path. Next: verify Chrome write limits and interrupted-transfer restoration before a user-approved supervised upload. **NRF- physical image upload remains disabled.**
 
+> **NEW VERIFIED HARDWARE CHECK (14 Oct 2026 ~22:03, Test V):** User ran the **read-only connected EPD capability inspector** successfully in Android Chrome. EPD write property **true**, acknowledged `writeValueWithResponse` method **true**, legacy write method **true**, write-without-response property **false**. Thus browser-side acknowledged-write capability is confirmed. **No packet was written** and Chrome's effective MTU/244-byte write acceptance remain unknown (nRF Connect reported 512 only in a separate session). Next: prepare user-approved reversible full-image trial with clear abort/restore procedure and no automatic resumption; keep NRF- image upload disabled until explicitly approved.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
