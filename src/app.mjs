@@ -2,6 +2,7 @@ import { createDashTransferPlan } from './dash-image.mjs';
 import { simulateDashTransfer } from './dash-simulator.mjs';
 import { auditDashSequence } from './dash-preflight.mjs';
 import { describeEpdWriteCapabilities } from './ble-capabilities.mjs';
+import { inspectGattReadOnly, TELEMETRY_SERVICES } from './gatt-diagnostics.mjs';
 import { createUploadRehearsal } from './upload-rehearsal.mjs';
 import { runMockSupervisedTransfer } from './mock-transfer-runner.mjs';
 import { prepareFirstHardwareTrial } from './first-trial-readiness.mjs';
@@ -80,6 +81,7 @@ function updateUi() {
   $('topConnect').textContent = linked ? 'Disconnect clock' : 'Connect clock ↗';
   $('disconnectBtn').disabled = !linked || state.busy;
   $('queryInfo').disabled = !online || state.busy || state.profile === 'dash';
+  $('inspectGattServices').disabled = !linked || state.busy;
   $('sendImage').disabled = !online || state.busy || state.profile === 'dash';
   $('discoverService').disabled = !linked || online || state.busy;
   $('allDevices').disabled = linked || state.busy;
@@ -266,7 +268,7 @@ async function connectClock() {
     // Accept both NRF_ and NRF- device name formats as reported by the user.
     // XLY95's inspected source uses NRF_; the user's working device uses NRF-.
     // Bluetooth service authorization is requested explicitly for both.
-    const optionalServices = [SERVICE_UUID, DASH_EPD_SERVICE_UUID, DASH_RXTX_SERVICE_UUID, '0000221f-0000-1000-8000-00805f9b34fb'];
+    const optionalServices = [SERVICE_UUID, DASH_EPD_SERVICE_UUID, DASH_RXTX_SERVICE_UUID, '0000221f-0000-1000-8000-00805f9b34fb', ...TELEMETRY_SERVICES.map(x=>x.uuid)];
     const options = $('allDevices').checked
       ? {acceptAllDevices: true, optionalServices}
       : {filters: [{namePrefix: 'NRF-'}, {namePrefix: 'NRF_'}], optionalServices};
@@ -563,6 +565,40 @@ function downloadPng() {
   a.download=`eink-${getScreen().width}x${getScreen().height}-${$('template').value}.png`;
   document.body.appendChild(a);a.click();a.remove();
   log('Exported current display as PNG');
+}
+
+async function inspectConnectedGatt() {
+  if(state.busy)return;
+  if(!gattLinked()){
+    $('gattDiagnosticsSummary').textContent='Connect to your NRF- clock in Safe mode first. Nothing sent.';
+    return;
+  }
+  setBusy(true);
+  const output=$('gattDiagnosticsSummary');
+  output.textContent='Inspecting permitted GATT metadata and reading ONLY standard Battery Level / Temperature characteristics where present…';
+  try {
+    const report=await inspectGattReadOnly({
+      server:state.device.gatt,
+      isConnected:()=>gattLinked(),
+      onEvent:value=>log('Read-only standard telemetry: '+value.name+' = '+value.value+value.unit)
+    });
+    const names=Object.fromEntries(TELEMETRY_SERVICES.map(x=>[x.uuid,x.name]));
+    const lines=['Visible services: '+report.length];
+    for(const item of report){
+      lines.push((names[item.service]||item.service)+' — '+item.characteristics.length+' characteristic(s)');
+      for(const ch of item.characteristics)lines.push('  '+ch.uuid+' ['+ch.properties.join(', ')+']');
+      for(const x of item.measurements)lines.push('  STANDARD READ: '+x.name+' = '+x.value+x.unit+' ('+x.note+')');
+      for(const err of item.errors)lines.push('  Unavailable: '+err);
+    }
+    if(!report.some(x=>x.measurements.length))
+      lines.push('No supported standard readings found. 3.9V/21°C shown on the panel are NOT proven BLE-readable.');
+    lines.push('Only service discovery and permitted standard characteristic reads were performed. No characteristic writes, commands or notifications.');
+    output.textContent=lines.join('\n');
+    log('Read-only GATT inventory complete: '+report.length+' permitted services; no writes.','success');
+  }catch(error){
+    output.textContent='GATT inspection incomplete: '+(error.message||error)+'. No write commands were sent.';
+    log('Read-only GATT inspection: '+(error.message||error),'error');
+  }finally{setBusy(false)}
 }
 
 function inspectBleCapabilities() {
@@ -1003,6 +1039,7 @@ function init(){
   $('calendarMode').addEventListener('click',()=>switchMode(2,'Calendar mode'));
   $('inspectDash').addEventListener('click',inspectDashImageOffline);
   $('inspectBleCapacity').addEventListener('click',inspectBleCapabilities);
+  $('inspectGattServices').addEventListener('click',inspectConnectedGatt);
   $('simulateDash').addEventListener('click',simulateDashImageOffline);
   $('rehearseDash').addEventListener('click',rehearseDashUpload);
   $('mockUploadStart').addEventListener('click',startMockUpload);
