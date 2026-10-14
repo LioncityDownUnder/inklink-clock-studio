@@ -522,6 +522,18 @@ The user's built-in **Clock mode has THREE distinct presentation styles**, and *
 
 **App text updated:** Overview Clock-mode help now states repeated presses cycle three observed layouts and notes firmware-native temperature and battery indicators. This is documentation/UX only, with NO Bluetooth writes or changes to command payloads.
 
+## Test AP — three native clock styles PHOTO-CONFIRMED
+
+**14 October 2026 — three user-supplied photographs** of physical clock after pressing the same native Clock mode repeatedly. **All three layout types are now directly visual-confirmed (not just verbal report):**
+
+1. **Large digital clock:** giant seven-segment black `23:52`, header red `2026年10月14日`, weekday, temperature **21°C**, battery symbol and text **3.9V** (likely battery voltage shown by firmware, not a proven capacity percentage), lunar date and Chinese seasonal countdown at bottom.
+2. **Split clock + monthly calendar dashboard:** left red panel with analog clock face, digital `23:52`, bottom `21` (likely temperature but cannot confirm units from this placement), battery icon and lunar date; right white monthly grid with highlighted day 14, month `2026-10`. Some faint remnants of older digits are visibly present behind parts of left panel.
+3. **Full monthly lunar calendar:** wide red/black/white calendar with Chinese lunar day labels, red-highlighted 14, solar terms/holiday annotations, top header `2026年10月`, `23:53`, small battery symbol and **3.9V**, **21°C**. Faint old seven-segment digits appear behind the grid in the photo.
+
+**Key interpretation:** the native firmware can drive live ticking time, calendar calculations and show voltage/temperature. This **does not establish a BLE telemetry characteristic** or the sensor part/source. Photo 2/3 indicate **some ghosting/image retention can occur in firmware-native style transitions**, qualifying the earlier clean-clock restoration observation (Test AK): the large-clock face looked clean, but it is not proved all native mode styles always erase perfectly.
+
+**Implementation:** changed Overview's Clock-mode helper text to name the photo-confirmed style sequence. There are no new BLE commands, chip detection claims or physical uploads. User photos are evidence in current conversation and are **not uploaded to this public GitHub repository**. Investigate refresh across all three native transitions, but do not assume an undocumented EPD clear operation.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
