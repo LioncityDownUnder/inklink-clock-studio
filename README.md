@@ -14,7 +14,7 @@ A browser-based, English-language control panel and image designer for desk cloc
 - [Roadmap](docs/ROADMAP.md) — current priorities, acceptance criteria and later features.
 - [Instructions for AI coding assistants](AGENTS.md) — how to work safely in the repo and keep documentation updated.
 
-**Next engineering checkpoint (Phase 2):** Time/Calendar/Clock already physically verified. The **offline-only** NRF- bitplane/packet encoder and **Inspect encoded packets** button are now implemented (10 new tests; **19 total tests**). Inspect with 400×300 preset in Android Chrome, then verify actual panel resolution, write MTU and safe refresh/restore before any physical image transfer. **NRF- upload stays disabled.**
+**Phase 2 status:** Android Chrome **offline packet inspection PASSED (14 October 2026 ~20:34)**: 400×300 XLY95 preset; 126 packets; BW/red 15,000 bytes each; 30,504 framed bytes; maximum 244-byte packet; refresh 01; **no Bluetooth transmission**. The offline encoder has 10 new tests (**19 total**). **Next:** independently confirm panel model/resolution and safely inspect nRF Connect's negotiated ATT MTU (request 247); Chrome's negotiated MTU is separate. **NRF- upload stays disabled.**
 
 
 ## Device compatibility
@@ -90,6 +90,8 @@ See [Project Handoff](docs/PROJECT_HANDOFF.md), [BLE Protocols](docs/BLE_PROTOCO
 ### Offline image encoder — new in Phase 2
 
 The Display Designer now includes **Inspect encoded packets (offline)**. It converts the selected preview to the `NRF-` black/white and positive-red planes, reports the original XLY95 03/04 packet headers, offsets, packet count and expected EPD refresh code. **No Bluetooth connection is required and no commands are sent.**
+
+**Browser test passed:** The user's 20:34 Android Chrome screenshot shows 126 packets, 30,504 total framed bytes, max 244-byte write and EPD refresh 01 using the selected 400×300 profile. This is **offline-only**, not a hardware image upload. A 244-byte acknowledged write requires ATT MTU **at least 247**. nRF Connect can negotiate/request the MTU, but this cannot prove Chrome negotiated the same value. See [Testing History](docs/TEST_HISTORY.md) record N.
 
 - New source: [`src/dash-image.mjs`](src/dash-image.mjs), with 7 source-derived image-size profiles, pure opaque RGB validation, row-major/reverse-column orientation, and 240-byte payload chunks plus 4-byte headers.
 - Test coverage: [`tests/dash-image.test.mjs`](tests/dash-image.test.mjs) adds 10 tests to the previous 9, all run in GitHub Actions.
