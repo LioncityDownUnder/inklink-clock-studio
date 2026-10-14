@@ -63,6 +63,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Milestone AH (14 Oct 2026): FIRST LIVE NRF- IMAGE UPLOAD SUCCESS:** 126/126 EPD packets, refresh acknowledged in 9.3s, and real photo shows English tri-colour 400×300 image physically rendered. The 244-byte Chrome write unknown is resolved **for this session**. **Remaining defect: prominent ghosting from Chinese clock, small/pixelated footer, static face does not tick.** P1 shifts to researching safe full-refresh/clear and improved design; potential `clearScreen(cmd)` exists upstream but must NOT be sent before understanding supported argument and device effects. Restore-to-live clock after image not yet retested. Do not assume image-buffer rollback or durable BLE stability verified.
 
+**Test AI — persistent ghosting after several minutes (14 October 2026):** physical English image remains legible, but old Chinese clock digits still visible behind it; issue persists beyond normal waiting. Research waveform/erasure and the undocumented XLY95 `clearScreen(cmd)` safely offline. Do not send an assumed clear argument or reupload blindly. Improve footer text sizing in a later deliberate update.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
