@@ -50,6 +50,8 @@
 
 > **LATEST READINESS TEST AF (14 Oct 2026 ~23:01):** User confirmed deployed Android Chrome first physical-upload **read-only** readiness report: 126 packets / 30,504 total characteristic bytes, packet sequence audit PASS. 400×300 panel ID, EPD interface (in this *disconnected* run), Chrome 244-byte write acceptance and interrupted-image recovery shown UNVERIFIED. Earlier connected Test V **did** confirm Chrome acknowledged EPD write interface; this is not a regression. No BLE data sent; real NRF- upload still disabled. Next: review residual risk and explicitly distinguish trial preparation consent from final device-write authorization.
 
+> **Checkpoint AG (14 Oct 2026):** The user approved preparation of the first supervised physical upload. The app now has a separate, manually triggered one-attempt form requiring a connected NRF- device, typed confirmation, and acceptance of the remaining risks. Integration tests use mock characteristics only. **No actual image upload has been observed.** The known uncertainty of write size and interrupted-buffer recovery remains. Next: user tests the live interface and reports physical result.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
