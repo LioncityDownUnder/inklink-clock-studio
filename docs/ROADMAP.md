@@ -73,6 +73,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Checkpoint AM — safe controller research and preview typography:** XLY95 public HTML names a 4.2-inch/400×300 preset but no grounded EPD controller chip model. Unknown chipset/firmware-specific full refresh waveform; do not guess `clearScreen(cmd)`. Added optional high-contrast 2-line black footer for the clock-face **browser preview/PNG only**; five new tests (77 total). Next user action: review updated preview on Android Chrome and offer feedback. No new BLE image transfer is needed.
 
+**Test AN (14 Oct ~23:43):** High-contrast English preview successfully inspected in Android Chrome (400×300; bold time, red date, darker legible single-line footer). Offline typography improvement validated; no physical display test or ghosting cure. Prioritize controller/firmware refresh research without changing current clean Clock mode.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
