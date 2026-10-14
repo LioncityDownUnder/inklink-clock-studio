@@ -50,7 +50,7 @@ Write (to 1F1F, with response):
 - 1-byte weekday (Monday=1 ... Sunday=7)
 - Then `E2` to RXTX for refresh.
 
-This command is **10 bytes** before the E2 refresh. InkLink's `encodeDashTime(date)` in `src/protocol.mjs` mirrors the observed layout. Android-local timezone interpretation should be confirmed by reading the time shown on the physical clock after syncing; tests only establish encoding.
+This command is **10 bytes** before the E2 refresh. InkLink's `encodeDashTime(date)` in `src/protocol.mjs` mirrors the observed layout. **The physical-device test on 14 Oct 2026 at 19:46:27–28 confirmed DD + E2 successfully synchronised the displayed time** (user report; log packet `DD 6A CF DC 13 07 EA 0A 0E 03`). Exact displayed date/weekday was not separately verified.
 
 ### Clock/calendar modes
 
@@ -89,7 +89,8 @@ Before implementing NRF- image upload, derive byte-exact test vectors from the o
 - **Observed on real device:** nRF Connect listed 13187b10/1F10/221F; initial InkLink with wrong UUID could discover `NRF-6CD319` and sometimes connect GATT but could not access 32120001 service. **After correction, InkLink at ~19:01 on 14 October 2026 successfully discovered both EPD and RXTX characteristics and completed the 1.5-second idle connection test on the physical clock, using Safe mode.** EPD write/notify and RXTX write properties were exposed.
 - **Confirmed from upstream source:** all UUIDs in table, time DD format, clock/calendar E1/E2 operations, differences between main page and standalone js.js, EPD image packet skeleton.
 - **Automated-tested locally/on Actions:** encoder outputs and JavaScript syntax. This does not establish physical compatibility.
-- - **Pending verification on real hardware:** longer-term link stability (10+ seconds), characteristic notifications, RXTX time/mode writes with correct visible results, and any NRF- image transfer.
+- - **Confirmed on real hardware (14 Oct 2026, Test K):** InkLink sent RXTX `DD 6A CF DC 13 07 EA 0A 0E 03` followed by `E2`, both writes completed and user confirmed the physical clock's displayed time synchronised. Notification subscription had also succeeded in Test H; actual incoming notification payloads not verified.
+- **Pending verification on real hardware:** E1/E2 Clock/Calendar mode visual changes, incoming notification data and NRF- image transfer. Link disconnects after 33.5s, 57.2s and 51.4s on InkLink, with similar ~1-minute idle disconnect on XLY95. Cause unknown.
 - **Unknown:** BLE chip/firmware version, exact e-paper display controller and resolution, sleep and pairing behaviour, device security/bonding requirements, overall reliability.
 
 ## Common failure signatures
