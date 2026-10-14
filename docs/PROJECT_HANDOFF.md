@@ -21,6 +21,8 @@
 
 > **Browser simulation milestone (14 Oct 2026 ~21:26, Test R):** Android Chrome screenshots verified **both** no-Bluetooth scenarios. With 400×300 image (126 packets), assumed MTU 512 and 55s lifetime: 200 ms/packet yields 29.2s estimated total and 126/126 complete; 600 ms/packet yields 79.6s and 91/126 packets before simulated interruption. These are **arithmetic scenarios, not measured radio speed**, and do not authorize image upload. Next: verify exact original XLY95 refresh/recovery flow, Chrome characteristic write limits and interruption safety; keep `NRF-` Send to clock disabled.
 
+> **Android Chrome confirmation, Test T (14 Oct 2026 ~21:41):** The deployed *offline* preflight audit visibly **PASSED**: 126 ordered packets, 30,000 image bytes, BW→red→300ms wait→EPD refresh, 126/126 packets in the assumed 29.2s/55s scenario (MTU 512 assumption, 200ms/packet). No Bluetooth writes were made. This validates client-side operation only—not browser GATT write capacity, radio timing, actual refresh or a safe recovery path. Next: verify Chrome write limits and interrupted-transfer restoration before a user-approved supervised upload. **NRF- physical image upload remains disabled.**
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
