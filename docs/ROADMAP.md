@@ -2,6 +2,8 @@
 
 **Phase 2 Q (simulation-only, 14 Oct 2026):** Implemented independent NRF- transfer simulator with MTU capacity validation, projected packet throughput, hypothetical disconnect and refresh interruption, and explicit warning not to resume partial frames. Six new offline tests; intended total **25 tests**. Browser simulation is read-only. Next: validate in Android Chrome and research actual browser write size, image refresh and failure recovery. No physical image writes.
 
+**Android Chrome simulator validation DONE (Test R, 14 Oct 2026):** MTU 512 and 55s hypothetical session: 200ms/packet => 29.2s, 126/126 packets; 600ms/packet => 79.6s, 91/126 before interruption. Both mobile screenshots match model predictions. These are not measured BLE throughput or hardware transfer results. Next: original XLY95 image refresh and recovery details, Chrome write length and safe reversible test protocol. Physical NRF- image upload remains disabled.
+
 **Project:** InkLink Clock Studio — English BLE interface for Chinese e-paper desk clocks.
 
 **Last reviewed:** 14 October 2026. **P0 clock controls are physically verified; next priority is safe NRF- image protocol research and offline-tested implementation, not firmware flashing.**
