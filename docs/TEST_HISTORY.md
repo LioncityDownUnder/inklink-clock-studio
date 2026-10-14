@@ -442,6 +442,12 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next:** no need to repeat this mock. The remaining gate is an explicitly consented and risk-reviewed real image test with Chrome 244-byte write capacity and incomplete-frame recovery still unknown; live NRF- Send to Clock remains disabled.
 
+## Checkpoint AE — User accepted first-trial risk; PREPARATION only
+
+**14 Oct 2026.** User answered **yes** to accepting the risks of preparing a supervised physical upload. This is not immediate authorization to send any bytes to their clock. Implemented `src/first-trial-readiness.mjs` and a Studio **Review hardware trial readiness — no writes** panel, with four new tests intended to bring total to **68**. This checklist never sends BLE data and always reports physical image upload disabled.
+
+**Open concerns:** Android Chrome acceptance of 244-byte EPD writes remains unverified; clock firmware recovery from partial frame is unknown. Clock-mode command is not proven to roll back EPD RAM. A user-facing readiness report must not conflate willingness to prepare with consent to execute. Keep image send guarded.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
