@@ -52,6 +52,8 @@
 
 > **Checkpoint AG (14 Oct 2026):** The user approved preparation of the first supervised physical upload. The app now has a separate, manually triggered one-attempt form requiring a connected NRF- device, typed confirmation, and acceptance of the remaining risks. Integration tests use mock characteristics only. **No actual image upload has been observed.** The known uncertainty of write size and interrupted-buffer recovery remains. Next: user tests the live interface and reports physical result.
 
+> **MAJOR MILESTONE AH — FIRST REAL IMAGE UPLOAD SUCCESS (14 Oct 2026 ~23:12–23:13):** User screenshot shows **126/126** acknowledged NRF- EPD packets, final EPD refresh acknowledged in **9.3s** at 23:12:56. **Physical clock photo proves English 400×300 tri-colour image rendered**, with "SYDNEY TIME", large black 23:12, red "WEDNESDAY 14 OCTOBER 2026". Thus Android Chrome **244-byte image writes are physically demonstrated** in this connection and full image transfer works. **Important defect:** severe ghosting of old Chinese digits/labels behind English image; lower slogan is tiny/rough. English face is a static snapshot, not a running live clock. Not a clean visual result yet. Upstream XLY95 defines `clearScreen(cmd)` = EPD `00+cmd` then `01`, but parameter/driver effects remain **unverified and MUST NOT be attempted speculatively**. Next: research safe full-refresh/clear strategy, improve contrast/footer offline, assess ability to return to live clock, request separate approval for any further hardware EPD writes. Do not repeat initial-upload debugging.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
