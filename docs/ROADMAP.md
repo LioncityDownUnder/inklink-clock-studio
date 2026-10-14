@@ -57,6 +57,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Test AD completed — pending-write stall and cancellation VERIFIED in Android Chrome (14 Oct 2026 ~22:50):** packet 25 remained pending, warning appeared after 1.1s, it later settled, and cancellation stopped the mock transfer at 24/126 counted without refresh or packet 26. No BLE writes. Browser mock acceptance suite fully verified; next decision concerns explicit risk consent for physical image transfer, Chrome write capacity and lack of proven interrupted-image recovery. NRF- physical upload remains disabled.
 
+**Test AF (14 Oct ~23:01):** Android Chrome no-write first-hardware-trial readiness review executed: packet audit PASS, 126 packets/30,504 bytes. EPD characteristic marked unverified in disconnected review, but earlier connected Test V passed. Real Chrome 244-byte write acceptance and recovery of interrupted images remain unknown. No transfer authorized or performed; avoid repeating offline review.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
