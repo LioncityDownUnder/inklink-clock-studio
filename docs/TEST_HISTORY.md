@@ -390,6 +390,14 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next hardware-neutral validation:** user opens deployed InkLink Display Designer and runs checklist, confirms no BLE writes. Before any full image transmission, independently evaluate Chrome accepted 244-byte writes, panel compatibility and an interruption recovery strategy; separate explicit informed approval is still required.
 
+## Test record X — supervised image-upload DRY RUN checklist completed in Android Chrome
+
+**Date/time:** 14 October 2026 ~22:15 Sydney. User supplied screenshot showing **Prepare dry-run upload checklist** executed successfully in the live InkLink Display Designer. The output says **DRY RUN ONLY — NO DEVICE WRITES** and **Packet plan is internally valid for the chosen MTU assumption**. The checklist listed all eight safety steps: confirm panel/device, Safe connection/close other BLE apps, explicit informed approval, acknowledged BW-then-red image writes with stop on first error, no EPD refresh after incomplete data, wait 300 ms then EPD refresh after complete data, visually inspect and only then consider Clock mode, and never automatically resume after disconnection.
+
+**Critical limitation:** The screenshot explicitly notes Chrome MTU/write acceptance and rollback are **NOT verified** and upload **NOT authorized**. Successful rehearsal does not prove a 244-byte packet will be accepted or the physical display can be restored after a mid-frame disconnect. No actual EPD image writes were sent. Avoid implying a physical upload is already safe or complete.
+
+**Next:** Deliberately design a supervised full-image test with progress, cancellation, first-error abort and manual restoration controls, but retain hardware upload disabled until user reviews risks and provides **separate explicit authorization**. Do not run dummy probe packets or assume clock-mode restoration is a verified image-buffer rollback.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
