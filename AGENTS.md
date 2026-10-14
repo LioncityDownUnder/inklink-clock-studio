@@ -1,5 +1,11 @@
 # Project instructions for AI coding assistants and future ChatGPT sessions
 
+## Chrome read-only EPD capability inspection checkpoint
+
+`src/ble-capabilities.mjs` and its four tests provide a zero-write browser-side BLE inspection of the connected NRF- EPD characteristic; Display Designer has an **Inspect connected EPD capability — no writes** button. This confirms characteristic properties/method exposure but **cannot** verify a numerical MTU or successful 244-byte writes. Do not introduce dummy/probing BLE packets or enable NRF- image writes without a deliberate user-approved supervised image test and interruption recovery plan.
+
+
+
 ## Phase 2 preflight audit (14 Oct 2026)
 
 XLY95 main-page `upload_image()` sends EPD BW packets then red packets via `writeValueWithResponse`, waits 300 ms, then sends EPD `01` or `AA` refresh by acknowledged write. It supplies no verified mid-frame resume/rollback. New `src/dash-preflight.mjs` validates packet plane order, offsets, bytes, assumed MTU-3 capacity and final opcode **offline only**, with five tests; simulation UI reports audit outcome. Existing time/mode RXTX controls must not be conflated with image EPD writes. Do NOT enable NRF- physical image upload or create probing writes until browser write-capacity and safe restoration are addressed.
