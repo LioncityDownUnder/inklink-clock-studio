@@ -384,6 +384,12 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next:** Evaluate a transparent, manual, supervised **full-image** test with explicit user consent and abort handling only after a reversible/known-good recovery plan is documented. Avoid dummy characteristic writes (which might be interpreted as image commands). Keep actual `NRF-` upload disabled until agreed.
 
+## Engineering checkpoint W — upload rehearsal and conservative interruption procedure (no BLE writes)
+
+**14 October 2026.** Prepared a dry-run supervised image workflow, not a real upload. Added `src/upload-rehearsal.mjs` and four offline tests. Android Chrome Display Designer now provides **Prepare dry-run upload checklist**, showing plane/packet validation, assumed MTU gating, and conservative steps: stop on first failed write, never refresh incomplete buffers, never resume from arbitrary offsets, don't automatically retry or assume Clock mode clears image memory. The UI explicitly states hardware write size, actual refresh and rollback remain unverified and that uploads are not authorized.
+
+**Next hardware-neutral validation:** user opens deployed InkLink Display Designer and runs checklist, confirms no BLE writes. Before any full image transmission, independently evaluate Chrome accepted 244-byte writes, panel compatibility and an interruption recovery strategy; separate explicit informed approval is still required.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
