@@ -3,6 +3,7 @@ import { simulateDashTransfer } from './dash-simulator.mjs';
 import { auditDashSequence } from './dash-preflight.mjs';
 import { describeEpdWriteCapabilities } from './ble-capabilities.mjs';
 import { createUploadRehearsal } from './upload-rehearsal.mjs';
+import { runMockSupervisedTransfer } from './mock-transfer-runner.mjs';
 import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex,
   DASH_EPD_SERVICE_UUID, DASH_EPD_CHARACTERISTIC_UUID, DASH_RXTX_SERVICE_UUID,
   DASH_RXTX_CHARACTERISTIC_UUID, encodeDashTime, encodeDashMode, DASH_REFRESH } from './protocol.mjs';
@@ -648,6 +649,75 @@ function rehearseDashUpload() {
   }
 }
 
+let mockUploadAbort = null;
+let mockUploadRunning = false;
+function setMockUploadUi(active) {
+  $('mockUploadStart').disabled = active;
+  $('mockUploadCancel').disabled = !active;
+  $('mockUploadConsent').disabled = active;
+  $('mockUploadFailure').disabled = active;
+}
+async function startMockUpload() {
+  if(mockUploadRunning) return;
+  if(!$('mockUploadConsent').checked) {
+    $('mockUploadResult').textContent='Blocked: please acknowledge this is a MOCK-only rehearsal.';
+    return;
+  }
+  mockUploadRunning=true;
+  mockUploadAbort=new AbortController();
+  setMockUploadUi(true);
+  const resultNode=$('mockUploadResult');
+  const meter=$('mockUploadProgress');
+  const events=$('mockUploadEvents');
+  events.replaceChildren();
+  meter.value=0;
+  const writeEvent=(message)=>{
+    const line=document.createElement('div');
+    line.textContent=new Date().toLocaleTimeString('en-AU',{hour12:false})+' — '+message;
+    events.appendChild(line);
+    while(events.children.length>60)events.firstElementChild.remove();
+    events.scrollTop=events.scrollHeight;
+  };
+  try{
+    const canvas=$('previewCanvas');
+    const image=canvas.getContext('2d',{willReadFrequently:true})
+      .getImageData(0,0,canvas.width,canvas.height);
+    const plan=createDashTransferPlan(image);
+    const audit=auditDashSequence(plan,{attMtu:Number($('simMtu').value)});
+    if(!audit.passed) throw new Error('Preflight BLOCKED: '+audit.failures.slice(0,3).join('; '));
+    if($('template').value==='image' && !state.loadedImage) throw new Error('Choose an image first.');
+    resultNode.textContent='MOCK running; no Bluetooth calls. '+plan.packetCount+' image packets.';
+    writeEvent('MOCK start: '+plan.packetCount+' packets; hardware image upload remains disabled');
+    const value=$('mockUploadFailure').value;
+    const failAtPacket=value==='none'?null:Number(value);
+    const completed=await runMockSupervisedTransfer({
+      plan,audit,signal:mockUploadAbort.signal,failAtPacket,
+      delayMs:35,
+      onProgress:p=>{
+        meter.value=p.percent;
+        resultNode.textContent='MOCK '+p.stage+': '+p.completed+'/'+p.total+' packets ('+p.percent+'%). NO Bluetooth writes.';
+        if(p.stage!=='image' || p.completed%10===0 || p.completed===p.total)
+          writeEvent(p.stage+' — '+p.completed+'/'+p.total);
+      }
+    });
+    resultNode.textContent='MOCK completed: '+completed.completed+'/'+completed.total+
+      ' and mock refresh acknowledged. Physical display NOT verified; no Bluetooth writes.';
+    writeEvent('MOCK completed successfully. No clock data transmitted.');
+  }catch(error){
+    resultNode.textContent='MOCK stopped: '+(error.message||error)+
+      '. Incomplete transfer would NOT be refreshed or resumed. No Bluetooth writes.';
+    writeEvent('MOCK stopped: '+(error.message||error));
+  }finally{
+    mockUploadRunning=false;mockUploadAbort=null;setMockUploadUi(false);
+  }
+}
+function cancelMockUpload() {
+  if(mockUploadAbort) {
+    mockUploadAbort.abort();
+    $('mockUploadResult').textContent='MOCK cancellation requested; waiting for current simulated write.';
+  }
+}
+
 function progress(percent,label){
   $('transferStatus').hidden=false;
   $('transferProgress').value=percent;
@@ -755,6 +825,8 @@ function init(){
   $('inspectBleCapacity').addEventListener('click',inspectBleCapabilities);
   $('simulateDash').addEventListener('click',simulateDashImageOffline);
   $('rehearseDash').addEventListener('click',rehearseDashUpload);
+  $('mockUploadStart').addEventListener('click',startMockUpload);
+  $('mockUploadCancel').addEventListener('click',cancelMockUpload);
   $('sendImage').addEventListener('click',uploadImage);
   $('downloadPng').addEventListener('click',downloadPng);
   $('clearLog').addEventListener('click',()=>{
