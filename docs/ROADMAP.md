@@ -44,13 +44,14 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 - **DONE (source/algorithm):** mapped original main-page `canvas2bytes`, `canvas2bytes_bw`, `upload_image`, and `sendBufferData`; use strict opaque pure black/white/red quantization. Independent BLE packet captures are still pending.
 - **PENDING (highest priority):** determine exact physical screen resolution/driver and supported colour planes; XLY95's selected **400×300** canvas is NOT an independent hardware measurement.
+- **PENDING (highest priority):** original NRF- frame requires a 244-byte acknowledged GATT characteristic write; ATT Write Request value ≤ MTU−3 means **negotiated ATT MTU ≥247** is needed for that size. Read actual nRF Connect negotiated MTU non-destructively; do not assume Chrome gets identical MTU.
 - **DONE (offline code):** implemented `03/04 + FF/00 + 16-bit big-endian byte offset + up to 240 image bytes` packet builder in `src/dash-image.mjs`, with correct full/partial refresh metadata but **no device writes**.
 - **PARTLY DONE (source):** original XLY95 `upload_image()` finishes by sending EPD `01` for full images, `AA` for 280×100/400×180 partials; offline plan reports these codes. **PENDING** physical image mode/refresh/restore verification and negotiated 244-byte BLE write support.
 - **DONE (source-derived automated tests):** ten new cases for planes, row/column orientation, chunk headers/offsets, partial images, strict palette and 400×300/800×480 plans; **PENDING** independent captured-packet comparison and MTU validation.
 - **PENDING:** with explicit user agreement, send a simple small/blank test image first only after screen dimensions and packets are confirmed.
 - **PENDING:** enable `Send image` only after a confirmed physical transfer.
 
-**Next test (no BLE needed):** In live InkLink Display Designer choose 400×300 and tap **Inspect encoded packets (offline)**. Expected 126 packets, 30,504 bytes including headers, max write 244 bytes. Report its output and confirm screen geometry separately.
+**DONE (Android Chrome, Test N):** User ran the offline inspector with 400×300 preset; it returned **126 packets, 15,000 BW + 15,000 red bytes, 30,504 framed bytes, max 244 bytes/packet, refresh 01**; no BLE transmission. **NEXT safe check:** nRF Connect device menu → Request MTU 247 and report **negotiated MTU**. This is a separate session from Chrome and cannot by itself prove Chrome's packet-write capacity. Independently identify clock panel geometry/model.
 
 **Ultimate done when:** repeated, user-approved physical image uploads render correctly, without breaking built-in clock mode, with a verified restore path.
 
