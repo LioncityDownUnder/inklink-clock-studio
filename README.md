@@ -2,32 +2,45 @@
 
 A browser-based, English-language control panel and image designer for desk clocks compatible with the [XLY95 BLE protocol](https://github.com/XLY95/xly95.github.io). Built with plain HTML, CSS and JavaScript; no dependencies or server-side account.
 
-> **Version 1 / hardware-test beta.** The packet format was inspected in XLY95's publicly accessible JavaScript on 14 October 2026. The application has been tested in Chromium with a simulated BLE device and Node unit tests, **not yet with the photographed clock itself**.
+> **Hardware-test beta.** Updated 14 October 2026 to support two separate XLY95 BLE protocols. The code passes automated tests; the updated NRF- connection and commands still need verification on the user's physical clock.
 
-## Features
+## Device compatibility
 
-- Pair with Bluetooth devices named `NRF_...`, or select "Show all nearby devices" if required.
-- Query device information / collect notifications (decoded as hex, raw data only).
-- Set time from the browser's clock.
-- Switch between built-in clock mode (`AE 01`) and calendar mode (`AE 02`).
-- Preview custom English clock faces, message boards, or imported images.
-- Black/white and black/white/red e-paper conversion; ordered dithering for photos.
-- Export the current design as a PNG.
-- Transfer pixels to the clock over BLE with progress feedback and adjustable write sizes.
-- Local operation: images, commands and clock interactions remain on the device/browser (no network API calls).
+The public XLY95 site includes **two different BLE implementations**. InkLink now selects the profile by the device's advertised name:
+
+| Device name | Source implementation | EPD service | Clock controls |
+| --- | --- | --- | --- |
+| `NRF-...` | XLY95 main `index.html` | `13187b10-eba9-a3ba-044e-83d3217d9a38` | RXTX `00001f10-0000-1000-8000-00805f9b34fb` |
+| `NRF_...` | XLY95 standalone `js.js` | `32120001-0bf6-448a-9608-1b01a1a8f75c` | Same characteristic as EPD |
+
+On `NRF-` clocks, the EPD characteristic is `4b646063-6264-f3a7-8941-e65356ea82fe` and the RXTX write characteristic is `00001f1f-0000-1000-8000-00805f9b34fb`.
+
+The user-provided nRF Connect scan for an `NRF-6CD319` device showed both expected service UUIDs for the `NRF-` profile.
+
+## Features and safety
+
+- Connect in a Web Bluetooth browser with clear stage-by-stage diagnostics.
+- Default safe connection: discover services without sending commands.
+- Explicitly enable notifications after connection.
+- Synchronise the clock and switch between built-in clock/calendar modes using profile-specific commands.
+- Preview English faces, messages and custom images locally; export previews as PNG.
+- Image upload using the older A1 packet protocol is supported only for the `NRF_` profile.
+- **NRF- image upload is disabled** pending implementation and validation of its distinct offset-based `03/04` image packet protocol.
+- No firmware flashing, unlocking, destructive commands, or background Bluetooth reconnection.
+
+These commands are verified against publicly accessible source and automated unit tests. Real-device compatibility must still be confirmed by testing. XLY95's original source supports more commands; they should not be used on the wrong profile.
 
 ## Easiest way to start
 
-**Option A — Standalone HTML**
+**Option A — Open the deployed website**
 
-Open `InkLink_Clock_Studio.html` in **Chrome or Edge on desktop**. This self-contained file has the same UI, styles and functionality, without separate files. Bluetooth requires a *secure context*; modern Chrome normally treats local files as potentially trustworthy, but the most reliable approach is to host it over HTTPS or localhost.
+Use **https://lioncitydownunder.github.io/inklink-clock-studio/** in Android Chrome or desktop Chrome/Edge. The GitHub Pages version uses the current `src/` modules. Old standalone HTML downloads are not automatically updated with this new device protocol.
 
 **Option B — Local development server**
 
 With Python 3:
 
 ```bash
-cd english-eink-clock
 python -m http.server 8000
 ```
 
