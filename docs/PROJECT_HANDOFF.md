@@ -56,6 +56,8 @@
 
 > **Test AI — persistent physical ghosting CONFIRMED:** User says old Chinese digits remain visible **after several minutes** following successful Test AH English image upload. It is not just waiting for pigment settling. XLY95 source defines `clearScreen(cmd)` → EPD `00+cmd` then `01`, but no grounded argument/use on this clock has been established. `clear_canvas()` clears browser canvas only. **Do not send guessed clear/refresh commands or repeatedly upload.** Focus on read-only full refresh research and better small-font contrast. Existing first real image transfer remains a success with a visible quality defect.
 
+> **Test AJ — uniform ghosting report:** User confirms persistent ghosting appears **approximately evenly across the entire panel**, not mainly around former large Chinese numerals. Suggests prioritising **global erase/waveform/refresh** investigation, but cause remains unverified; this is observational and no new BLE writes were issued. Do not send undocumented clear commands, or blindly reupload. Next: safely research panel-wide erasure behaviour and improve offline typography.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
