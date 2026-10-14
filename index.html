@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="English Bluetooth control and e-paper image studio for XLY95-compatible desk clocks.">
+  <title>InkLink Studio — Your E-Paper Clock</title>
+  <style>
+:root{--navy:#111827;--ink:#172033;--grey:#657184;--light:#eff1f5;--line:#e5e8ef;--red:#d55243;--red-light:#fff2ee;--blue:#29486a;--white:#fff;--shadow:0 10px 36px rgba(25,35,54,.035);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#f8f9fc}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}a{color:inherit}.hidden,[hidden]{display:none!important}.muted{color:#87909e}.shell{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}.sidebar{background:#111a2a;color:#edf1f8;min-height:100vh;display:flex;flex-direction:column;padding:31px 17px 23px;position:sticky;top:0;height:100vh}.brand{display:flex;gap:12px;align-items:center;text-decoration:none;font-size:26px;font-weight:800;letter-spacing:-1.3px;padding:5px 14px 58px}.brand small{display:block;font-size:9px;font-weight:750;letter-spacing:2.9px;margin-top:0;color:#8696ae}.brand-dot{color:#fa8e79}.brand-mark{width:31px;height:31px;display:grid;grid-template-columns:repeat(2,1fr);gap:3px;transform:rotate(-9deg)}.brand-mark span{border-radius:3px;background:#edf2f9}.brand-mark span:nth-child(2){background:#e7a396}.brand-mark span:nth-child(3){background:#a4bbcd}.sidebar-label{font-size:10px;font-weight:800;letter-spacing:1.6px;color:#64738a;padding:0 19px 14px}.nav{display:flex;flex-direction:column;gap:7px}.nav-link{background:none;border:0;display:flex;align-items:center;gap:14px;width:100%;text-align:left;color:#a8b5c7;padding:15px 15px;border-radius:9px;font-weight:600;font-size:13px}.nav-link:hover{background:#1c2b43;color:#fff}.nav-link.active{background:#2d415e;color:white}.nav-ico{display:grid;place-items:center;width:18px;color:#a6c0dc;font-size:19px}.sidebar-bottom{margin-top:auto;padding:12px}.side-note{border-top:1px solid #344154;padding-top:20px;font-size:11px;line-height:1.9;color:#d5deeb}.tiny-dot{display:inline-block;background:#63bfad;width:7px;height:7px;border-radius:50%;margin-right:5px}.version{color:#526279;font-weight:700;font-size:10px;letter-spacing:1.5px;margin-top:20px}.main{min-width:0}.topbar{height:82px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#fff;padding:0 clamp(24px,4vw,72px);gap:12px}.breadcrumb{font-size:11px;letter-spacing:1.3px;font-weight:750;color:#98a2b1}.breadcrumb span{margin:0 13px;color:#c4cad5}.breadcrumb strong{color:#313e55}.top-actions{display:flex;gap:14px;align-items:center}.pill{display:flex;gap:8px;align-items:center;border-radius:100px;padding:9px 13px;font-size:11px;font-weight:750;background:#f4f5f8;color:#737e8c;white-space:nowrap}.pill-dot{width:7px;height:7px;border-radius:50%;background:#a9b4c1}.pill.connected{color:#1b715b;background:#e7f6ef}.pill.connected .pill-dot{background:#35a87d}.content{max-width:1510px;padding:clamp(26px,4vw,52px) clamp(24px,4vw,72px) 10px;margin:0 auto}.page-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:32px}.eyebrow{font-size:11px;letter-spacing:2.1px;color:#d25343;font-weight:850}.page-heading h1{font-size:clamp(29px,3.4vw,43px);margin:10px 0 9px;line-height:1.13;letter-spacing:-1.7px;font-weight:780}.accent{color:#d85e4a}.page-heading p{margin:0;color:#738092;font-size:14px;line-height:1.7}.date-tag{border:1px solid #e0e5ed;border-radius:8px;padding:12px 14px;color:#7c889c;font-size:11px;font-weight:800;white-space:nowrap;letter-spacing:.5px;background:white}.button{display:inline-flex;align-items:center;justify-content:center;gap:13px;padding:12px 19px;min-height:44px;border-radius:8px;font-size:12px;font-weight:780;border:1px solid transparent;white-space:nowrap;transition:.16s background,.16s transform}.button:not(:disabled):active{transform:translateY(1px)}.button-primary{background:#d75e4d;color:#fff;box-shadow:0 5px 14px rgba(199,73,60,.12)}.button-primary:hover:not(:disabled){background:#ba453b}.button-secondary{background:#f4f5f8;color:#3c4a5e;border-color:#e6e9ef}.button-secondary:hover:not(:disabled){background:#e9edf3}.button-outline{background:#fff;color:#38445a;border-color:#dfe4ec}.button-outline:hover:not(:disabled){background:#f5f7fa}.button-small{min-height:38px;padding:8px 14px}.button-full{width:100%}.card{border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:var(--shadow)}.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}.connect-card,.quick-card{padding:25px}.card-heading{display:flex;align-items:center;gap:13px;margin-bottom:25px}.card-icon{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:#fff0e9;color:#cd5949;font-size:22px;font-weight:650}.card-icon.ink{background:#edf2f9;color:#477095}.card-heading h2{font-size:16px;letter-spacing:-.3px;margin:0 0 5px;font-weight:750}.card-heading p{font-size:12px;color:#929cac;margin:0}.device-surface{border:1px solid #e9edf3;background:#fafbfd;border-radius:10px;display:flex;gap:21px;align-items:center;padding:21px;margin:0 0 21px}.device-picture{background:#e8edf2;border-radius:8px;padding:9px;box-shadow:0 4px 7px rgba(10,20,40,.06),inset 0 0 0 1px #d5dce5;flex:0 0 auto}.device-screen{background:#eff0e8;border:2px solid #d7dbd3;border-radius:3px;padding:5px 11px 0;color:#222e35;font-weight:840;font-size:30px;letter-spacing:-3px;text-align:center;min-width:105px;height:65px;line-height:31px;font-variant-numeric:tabular-nums}.device-screen .colon{color:#c2574e}.device-screen small{display:block;font-size:8px;letter-spacing:.8px;color:#5d6970;line-height:18px}.device-details{display:flex;flex-direction:column;gap:7px;min-width:0}.device-details strong{font-size:15px;overflow-wrap:anywhere}.device-details>span:last-child{font-size:12px;color:#8895a7;line-height:1.6}.label-muted{font-size:10px;color:#a2acb9;letter-spacing:1.3px;font-weight:800}.connect-controls{display:flex;gap:10px;flex-wrap:wrap}.fineprint{font-size:11px;line-height:1.8;color:#8995a5;margin:13px 0 0}.form-row.compact{display:flex;align-items:center;gap:6px;margin-top:17px}.checkbox-label{font-size:11px;color:#637085;display:flex;align-items:center;gap:7px;cursor:pointer}.checkbox-label input{accent-color:#d45c49}.tip{font-size:13px;color:#9ca6b4}.quick-card .card-heading{margin-bottom:15px}.quick-action{width:100%;border:0;border-bottom:1px solid #eff1f4;background:#fff;text-align:left;display:flex;align-items:center;gap:14px;padding:15px 0}.quick-action:last-of-type{border-bottom:0}.quick-action:hover:not(:disabled){background:#fafbfc}.quick-action>span:nth-child(2){display:flex;flex-direction:column;gap:5px;flex:1}.quick-action strong{font-size:12px;color:#354257}.quick-action small{font-size:11px;color:#99a5b2}.action-icon{width:36px;height:36px;border-radius:9px;background:#f5f7fa;color:#607a96;display:grid;place-items:center;font-size:21px;flex:0 0 auto}.chevron{font-size:17px;color:#afbac6}.quick-help{background:#f8fafd;padding:12px 13px;margin-top:11px;border-radius:8px;font-size:11px;color:#8792a1;line-height:1.65}.section-header{display:flex;justify-content:space-between;align-items:center;gap:15px;margin:37px 0 16px}.section-header h2{font-size:18px;letter-spacing:-.5px;margin:0 0 5px}.section-header p{font-size:12px;color:#929eae;margin:0}.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.feature-card{border:1px solid var(--line);text-align:left;background:#fff;padding:14px 14px 19px;border-radius:12px;box-shadow:var(--shadow)}.feature-card:hover{border-color:#d69e95;transform:translateY(-1px)}.feature-card>strong{display:block;margin:15px 2px 6px;font-size:13px}.feature-card>small{display:block;margin-left:2px;color:#97a2b1;font-size:11px}.feature-illustration{height:155px;border-radius:8px;background:#edf1f4;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}.preview-mini{background:#f5f4ed;border:9px solid #edf0f3;box-shadow:inset 0 0 0 1px #e0e0d5;color:#252a35;gap:7px}.mini-top{font-size:10px;color:#b54d45;font-weight:850;letter-spacing:1.8px}.preview-mini strong{font-size:43px;font-weight:850;letter-spacing:-3px}.mini-bottom{font-size:8px;font-weight:800;letter-spacing:1px}.message-mini{background:#e8e9e2;border:8px solid #eef0f0;align-items:flex-start;padding-left:20px}.message-mini .mini-top{font-size:8px}.message-mini strong{font-size:26px;letter-spacing:-1px;line-height:1.03;margin-top:10px}.message-mini strong span{color:#cb5b4d}.upload-mini{background:#e4ebf1;color:#6c849b;gap:13px}.upload-mini>span{display:grid;place-items:center;border:2px dashed #b0bfce;border-radius:8px;font-size:30px;width:60px;height:60px}.upload-mini strong{font-size:10px;letter-spacing:2px}.studio-layout{display:grid;grid-template-columns:minmax(270px,340px) minmax(0,1fr);gap:21px;align-items:start}.studio-settings{display:flex;flex-direction:column;gap:18px}.settings-card{padding:24px}.settings-card .card-heading{margin-bottom:22px}.field-label{font-size:11px;font-weight:800;color:#5f6b7d;display:block;margin:17px 0 8px}.field{background:#fff;border:1px solid #dfe5ed;border-radius:8px;padding:11px 12px;color:#27374d;width:100%;font-size:12px;min-height:43px;outline:none}.field:focus{border-color:#cc6b5e;box-shadow:0 0 0 3px #f9eae8}.file-field{font-size:11px;padding:10px}.file-field::file-selector-button{font:inherit;padding:5px;border-radius:5px;background:#f2f4f7;border:0;color:#485467;margin-right:10px}.settings-card .button-full{margin-top:22px}.transfer-card{background:#fcfcfd}.preview-card{overflow:hidden}.preview-header{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:26px 29px;border-bottom:1px solid var(--line)}.preview-header h2{font-size:19px;margin:8px 0 0;letter-spacing:-.3px}.chip{font-size:10px;font-weight:800;background:#f2f4f6;color:#6f7f91;border-radius:30px;padding:9px 11px;white-space:nowrap}.preview-stage{background:radial-gradient(ellipse at center,#eef1f4 0%,#f6f8fb 75%);min-height:380px;display:grid;place-items:center;padding:35px 30px}.epaper-device{padding:17px;background:#fefefe;border:1px solid #e1e4e9;border-radius:15px;box-shadow:0 12px 25px rgba(35,48,63,.10),0 3px 6px rgba(0,0,0,.035);max-width:100%}.epaper-surface{background:#f8f8f1;line-height:0;box-shadow:inset 0 0 0 1px #d6d9d4;border-radius:5px;padding:2px}.epaper-surface canvas{width:min(100%,490px);height:auto;max-height:440px;display:block;image-rendering:auto;border-radius:3px;background:#fff}.preview-caption{padding:15px 27px;border-top:1px solid #edf0f4;border-bottom:1px solid #edf0f4;display:flex;gap:18px;color:#657587;font-size:11px}.preview-caption span:first-child::first-letter{color:#1b2431}.preview-caption span:nth-child(2)::first-letter{color:#d9d8ce}.preview-caption span:nth-child(3)::first-letter{color:#d55243}.caption-right{margin-left:auto;color:#a0aab7}.snapshot-note{font-size:11px;line-height:1.75;padding:17px 28px;background:#fff9f6;color:#8c716e;border-bottom:1px solid #f9eae4}.snapshot-note strong{color:#a95044}.preview-actions{padding:21px 26px;display:flex;justify-content:space-between;gap:12px}.transfer-status{padding:18px 27px 0}.progress-meta{display:flex;justify-content:space-between;color:#4c6178;font-size:11px;margin-bottom:9px}.transfer-status progress{width:100%;height:10px;border:0;border-radius:10px;overflow:hidden;accent-color:#d65f50}.log-card{overflow:hidden}.log-head{background:#f9fafc;padding:19px 23px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;color:#8695a9;font-size:10px;font-weight:800;letter-spacing:1px}.log-entries{min-height:275px;max-height:500px;overflow:auto;padding:18px 23px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.log-entry{display:flex;align-items:flex-start;gap:14px;line-height:1.6;padding:9px 0;border-bottom:1px solid #f1f2f5;overflow-wrap:anywhere}.log-entry .log-time{color:#a0a9b7;flex:0 0 84px}.log-entry .log-level{font-weight:800;min-width:40px;color:#6784a3}.log-entry.error .log-level{color:#cb534a}.log-entry.success .log-level{color:#23836e}.log-entry .log-text{flex:1}.log-advice{color:#909cab;font-size:12px;line-height:1.8}.guide-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.guide-card{padding:26px;min-height:200px}.step-no{color:#d65e50;font-size:11px;font-weight:850;letter-spacing:1.5px}.guide-card h2{font-size:17px;letter-spacing:-.4px;margin:13px 0 9px}.guide-card p,.guide-note p{font-size:12px;line-height:1.85;color:#7a8798;margin:0}.guide-note{margin-top:19px;padding:25px}.guide-note h2{font-size:17px}.guide-note p{margin:11px 0}.guide-note a{color:#c55448}.footer{display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap;padding:37px 0 15px;color:#a3adba;font-size:10px}.notice{border:1px solid #ebc9a6;color:#935b2d;background:#fff7e9;padding:15px 18px;margin-bottom:25px;border-radius:9px;font-size:12px;line-height:1.7}.toast{position:fixed;bottom:25px;right:25px;z-index:20;background:#15243b;color:#fff;border-radius:9px;padding:16px 20px;max-width:390px;font-size:12px;line-height:1.6;box-shadow:0 12px 32px rgba(0,0,0,.15)}.toast.error{background:#a93f38}@media(max-width:1150px){.shell{grid-template-columns:205px 1fr}.sidebar{padding-left:10px;padding-right:10px}.topbar{padding:0 25px}.content{padding:32px 25px}.hero-grid{grid-template-columns:1fr 1fr}.studio-layout{grid-template-columns:285px 1fr}.preview-stage{min-height:290px}.preview-stage .epaper-device{padding:12px}}@media(max-width:850px){.shell{display:block}.sidebar{height:auto;min-height:0;position:static;flex-direction:row;padding:15px 20px;align-items:center;gap:15px}.brand{font-size:22px;margin:0;padding:0}.brand-mark{height:23px;width:23px}.brand small{font-size:7px}.sidebar-label,.sidebar-bottom{display:none}.nav{flex:1;flex-direction:row;justify-content:flex-end;gap:3px}.nav-link{padding:9px;font-size:0;width:auto}.nav-ico{font-size:21px}.nav-link.active{background:#2d415e}.topbar{height:66px}.hero-grid{grid-template-columns:1fr}.studio-layout{grid-template-columns:1fr}.studio-settings{display:grid;grid-template-columns:1fr 1fr}.feature-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.preview-stage{min-height:330px}}@media(max-width:600px){.sidebar{padding:14px 15px}.brand{font-size:18px}.brand small{font-size:6px;letter-spacing:1.3px}.nav-link{padding:7px}.topbar{padding:0 18px}.breadcrumb{font-size:9px}.breadcrumb span{margin:0 4px}.top-actions{gap:6px}.top-actions .pill{font-size:0;padding:10px}.top-actions .pill-dot{margin:0}.button-small{font-size:11px;padding:8px 11px}.content{padding:25px 17px}.page-heading{align-items:flex-start;margin-bottom:22px}.page-heading h1{font-size:30px}.page-heading .date-tag{display:none}.page-heading p{font-size:12px}.connect-card,.quick-card{padding:19px}.device-surface{gap:12px;padding:13px}.device-screen{font-size:24px;min-width:80px;height:57px}.device-picture{padding:6px}.device-details strong{font-size:12px}.device-details>span:last-child{font-size:10px}.section-header{margin-top:27px}.section-header .button{display:none}.feature-grid{grid-template-columns:1fr 1fr;gap:10px}.feature-card{padding:8px 8px 14px}.feature-card:nth-child(3){grid-column:span 2}.feature-illustration{height:110px}.preview-mini strong{font-size:32px}.mini-top{font-size:7px}.mini-bottom{font-size:6px}.feature-card>strong{font-size:11px}.feature-card>small{font-size:10px}.studio-settings{grid-template-columns:1fr}.preview-header{padding:19px}.preview-stage{padding:25px 16px;min-height:240px}.epaper-device{max-width:100%}.preview-caption{gap:9px;padding:12px;font-size:10px}.caption-right{display:none}.snapshot-note{padding:12px 17px}.preview-actions{padding:17px;flex-wrap:wrap}.preview-actions .button{flex:1}.guide-grid{grid-template-columns:1fr}.guide-card{min-height:0}.footer{padding-bottom:20px}.toast{right:13px;left:13px;bottom:13px}}
+
+</style>
+  <script>
+/**
+ * XLY95-compatible BLE packet utilities.
+ * Independent implementation based on publicly observable commands from
+ * https://github.com/XLY95/xly95.github.io (inspected 2026-10-14).
+ * No firmware flashing or undocumented configuration writes are performed.
+ */
+const SERVICE_UUID = '32120001-0bf6-448a-9608-1b01a1a8f75c';
+const CHARACTERISTIC_UUID = '32120002-0bf6-448a-9608-1b01a1a8f75c';
+const COMMAND = Object.freeze({
+  INFO: 0xA9,
+  TIME: 0xA3,
+  MODE: 0xAE,
+  IMAGE_CHUNK: 0xA1,
+  REFRESH: 0xA5,
+});
+const SCREEN_SIZES = Object.freeze([
+  { id: '4.2', width: 400, height: 300, name: '4.2″ · 400 × 300' },
+  { id: '2.13', width: 122, height: 250, name: '2.13″ · 122 × 250' },
+  { id: '7.5', width: 800, height: 480, name: '7.5″ · 800 × 480' },
+]);
+
+function encodeTime(date = new Date()) {
+  // XLY95 setTime() uses one big-endian Unix timestamp (four bytes).
+  const seconds = Math.floor(date.getTime() / 1000);
+  if (!Number.isInteger(seconds) || seconds < 0 || seconds > 0xffffffff) {
+    throw new RangeError('Date falls outside the supported 32-bit Unix time range');
+  }
+  return Uint8Array.of((seconds >>> 24) & 255, (seconds >>> 16) & 255,
+    (seconds >>> 8) & 255, seconds & 255);
+}
+
+function commandPacket(opcode, payload = []) {
+  if (!Number.isInteger(opcode) || opcode < 0 || opcode > 255) {
+    throw new RangeError('Opcode must be one byte');
+  }
+  return Uint8Array.of(opcode, ...payload);
+}
+
+/**
+ * Prepare e-paper pixel planes from RGBA pixels.
+ * 1 means white and 0 means black in the B/W plane.
+ * For a red pixel, the RED plane bit is 0; otherwise 1.
+ * Pack left-to-right, top-to-bottom, MSB first, with row padding.
+ * This matches the source's blackWhiteColor / threeColor thresholds.
+ */
+function packImage(imageData, triColor = true) {
+  const {width, height, data} = imageData;
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 ||
+      !data || data.length !== width * height * 4) {
+    throw new TypeError('Invalid RGBA image data');
+  }
+  const stride = Math.ceil(width / 8);
+  const planeBytes = stride * height;
+  // White is 1 in the original data format. Padding is white, too.
+  const mono = new Uint8Array(planeBytes);
+  const red = triColor ? new Uint8Array(planeBytes) : null;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixel = (y * width + x) * 4;
+      const r = data[pixel], g = data[pixel + 1], b = data[pixel + 2];
+      const luminance = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+      const byte = y * stride + (x >> 3);
+      const mask = 0x80 >>> (x & 7);
+      if (luminance >= 140) mono[byte] |= mask;
+      if (red && !(r > 160 && r > g && r > b)) red[byte] |= mask;
+    }
+    // Pad any partial byte with white, so no black stripe at the right edge.
+    const trailing = width % 8;
+    if (trailing) {
+      const mask = (1 << (8 - trailing)) - 1;
+      mono[y * stride + stride - 1] |= mask;
+      if (red) red[y * stride + stride - 1] |= mask;
+    }
+  }
+  return { width, height, mono, red, totalBytes: planeBytes * (triColor ? 2 : 1) };
+}
+
+/**
+ * XLY95 writeImage sends A1, then a flag byte and pixel data.
+ * 0x0F: first monochrome packet, 0xFF: continuation monochrome
+ * 0x00: first red packet,        0xF0: continuation red.
+ * maxWriteSize counts ALL characteristic bytes, including A1 and flags.
+ */
+function* imagePackets(plane, colour = 'mono', maxWriteSize = 20) {
+  if (!(plane instanceof Uint8Array)) throw new TypeError('Image plane must be Uint8Array');
+  if (!Number.isInteger(maxWriteSize) || maxWriteSize < 3 || maxWriteSize > 512) {
+    throw new RangeError('Invalid characteristic write size');
+  }
+  const chunkSize = maxWriteSize - 2;
+  for (let offset = 0; offset < plane.length; offset += chunkSize) {
+    const first = offset === 0;
+    const flag = colour === 'red' ? (first ? 0x00 : 0xF0) : (first ? 0x0F : 0xFF);
+    yield commandPacket(COMMAND.IMAGE_CHUNK, [flag, ...plane.subarray(offset, offset + chunkSize)]);
+  }
+}
+
+const bytesToHex = bytes => Array.from(bytes, b => b.toString(16).padStart(2, '0')).join(' ').toUpperCase();
+
+
+
+const $ = id => document.getElementById(id);
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+const state = {
+  device: null, characteristic: null, notifications: false,
+  busy: false, logCount: 0, loadedImage: null, previewTime: null,
+};
+
+function toast(message, error = false) {
+  const box = $('toast');
+  box.textContent = message;
+  box.classList.toggle('error', error);
+  box.hidden = false;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => { box.hidden = true; }, 5200);
+}
+
+function log(message, level = 'info') {
+  state.logCount++;
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${level}`;
+  const parts = [new Date().toLocaleTimeString('en-AU', {hour12: false}), level.toUpperCase(), message];
+  for (const [i, text] of parts.entries()) {
+    const span = document.createElement('span');
+    span.className = ['log-time','log-level','log-text'][i];
+    span.textContent = text;
+    entry.appendChild(span);
+  }
+  const list = $('logEntries');
+  list.appendChild(entry);
+  if (list.children.length > 200) list.firstElementChild.remove();
+  list.scrollTop = list.scrollHeight;
+  $('logCount').textContent = `${state.logCount} event${state.logCount === 1 ? '' : 's'}`;
+}
+
+function connected() {
+  return Boolean(state.device?.gatt?.connected && state.characteristic);
+}
+function updateUi() {
+  const online = connected();
+  const pill = $('connectionPill');
+  pill.classList.toggle('connected', online);
+  pill.classList.toggle('disconnected', !online);
+  pill.innerHTML = `<span class="pill-dot"></span> ${online ? 'Connected' : 'Disconnected'}`;
+  $('deviceName').textContent = online ? (state.device.name || 'Unnamed BLE clock') : 'No clock connected';
+  $('deviceHint').textContent = online ? 'XLY95-compatible BLE service found' : 'Looking for nearby NRF_ devices';
+  for (const button of document.querySelectorAll('[data-requires-connection]')) button.disabled = !online || state.busy;
+  $('mainConnect').disabled = online || state.busy;
+  $('topConnect').disabled = state.busy;
+  $('topConnect').textContent = online ? 'Disconnect clock' : 'Connect clock ↗';
+  $('disconnectBtn').disabled = !online || state.busy;
+  $('allDevices').disabled = online || state.busy;
+  $('packetSize').disabled = state.busy;
+  $('ackInterval').disabled = state.busy;
+}
+
+function setBusy(value) {
+  state.busy = value;
+  updateUi();
+}
+
+async function runAction(title, work) {
+  if (state.busy) return;
+  setBusy(true);
+  try {
+    await work();
+    log(`${title}: command completed`, 'success');
+    toast(`${title} sent successfully`);
+  } catch (error) {
+    log(`${title}: ${error.message || error}`, 'error');
+    toast(`${title}: ${error.message || error}`, true);
+  } finally {
+    setBusy(false);
+  }
+}
+
+function onDisconnect() {
+  state.characteristic = null;
+  state.notifications = false;
+  state.busy = false;
+  updateUi();
+  log('Bluetooth device disconnected', 'info');
+}
+
+async function connectClock() {
+  if (connected()) return;
+  if (!navigator.bluetooth) {
+    toast('Web Bluetooth is unavailable in this browser. Use Chrome/Edge on desktop or Chrome on Android.', true);
+    return;
+  }
+  if (!window.isSecureContext) {
+    toast('Web Bluetooth requires HTTPS or localhost.', true);
+    return;
+  }
+  if (state.busy) return;
+  setBusy(true);
+  try {
+    // The original XLY95 page matches NRF_ names and requests this exact service.
+    const options = $('allDevices').checked
+      ? {acceptAllDevices: true, optionalServices: [SERVICE_UUID]}
+      : {filters: [{namePrefix: 'NRF_'}], optionalServices: [SERVICE_UUID]};
+    const device = await navigator.bluetooth.requestDevice(options);
+    state.device = device;
+    state.device.addEventListener('gattserverdisconnected', onDisconnect);
+    log(`Selected ${device.name || 'unnamed BLE device'}`);
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    state.characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+    try {
+      await state.characteristic.startNotifications();
+      state.notifications = true;
+      state.characteristic.addEventListener('characteristicvaluechanged', evt => {
+        const data = evt.target.value;
+        const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+        log(`RX ${bytesToHex(bytes)}`);
+      });
+    } catch (error) {
+      log(`Notifications not enabled: ${error.message || error}. Other controls may still work.`);
+    }
+    log(`Connected to ${device.name || 'BLE clock'}; service and characteristic found`, 'success');
+    try {
+      await send(commandPacket(COMMAND.INFO), true);
+      log('Requested clock information (A9)');
+    } catch (error) {
+      log(`Information query failed: ${error.message || error}`);
+    }
+    toast('Your clock is connected!');
+  } catch (error) {
+    if (error.name === 'NotFoundError') log('No BLE device selected (or selection cancelled)');
+    else { log(`Connection failed: ${error.message || error}`, 'error'); toast(`Could not connect: ${error.message || error}`, true); }
+    if (state.device?.gatt?.connected) state.device.gatt.disconnect();
+    state.characteristic = null;
+  } finally {
+    setBusy(false);
+  }
+}
+
+function disconnectClock() {
+  if (state.busy) return;
+  if (state.device?.gatt?.connected) state.device.gatt.disconnect();
+  else onDisconnect();
+}
+
+async function send(packet, withResponse = true) {
+  if (!connected()) throw new Error('Clock is not connected');
+  const characteristic = state.characteristic;
+  if (withResponse) {
+    if (typeof characteristic.writeValueWithResponse === 'function') {
+      await characteristic.writeValueWithResponse(packet);
+    } else if (typeof characteristic.writeValue === 'function') {
+      await characteristic.writeValue(packet);
+    } else {
+      throw new Error('Device does not support acknowledged BLE writes');
+    }
+  } else if (typeof characteristic.writeValueWithoutResponse === 'function') {
+    await characteristic.writeValueWithoutResponse(packet);
+  } else {
+    await send(packet, true);
+  }
+}
+
+async function syncClock() {
+  await runAction('Time sync', async () => {
+    const packet = commandPacket(COMMAND.TIME, encodeTime());
+    await send(packet);
+    log(`TX A3 — current Unix time (4-byte big-endian)`);
+  });
+}
+async function switchMode(mode, label) {
+  await runAction(label, async () => {
+    await send(commandPacket(COMMAND.MODE, [mode]));
+    log(`TX AE ${mode.toString(16).padStart(2,'0').toUpperCase()}`);
+  });
+}
+
+function setTab(id) {
+  if (!$(id)) return;
+  for (const section of document.querySelectorAll('.tab-panel')) section.classList.toggle('hidden', section.id !== id);
+  for (const button of document.querySelectorAll('[data-tab]')) button.classList.toggle('active', button.dataset.tab === id);
+  const names = {overview:'Overview', studio:'Display studio', activity:'Activity log', guide:'Setup guide'};
+  $('crumb').textContent = names[id];
+  if (location.hash !== `#${id}`) history.replaceState(null, '', `#${id}`);
+}
+
+function getScreen() { return SCREEN_SIZES.find(x => x.id === $('screenSize').value) || SCREEN_SIZES[0]; }
+function roundedRect(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.min(r,w/2,h/2));
+}
+function fillTextFitted(ctx, text, centerX, y, desiredSize, maxWidth, weight = '800') {
+  let font = desiredSize;
+  do {
+    ctx.font = `${weight} ${font}px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif`;
+    if (ctx.measureText(text).width <= maxWidth || font <= 8) break;
+    font -= 1;
+  } while (font > 8);
+  ctx.textAlign = 'center';
+  ctx.fillText(text, centerX, y);
+}
+function drawClock(ctx, w, h) {
+  const portrait = w < h, accent = '#D55243', black = '#192334';
+  const title = $('headline').value.trim().toUpperCase() || 'YOUR CLOCK';
+  const footer = $('subtitle').value.trim().toUpperCase();
+  const now = new Date(); state.previewTime = now;
+  ctx.fillStyle = accent; ctx.fillRect(0,0,w,Math.max(5,h*.022));
+  ctx.fillStyle = black;
+  const side = portrait ? 8 : w*.066;
+  const topY = h*(portrait ? .16 : .17);
+  ctx.textAlign='left'; ctx.font=`800 ${Math.max(9,Math.round(h*(portrait?.039:.042)))}px Arial`;
+  fillTextFitted(ctx, title, w/2, topY, h*(portrait?.041:.047), w-side*2, '800');
+  ctx.fillStyle = accent;
+  ctx.fillRect(side, topY+9, w-2*side, Math.max(1,h*.004));
+  const timeString = new Intl.DateTimeFormat('en-AU', {
+    hour:'2-digit',minute:'2-digit',hour12:$('timeFormat').value === '12'
+  }).format(now).replace(/\s/g,' ').toUpperCase();
+  ctx.fillStyle = black;
+  fillTextFitted(ctx, timeString, w/2, h*(portrait?.52:.57), h*(portrait?.22:.275), w-side*1.6,'800');
+  const dateString = new Intl.DateTimeFormat('en-AU', {weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(now).toUpperCase();
+  ctx.fillStyle=accent;
+  fillTextFitted(ctx, dateString, w/2, h*(portrait?.66:.73), h*(portrait?.043:.051), w-side*1.5,'750');
+  ctx.fillStyle='#3D4650';
+  fillTextFitted(ctx, footer, w/2, h*(portrait?.84:.91), h*(portrait?.033:.033), w-side*1.8,'600');
+}
+function wrappedLines(ctx, text, maxWidth, maxLines = 4) {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    if (line && ctx.measureText(`${line} ${word}`).width > maxWidth) { lines.push(line); line=word; }
+    else line = line ? `${line} ${word}` : word;
+    if (lines.length >= maxLines) break;
+  }
+  if (line && lines.length < maxLines) lines.push(line);
+  return lines;
+}
+function drawMessage(ctx, w, h) {
+  const title = $('headline').value.trim() || 'A LITTLE REMINDER';
+  const body = $('subtitle').value.trim() || 'Make today count.';
+  const side = Math.max(10,w*.07);
+  ctx.fillStyle='#D55243'; ctx.fillRect(side,h*.13,w*.20,Math.max(4,h*.013));
+  ctx.textAlign='left';ctx.fillStyle='#273447';
+  ctx.font=`800 ${Math.max(10,Math.round(Math.min(w*.041,h*.058)))}px Arial`;
+  const label = title.toUpperCase();
+  fillTextFitted(ctx,label,w/2,h*.27,h*.056,w-side*2,'800');
+  const size=Math.max(13,Math.round(Math.min(w*.095,h*.16)));
+  ctx.font=`800 ${size}px Arial`;
+  const lines=wrappedLines(ctx,body,w-side*2,4);
+  const lineHeight = size*1.10;
+  const start = h*.56 - (lines.length-1)*lineHeight/2;
+  lines.forEach((line,i)=>{ctx.fillStyle='#172337';fillTextFitted(ctx,line,w/2,start+i*lineHeight,size,w-side*2,'800');});
+  ctx.fillStyle='#D55243';ctx.fillRect(side,h*.9,w-side*2,Math.max(3,h*.01));
+}
+function drawUploadedImage(ctx, w, h) {
+  const image=state.loadedImage;
+  if (!image) {
+    ctx.textAlign='center';ctx.fillStyle='#E7EBF0';
+    roundedRect(ctx,w*.32,h*.20,w*.36,h*.44,10);ctx.fill();
+    ctx.fillStyle='#8A9AAF';fillTextFitted(ctx,'UPLOAD AN IMAGE',w/2,h*.77,h*.053,w*.85,'700');
+    return;
+  }
+  const iw=image.naturalWidth, ih=image.naturalHeight;
+  const cover=$('imageFit').value==='cover';
+  const factor=cover?Math.max(w/iw,h/ih):Math.min(w/iw,h/ih);
+  const dw=iw*factor, dh=ih*factor;
+  ctx.drawImage(image,(w-dw)/2,(h-dh)/2,dw,dh);
+}
+
+function quantize(canvas, useDither) {
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const {width,height}=data;
+  const rgb=data.data;
+  const tri=$('colourMode').value==='tri';
+  const pattern=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+    const i=(y*width+x)*4;
+    const r=rgb[i],g=rgb[i+1],b=rgb[i+2];
+    const red=tri && r>160 && r>g && r>b;
+    const luminance=.299*r+.587*g+.114*b;
+    const delta=useDither?(pattern[(y%4)*4+(x%4)]-7.5)*8:0;
+    const v=red?[211,82,67]:(luminance>=140+delta?[255,255,255]:[19,29,42]);
+    rgb[i]=v[0];rgb[i+1]=v[1];rgb[i+2]=v[2];rgb[i+3]=255;
+  }
+  ctx.putImageData(data,0,0);
+}
+
+function renderPreview() {
+  const screen=getScreen();
+  const canvas=$('previewCanvas'); canvas.width=screen.width; canvas.height=screen.height;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,canvas.width,canvas.height);
+  const template=$('template').value;
+  if(template==='clock')drawClock(ctx,canvas.width,canvas.height);
+  else if(template==='message')drawMessage(ctx,canvas.width,canvas.height);
+  else drawUploadedImage(ctx,canvas.width,canvas.height);
+  quantize(canvas, template==='image' && $('imageDither').checked);
+  $('dimensionTag').textContent=`${screen.width} × ${screen.height} PX`;
+  $('redLegend').hidden=$('colourMode').value==='mono';
+  $('copyFields').classList.toggle('hidden',template==='image');
+  $('imageFields').classList.toggle('hidden',template!=='image');
+}
+
+async function loadImage(file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { toast('Please choose a supported image file',true);return; }
+  if (file.size > 15*1024*1024) { toast('Please use an image smaller than 15 MB',true);return; }
+  const url=URL.createObjectURL(file);
+  try {
+    const image=new Image();
+    await new Promise((resolve,reject)=>{
+      image.onload=resolve;image.onerror=()=>reject(new Error('Cannot read this image'));
+      image.src=url;
+    });
+    state.loadedImage=image;
+    log(`Loaded ${file.name} (${image.naturalWidth} × ${image.naturalHeight})`);
+    renderPreview();
+  } catch (e) { toast(e.message,true); }
+  finally { URL.revokeObjectURL(url); }
+}
+
+function downloadPng() {
+  const a=document.createElement('a');
+  a.href=$('previewCanvas').toDataURL('image/png');
+  a.download=`eink-${getScreen().width}x${getScreen().height}-${$('template').value}.png`;
+  document.body.appendChild(a);a.click();a.remove();
+  log('Exported current display as PNG');
+}
+
+function progress(percent,label){
+  $('transferStatus').hidden=false;
+  $('transferProgress').value=percent;
+  $('transferPct').textContent=`${Math.round(percent)}%`;
+  $('transferLabel').textContent=label;
+}
+async function uploadImage() {
+  if (!connected() || state.busy) return;
+  if ($('template').value==='image' && !state.loadedImage) {toast('Choose an image file first.',true);return;}
+  const {width,height}=getScreen();
+  if(!confirm(`Upload this ${width} × ${height} ${$('colourMode').value==='tri'?'three-colour':'black-and-white'} image?\n\nThe clock's current live display will be replaced by a static image until you switch it back.`)) return;
+  setBusy(true);
+  const started=performance.now();
+  try {
+    // Snapshot the preview exactly as seen.
+    const preview=$('previewCanvas');
+    const context=preview.getContext('2d',{willReadFrequently:true});
+    const packed=packImage(context.getImageData(0,0,width,height),$('colourMode').value==='tri');
+    const maxSize=Number($('packetSize').value);
+    const every=Number($('ackInterval').value)+1;
+    const planes=[{data:packed.mono,colour:'mono',label:'Black/white'}];
+    if(packed.red)planes.push({data:packed.red,colour:'red',label:'Red'});
+    const totalPackets=planes.reduce((s,p)=>s+Math.ceil(p.data.length/(maxSize-2)),0);
+    let packetNumber=0;
+    progress(0,'Preparing packets…');
+    log(`Transferring ${width}×${height}, ${packed.totalBytes} bytes, ${totalPackets} packets, write size ${maxSize}`);
+    for(const plane of planes){
+      for(const packet of imagePackets(plane.data,plane.colour,maxSize)){
+        // XLY95 sends batches of unacknowledged A1 writes, then a write with response.
+        const acknowledged=((packetNumber+1)%every===0)||(packetNumber===totalPackets-1);
+        await send(packet,acknowledged);
+        packetNumber++;
+        // Small gap makes short-MTU devices less susceptible to queue overflows.
+        if(!acknowledged)await delay(4);
+        if(packetNumber%16===0||packetNumber===totalPackets){
+          progress(packetNumber/totalPackets*97,`${plane.label}: packet ${packetNumber}/${totalPackets}`);
+          await delay(0); // yield to browser to update progress bar
+        }
+      }
+    }
+    progress(98,'Requesting e-paper refresh…');
+    await send(commandPacket(COMMAND.REFRESH));
+    progress(100,'Transfer complete — wait for the screen to refresh');
+    log(`Image transfer and refresh command completed in ${((performance.now()-started)/1000).toFixed(1)} seconds`,'success');
+    toast('Image sent. The e-paper display may take a little longer to refresh.');
+  } catch(e){
+    log(`Image upload failed after ${((performance.now()-started)/1000).toFixed(1)}s: ${e.message||e}`,'error');
+    progress($('transferProgress').value,'Transfer failed — lower packet size and try again');
+    toast(`Upload failed: ${e.message||e}`,true);
+  } finally {setBusy(false);}
+}
+
+function detectSupport(){
+  const banner=$('compatBanner');
+  const isAppleMobile=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  if(isAppleMobile){
+    banner.hidden=false;
+    banner.textContent='On iPhone/iPad, standard Safari and Chrome do not provide Web Bluetooth. You can design and download images here, but connect from Chrome/Edge on a computer or Chrome on Android.';
+  } else if(!navigator.bluetooth){
+    banner.hidden=false;
+    banner.textContent='This browser does not expose Web Bluetooth. Use Chrome or Edge on a desktop, or Chrome on Android, over HTTPS or localhost. Image design still works here.';
+  } else if(!window.isSecureContext){
+    banner.hidden=false;
+    banner.textContent='Bluetooth requires a secure HTTPS or localhost address. Your image designer remains available.';
+  }
+}
+
+function init(){
+  const today=new Intl.DateTimeFormat('en-AU',{day:'numeric',month:'short',year:'numeric'}).format(new Date()).toUpperCase();
+  $('todayTag').textContent=today;
+  detectSupport();
+  for(const btn of document.querySelectorAll('[data-tab]'))btn.addEventListener('click',()=>setTab(btn.dataset.tab));
+  for(const btn of document.querySelectorAll('[data-go]'))btn.addEventListener('click',()=>setTab(btn.dataset.go));
+  for(const btn of document.querySelectorAll('[data-design]'))btn.addEventListener('click',()=>{
+    $('template').value=btn.dataset.design;setTab('studio');renderPreview();
+  });
+  $('mainConnect').addEventListener('click', connectClock);
+  $('topConnect').addEventListener('click',()=>connected()?disconnectClock():connectClock());
+  $('disconnectBtn').addEventListener('click',disconnectClock);
+  $('syncTime').addEventListener('click',syncClock);
+  $('clockMode').addEventListener('click',()=>switchMode(1,'Clock mode'));
+  $('calendarMode').addEventListener('click',()=>switchMode(2,'Calendar mode'));
+  $('sendImage').addEventListener('click',uploadImage);
+  $('downloadPng').addEventListener('click',downloadPng);
+  $('clearLog').addEventListener('click',()=>{
+    $('logEntries').replaceChildren();state.logCount=0;$('logCount').textContent='0 events';log('Log cleared');
+  });
+  $('imageInput').addEventListener('change',e=>loadImage(e.target.files?.[0]));
+  ['template','screenSize','colourMode','headline','subtitle','timeFormat','imageFit','imageDither'].forEach(id=>{
+    $(id).addEventListener('input',renderPreview);
+  });
+  $('resetDesign').addEventListener('click',()=>{
+    $('template').value='clock';$('screenSize').value='4.2';$('colourMode').value='tri';
+    $('headline').value='SYDNEY TIME';$('subtitle').value='A GOOD DAY TO GET THINGS DONE';
+    $('timeFormat').value='24';$('imageFit').value='contain';$('imageDither').checked=true;
+    state.loadedImage=null;$('imageInput').value='';renderPreview();toast('Design reset');
+  });
+  // Preview updates while this page is open; image sent to clock remains static.
+  setInterval(()=>{if(!state.busy && $('template').value==='clock')renderPreview();},15000);
+  setTab(['overview','studio','activity','guide'].includes(location.hash.slice(1))?location.hash.slice(1):'overview');
+  renderPreview();updateUi();log('InkLink Studio ready. Awaiting BLE connection.');
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init, {once: true});
+} else {
+  init();
+}
+
+</script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#overview" aria-label="InkLink Studio home">
+        <span class="brand-mark"><span></span><span></span><span></span><span></span></span>
+        <span>inklink<span class="brand-dot">.</span><small>EPAPER STUDIO</small></span>
+      </a>
+      <div class="sidebar-label">WORKSPACE</div>
+      <nav class="nav" aria-label="App sections">
+        <button class="nav-link active" data-tab="overview"><span class="nav-ico">◫</span> Overview</button>
+        <button class="nav-link" data-tab="studio"><span class="nav-ico">▣</span> Display studio</button>
+        <button class="nav-link" data-tab="activity"><span class="nav-ico">≡</span> Activity log</button>
+        <button class="nav-link" data-tab="guide"><span class="nav-ico">?</span> Setup guide</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="side-note"><span class="tiny-dot"></span> Local Bluetooth connection<br><span class="muted">No account or cloud required</span></div>
+        <div class="version">BETA · v1.0</div>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb">WORKSPACE <span>/</span> <strong id="crumb">Overview</strong></div>
+        <div class="top-actions"><span id="connectionPill" class="pill disconnected"><span class="pill-dot"></span> Disconnected</span><button id="topConnect" class="button button-primary button-small">Connect clock <span aria-hidden="true">↗</span></button></div>
+      </header>
+
+      <div class="content">
+        <section class="tab-panel" id="overview" aria-labelledby="overviewTitle">
+          <div class="page-heading"><div><div class="eyebrow">EPAPER CONTROL CENTRE</div><h1 id="overviewTitle">Your clock, your canvas<span class="accent">.</span></h1><p>Connect your XLY95-compatible e-paper clock and make it your own.</p></div><div class="date-tag" id="todayTag">—</div></div>
+          <div id="compatBanner" class="notice" hidden role="status"></div>
+          <div class="hero-grid">
+            <article class="card connect-card">
+              <div class="card-heading"><span class="card-icon" aria-hidden="true">↗</span><div><h2>Bluetooth connection</h2><p>Pair securely with your clock</p></div></div>
+              <div class="device-surface"><div class="device-picture" aria-hidden="true"><div class="device-screen">14<span class="colon">:</span>49<small>WED 14 OCT</small></div></div><div class="device-details"><span class="label-muted">DEVICE</span><strong id="deviceName">No clock connected</strong><span id="deviceHint">Looking for nearby NRF_ devices</span></div></div>
+              <div class="connect-controls"><button id="mainConnect" class="button button-primary">Connect via Bluetooth <span aria-hidden="true">↗</span></button><button id="disconnectBtn" class="button button-secondary" disabled>Disconnect</button></div>
+              <div class="form-row compact"><label class="checkbox-label"><input type="checkbox" id="allDevices"> Show all nearby Bluetooth devices</label><span class="tip" title="The original website selects devices beginning with NRF_. Tick this only if the device is missing.">ⓘ</span></div>
+              <p class="fineprint">A browser permission prompt will appear. The clock must be powered on, nearby, and disconnected from other apps.</p>
+            </article>
+            <article class="card quick-card">
+              <div class="card-heading"><span class="card-icon ink" aria-hidden="true">⌘</span><div><h2>Quick controls</h2><p>Common actions in one place</p></div></div>
+              <button id="syncTime" class="quick-action" data-requires-connection disabled><span class="action-icon">◷</span><span><strong>Sync date &amp; time</strong><small>Use your computer's current time</small></span><span class="chevron">→</span></button>
+              <button id="clockMode" class="quick-action" data-requires-connection disabled><span class="action-icon">◫</span><span><strong>Clock mode</strong><small>Restore built-in live clock display</small></span><span class="chevron">→</span></button>
+              <button id="calendarMode" class="quick-action" data-requires-connection disabled><span class="action-icon">▦</span><span><strong>Calendar mode</strong><small>Switch to built-in calendar</small></span><span class="chevron">→</span></button>
+              <div class="quick-help">Built-in clock/calendar text depends on the device firmware. Use Display studio for your own English design.</div>
+            </article>
+          </div>
+          <div class="section-header"><div><h2>Make something personal</h2><p>Design a beautiful e-paper screen in minutes.</p></div><button class="button button-outline" data-go="studio">Open display studio →</button></div>
+          <div class="feature-grid">
+            <button class="feature-card" data-design="clock"><div class="feature-illustration preview-mini"><span class="mini-top">SYDNEY TIME</span><strong>14:49</strong><span class="mini-bottom">WEDNESDAY, 14 OCTOBER</span></div><strong>English clock face</strong><small>A clean date-and-time snapshot</small></button>
+            <button class="feature-card" data-design="message"><div class="feature-illustration message-mini"><span class="mini-top">A LITTLE REMINDER</span><strong>Make<br>today count<span>.</span></strong></div><strong>Message board</strong><small>Quotes, reminders and notes</small></button>
+            <button class="feature-card" data-design="image"><div class="feature-illustration upload-mini"><span>＋</span><strong>YOUR IMAGE</strong></div><strong>Upload an image</strong><small>Optimised for e-paper</small></button>
+          </div>
+        </section>
+
+        <section class="tab-panel hidden" id="studio" aria-labelledby="studioTitle">
+          <div class="page-heading"><div><div class="eyebrow">DISPLAY DESIGNER</div><h1 id="studioTitle">Build your display<span class="accent">.</span></h1><p>Prepare a custom screen and send it directly to your e-paper clock.</p></div><span class="date-tag">IMAGE STUDIO</span></div>
+          <div class="studio-layout">
+            <div class="studio-settings">
+              <article class="card settings-card"><div class="card-heading"><span class="card-icon">✎</span><div><h2>Design settings</h2><p>Choose what appears on screen</p></div></div>
+                <label for="template" class="field-label">Design type</label><select id="template" class="field"><option value="clock">English clock face</option><option value="message">Text / message board</option><option value="image">Uploaded image</option></select>
+                <label for="screenSize" class="field-label">Display size</label><select id="screenSize" class="field"><option value="4.2">4.2″ — 400 × 300 (likely yours)</option><option value="2.13">2.13″ — 122 × 250</option><option value="7.5">7.5″ — 800 × 480</option></select>
+                <label for="colourMode" class="field-label">E-paper colour mode</label><select id="colourMode" class="field"><option value="tri">Black / white / red</option><option value="mono">Black / white</option></select><div class="form-row compact"><label class="checkbox-label"><input type="checkbox" id="imageDither" checked> Dither uploaded images for e-paper</label></div>
+                <div id="copyFields"><label for="headline" class="field-label">Heading</label><input id="headline" class="field" maxlength="60" value="SYDNEY TIME"><label for="subtitle" class="field-label">Footer text</label><input id="subtitle" class="field" maxlength="90" value="A GOOD DAY TO GET THINGS DONE"><label for="timeFormat" class="field-label">Time format</label><select id="timeFormat" class="field"><option value="24">24-hour</option><option value="12">12-hour (AM/PM)</option></select></div>
+                <div id="imageFields" class="hidden"><label for="imageInput" class="field-label">Image file</label><input id="imageInput" type="file" accept="image/*" class="field file-field"><label for="imageFit" class="field-label">Image fit</label><select id="imageFit" class="field"><option value="contain">Fit entire image</option><option value="cover">Fill display (crop edges)</option></select><p class="fineprint">Image stays in your browser. JPEG, PNG and other supported image formats are converted locally.</p></div>
+                <button id="resetDesign" class="button button-secondary button-full">Reset design</button>
+              </article>
+              <article class="card settings-card transfer-card"><div class="card-heading"><span class="card-icon ink">⇅</span><div><h2>Transfer settings</h2><p>Advanced Bluetooth options</p></div></div><label for="packetSize" class="field-label">Maximum bytes per BLE write</label><select id="packetSize" class="field"><option value="20">20 bytes — safest / slower</option><option value="60">60 bytes — faster</option><option value="120">120 bytes — faster</option><option value="180">180 bytes — fastest / device-dependent</option></select><label for="ackInterval" class="field-label">Acknowledged write interval</label><select id="ackInterval" class="field"><option value="1">Every packet — reliable / slow</option><option value="5" selected>Every 6th packet (XLY95 style)</option><option value="10">Every 11th packet</option></select><p class="fineprint">If an upload fails, select 20 bytes and acknowledge every packet. For reliability, try the smallest working size first.</p></article>
+            </div>
+            <article class="card preview-card"><div class="preview-header"><div><div class="eyebrow">LIVE DESIGN PREVIEW</div><h2>Your e-paper canvas</h2></div><span class="chip" id="dimensionTag">400 × 300 PX</span></div>
+              <div class="preview-stage"><div class="epaper-device"><div class="epaper-surface"><canvas id="previewCanvas" width="400" height="300" aria-label="Preview of image that will be sent to clock"></canvas></div></div></div>
+              <div class="preview-caption"><span>● Black</span><span>● White</span><span id="redLegend">● Red</span><span class="caption-right">Rasterised preview</span></div>
+              <div class="snapshot-note"><strong>Important:</strong> An uploaded clock design is a static snapshot; it will not tick after you close the app. To restore the device's live clock, use <em>Clock mode</em> under Overview.</div>
+              <div class="transfer-status" id="transferStatus" hidden><div class="progress-meta"><strong id="transferLabel">Preparing image…</strong><span id="transferPct">0%</span></div><progress id="transferProgress" value="0" max="100"></progress></div>
+              <div class="preview-actions"><button id="downloadPng" class="button button-secondary">↓ Download PNG</button><button id="sendImage" class="button button-primary" data-requires-connection disabled>Send to clock <span aria-hidden="true">↗</span></button></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="tab-panel hidden" id="activity" aria-labelledby="activityTitle"><div class="page-heading"><div><div class="eyebrow">BLUETOOTH DIAGNOSTICS</div><h1 id="activityTitle">Activity log<span class="accent">.</span></h1><p>Bluetooth status, outgoing commands and incoming notifications.</p></div><button id="clearLog" class="button button-outline">Clear log</button></div><article class="card log-card"><div class="log-head"><span>CONNECTION EVENTS</span><span id="logCount">0 events</span></div><div id="logEntries" class="log-entries" role="log" aria-live="polite"></div></article><p class="log-advice">Tip: Share these event messages (without personal details) when diagnosing connection and transfer errors. Packet acknowledgements do not necessarily guarantee that the screen has refreshed.</p></section>
+
+        <section class="tab-panel hidden" id="guide" aria-labelledby="guideTitle"><div class="page-heading"><div><div class="eyebrow">GETTING STARTED</div><h1 id="guideTitle">Setup guide<span class="accent">.</span></h1><p>Everything you need for your first connection.</p></div></div>
+          <div class="guide-grid"><article class="card guide-card"><span class="step-no">01</span><h2>Use a supported browser</h2><p>Use Google Chrome or Microsoft Edge on a computer, or Chrome on Android. Web Bluetooth is not supported by standard Safari on iPhone. Open this site via HTTPS or localhost.</p></article><article class="card guide-card"><span class="step-no">02</span><h2>Connect to your clock</h2><p>Turn the clock on, close other apps connected to it, select <strong>Connect clock</strong>, then choose the device beginning with <code>NRF_</code>.</p></article><article class="card guide-card"><span class="step-no">03</span><h2>Try a safe command</h2><p>Once connected, try <strong>Sync date & time</strong>. Use <strong>Clock mode</strong> to restore the built-in updating display, or <strong>Calendar mode</strong> for its calendar.</p></article><article class="card guide-card"><span class="step-no">04</span><h2>Send your first image</h2><p>Open <strong>Display studio</strong>, verify the screen dimensions and colour mode, review the preview, and select <strong>Send to clock</strong>. Give the e-paper display time to refresh.</p></article></div>
+          <article class="card guide-note"><h2>About compatibility</h2><p>This app targets the observable BLE protocol used by <a href="https://xly95.github.io/" target="_blank" rel="noopener noreferrer">XLY95's original configuration site</a>. The hardware variant has not yet been physically tested. All commands are configuration/display commands; there is no firmware flashing or device erasure.</p><p>Device sizes from the original JavaScript include 122 × 250, 400 × 300 and 800 × 480. The 400 × 300 setting is an educated guess for the photographed clock and should be verified in the original site.</p><p>For source code and deployment steps, see the included README.</p></article>
+        </section>
+        <footer class="footer"><span>InkLink Studio · Community-built companion for XLY95-compatible EPD clocks</span><span>Private by design · BLE stays in this browser</span></footer>
+      </div>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
