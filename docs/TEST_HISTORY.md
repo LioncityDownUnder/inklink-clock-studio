@@ -470,6 +470,14 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next:** Record current clock behaviour: does 23:12 remain static; does clock/calendar restoration via earlier working controls operate after image mode. Study XLY95 clear/refresh paths and generate a higher-contrast / larger footer design offline. No BLE writes to diagnose ghosting unless separately agreed.
 
+## Test AI — persistent ghosting confirmed after waiting (14 October 2026)
+
+User reported that the original Chinese clock digits/labels **remain visibly ghosted after several minutes** following the first successful English 400×300 upload (Test AH). This excludes an explanation based solely on a slow visible post-refresh settling period. The English design is physically rendered, but not cleanly erased against the prior image. No additional BLE write was attempted in this follow-up.
+
+Read-only upstream investigation: XLY95 `index.html` contains `clearScreen(cmd)` which calls `triggerEpdCmd('00'+cmd)` followed by `triggerEpdCmd('01')`. The helper argument is unspecified, and no actual use of this function was located in the inspected source. **Do not invent an argument or send clear/refresh commands speculatively.** The source also has `clear_canvas()`, which only whitens the webpage canvas and does NOT clear physical e-paper.
+
+Possible explanations include incomplete erasure/refresh waveform or residual image persistence when changing from built-in clock to custom image; neither is verified. Next: read-only research into precise driver/full refresh and safe recovery, then perhaps redesign the tiny footer for legibility. No more physical writes without a new user-approved test.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
