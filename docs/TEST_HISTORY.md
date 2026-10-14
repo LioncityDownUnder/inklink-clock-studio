@@ -512,6 +512,16 @@ Implemented `src/clock-typography.mjs` and checkbox `High-contrast English clock
 
 **Next:** keep clean clock mode; investigate verified full-screen erase/refresh from actual firmware/controller evidence before further physical image experiments. Do not ask user to repeat successful preview test.
 
+## Observation AO — Built-in clock displays battery, temperature and THREE cycling clock layouts
+
+**14 October 2026 — new user-reported physical clock observations.** The original Chinese firmware Clock mode visibly shows **battery level** and **temperature**. User suspects built-in temperature sensor, but its physical source (onboard sensor vs BLE/external measurement, and ambient vs electronics temperature) is **not yet verified**. Battery indicator may be a firmware estimate; calibrated capacity or BLE-readable battery service is **not confirmed**.
+
+The user's built-in **Clock mode has THREE distinct presentation styles**, and **each subsequent press of the Clock mode control cycles to the next style**. InkLink currently sends the same RXTX `E1 02` followed by `E2` for each Clock mode press. The user-observed cycling behaviour is device-firmware statefulness, not a new three-value command protocol. Do not relabel the button as selecting one fixed style, and do not assume the app can query which style is active.
+
+**Implications:** A future *native English live clock* would ideally preserve or expose real-time battery level and temperature. However, the custom uploaded English image remains static and **InkLink has not established BLE telemetry reads** for either measurement. These features cannot honestly be presented as available English telemetry until verified. Consider user photos of all three styles and controlled, read-only BLE characteristic/service discovery before building telemetry.
+
+**App text updated:** Overview Clock-mode help now states repeated presses cycle three observed layouts and notes firmware-native temperature and battery indicators. This is documentation/UX only, with NO Bluetooth writes or changes to command payloads.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
