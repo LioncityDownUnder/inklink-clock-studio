@@ -337,6 +337,17 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 **Next:** user checks offline simulator in Android Chrome, explores slower packet scenarios and reports its output. Follow with source analysis of refresh/recovery and BLE write capability before any supervised image upload.
 
 
+## Test record R — Android Chrome offline simulator verified (both scenarios)
+
+**Date/time:** 14 October 2026 ~21:26 Sydney. User provided two screenshots of the InkLink Display Designer simulator in Android Chrome; no clock image packets were transmitted.
+
+- **Fast hypothetical case:** MTU 512, 200 ms/packet, 55-second link lifetime, 126 packets, 25.2 s estimated image writes + assumed 4 s refresh = **29.2 seconds**, **126/126** complete, outcome **fits assumptions**.
+- **Slow hypothetical case:** MTU 512, 600 ms/packet, same 55-second lifetime, 126 packets, 75.6 s estimated image writes + assumed 4 s refresh = **79.6 seconds**, estimated **91/126** packets before interruption, outcome **interrupted during image**.
+- Both screenshots agree with the simulator's expected arithmetic and demonstrate working mobile UI. Timing values and the 55-second disconnect window are **user-selected assumptions**, not measurements of real Chrome BLE transfer throughput or a proven fixed firmware timeout.
+- Confirmed: client-side simulator behaves as expected in Android Chrome. **Not confirmed:** Chrome's effective MTU, 244-byte write acceptance, actual image-transfer duration, safe interruption recovery, physical rendering, EPD refresh behavior.
+
+**Next engineering action:** compare the exact XLY95 upload/refresh sequence, establish a safe recovery/clock restoration procedure and browser write-length constraints. Preserve the NRF- image-upload block until a controlled test is fully specified.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
