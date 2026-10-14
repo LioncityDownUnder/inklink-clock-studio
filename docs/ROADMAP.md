@@ -123,6 +123,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Test AR (15 Oct 2026, real BLE):** 4 GATT services observed; Battery Service 180F / Battery Level 2A19 reads **0%** (not validated charge level; clock physically showed 3.9V previously). No standard 181A environmental sensing observed. Proprietary 221F service with 331F **read, write, notify** is a candidate for controlled investigation; other proprietary 1F10/1F1F write-only and custom 13187b10/4b646063 write-notify. Avoid inferred meanings. Next: inspect original XLY95 code for 221F/331F use; consider opt-in single read with bounded hex capture, no speculative BLE write probes.
 
+**Checkpoint AS:** Added user-consented **single raw 331F characteristic read** (221F service, up to 64 displayed HEX bytes; one per page session; no automatic reads/writes/notifications, 7 additional mocked tests, expected 90 total). Next: connect NRF- Safe mode, manually run raw read after reviewing proprietary-read caution, and share exact output. Do not decode as battery/temperature without independent protocol evidence; do not send speculative BLE commands.
+
 ## P2 — enhanced clock features
 
 - **PENDING:** English screen layouts suited to actual physical resolution and red-plane capabilities.
