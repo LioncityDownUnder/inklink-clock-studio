@@ -38,6 +38,16 @@
 - Prefer reproducing known XLY95 transfer with independently checked byte vectors. The 244-byte write limit cannot be conclusively checked without an actual write.
 - Record each observable outcome; if not successful, keep NRF- upload disabled.
 
+## Reviewed adapter checkpoint — not activated (14 October 2026)
+
+An isolated `src/ble-guarded-writer.mjs` now provides a fail-closed wrapper around acknowledged EPD characteristic writes. It checks: `write` characteristic capability; connected GATT link; foreground visibility; abort signal; elapsed operation deadline; serialized writes; and the same conditions **after** each resolved write. A rejected write permanently blocks subsequent sends. There is no automatic reconnect, retry, image resume, refresh, or rollback. Eight mock tests cover these behaviours.
+
+**Not wired to `src/app.mjs`** and cannot send clock image data in the current deployed UI. The existing `NRF-` upload control stays disabled. The wrapper is an engineering review artifact, NOT a hardware-ready feature.
+
+**Important in-flight write limitation:** A browser `writeValueWithResponse` promise may remain pending when Bluetooth communication stalls. A local deadline/cancel request cannot force cancellation of that in-flight BLE operation; the wrapper checks safety again only if the promise resolves/rejects. An actual hardware implementation must account for unresolved promises, avoid concurrent attempts, and never issue a refresh under uncertainty. Promise timeout/race alone must not be described as cancellation.
+
+**Unresolved prerequisites:** actual Chrome 244-byte acceptance, source-specific incomplete-image recovery (not verified), panel driver identity, and separate informed user authorization. Before enabling uploads, perform a threat/failure review for stalled pending writes, display/page backgrounding, and clock restoration—not merely passing mock tests.
+
 ## Current next task
 
 Have the user connect in Android Chrome and click **Inspect connected EPD capability — no writes**. This will establish whether acknowledged-write capability is exposed; it cannot establish real write-length support. From there design a gated, user-confirmed hardware experiment if desired, with the above safeguards.
