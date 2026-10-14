@@ -65,6 +65,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Test AI — persistent ghosting after several minutes (14 October 2026):** physical English image remains legible, but old Chinese clock digits still visible behind it; issue persists beyond normal waiting. Research waveform/erasure and the undocumented XLY95 `clearScreen(cmd)` safely offline. Do not send an assumed clear argument or reupload blindly. Improve footer text sizing in a later deliberate update.
 
+**Test AJ — ghosting distribution observed:** user reports ghosting equally across entire display. Focus follow-up on global erase / waveform / refresh, without asserting root cause or sending speculative BLE clears; optionally prepare offline larger-text design. No new hardware write approved.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
