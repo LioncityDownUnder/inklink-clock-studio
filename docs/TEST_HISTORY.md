@@ -460,6 +460,16 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **14 October 2026.** User explicitly approved proceeding toward the first real image upload. Added a separate one-attempt, user-confirmed interface for 400×300 NRF- images, with connected-device check, risk acknowledgement, typed confirmation, native confirmation, sequential acknowledged writes, progress log and stop request. On failure no refresh, retry or automatic restoration. Four integration tests use fake characteristics (72 automated tests total). The production code deployed successfully, but **no hardware image-transfer result has been reported**. Chrome 244-byte write acceptance and interrupted-image recovery remain uncertain. Await the user's deliberate action and physical observation.
 
+## Test AH — FIRST PHYSICAL NRF- IMAGE UPLOAD SUCCEEDED (with ghosting)
+
+**14 October 2026 ~23:12–23:13 Sydney. USER SCREENSHOTS ARE DEFINITIVE EVIDENCE.** Android Chrome InkLink's single-attempt live image upload reported all **126/126** image packets acknowledged, EPD refresh write acknowledged at **23:12:56**, and **9.3 seconds** total until refresh acknowledgement (not necessarily full pigment settling). Physical photograph shows the new **400×300 English tri-colour face rendered on the clock**: "SYDNEY TIME" heading, black **23:12**, red "WEDNESDAY 14 OCTOBER 2026", footer text visible. This confirms real NRF- BLE EPD image transfers, and Chrome accepted the 244-byte characteristic image packets on this session. This is the first proven physical image rendering, not just a simulator.
+
+**ISSUES VISIBLE IN PHYSICAL PHOTO:** substantial faint original Chinese clock numerals and footer remain behind new English design (**ghosting/incomplete old-image erasure**); bottom English slogan looks small/pixelated or partially broken. New face is a **STATIC 23:12 snapshot**, not a live ticking clock. Do not claim full panel clearing or long-term stability. Do not repeatedly reupload to troubleshoot without weighing e-paper wear/refresh behaviour and obtaining user approval.
+
+**Upstream discovery for next R&D:** original XLY95 main `index.html` defines `clearScreen(cmd)` which calls `triggerEpdCmd('00'+cmd)` then `triggerEpdCmd('01')`. It also uses EPD `01` after full-image upload. **ClearScreen's permitted argument and safety/driver effects are not established on this physical clock**; do not run it without source analysis and fresh explicit user approval. Investigate full refresh / clearing, pixel contrast, dither/text legibility offline first.
+
+**Next:** Record current clock behaviour: does 23:12 remain static; does clock/calendar restoration via earlier working controls operate after image mode. Study XLY95 clear/refresh paths and generate a higher-contrast / larger footer design offline. No BLE writes to diagnose ghosting unless separately agreed.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
