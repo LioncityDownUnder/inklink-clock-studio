@@ -1,5 +1,7 @@
 # Roadmap and next-session checklist
 
+**Read-only capability CHECK PASSED on Android Chrome (Test V, 14 Oct ~22:03):** EPD write property=true, acknowledged-write API=true, legacy-write API=true, write-without-response=false. User screenshot validates in-browser connection capabilities; **no actual write, negotiated Chrome MTU or 244-byte acceptance** has been tested. Next evaluate a deliberate reversible full-image trial with clear stop/recovery process; no dummy writes, no automatic resume, keep NRF- upload disabled until explicit consent.
+
 **P1 read-only Chrome capability diagnostic implemented:** `src/ble-capabilities.mjs` checks existing EPD characteristic properties and browser acknowledged-write API, without a GATT read/write. Four tests added; intended 34 total. New Display Designer button reports that Chrome's negotiated MTU and acceptance of a 244-byte packet cannot be established without a real write. Next: user verifies read-only report; complete risk-reviewed recovery plan before considering any supervised image upload.
 
 **Browser preflight milestone CONFIRMED (Test T, 14 Oct 2026 ~21:41):** user screenshot shows offline audit PASS in Android Chrome for 126 ordered packets/30,000 image bytes/BW→red→300ms→EPD refresh. Simulator 29.2s under assumed MTU 512, 200ms/packet and 55s lifetime. No BLE writes were sent. **Next P1:** establish actual Chrome GATT write size, source-based partial-frame recovery and safe restoration; do not enable physical upload without deliberate supervised approval.
