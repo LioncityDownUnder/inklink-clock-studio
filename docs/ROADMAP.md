@@ -12,15 +12,15 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 - **DONE (code):** request EPD service `13187b10...` and RXTX service `1F10` for `NRF-`, with their respective characteristics.
 - **DONE (code):** Safe connection option, connection-stage log, no automatic commands in safe mode, retry discovery, explicit notifications.
 - **DONE (hardware):** both NRF- EPD and RXTX services/characteristics discovered successfully; first 1.5-second idle connection check passed in Android Chrome on 14 Oct 2026 ~19:01.
-- **DONE (hardware, observation only):** a later physical BLE session ran for **33.5 seconds after device selection**, with notifications enabled during the session.
-- **OPEN ISSUE (hardware):** GATT disconnected unexpectedly at 33.5 seconds. A 60-second Safe-mode idle baseline **without notifications** is needed to isolate whether the drop depends on notification subscription.
+- **DONE (hardware, observation only):** two physical BLE sessions: **33.5 seconds** after selection with notifications, **57.2 seconds** in Safe mode without notifications or commands; both unexpectedly disconnected.
+- **OPEN ISSUE (hardware):** GATT disconnected unexpectedly **both with notifications enabled (33.5s after selection) and with Safe mode/no notifications/no commands (57.2s)**. The latter proves notifications aren't required for the disconnect. Cause remains undetermined; compare to XLY95 on the same phone.
 - **DONE (hardware):** EPD `startNotifications()` succeeded at 19:21:57 on Android Chrome. No incoming notification payload has been observed.
-- **OPEN ISSUE:** session disconnected at 19:22:07, around 10 seconds after notification subscription; **causal connection unproven**.
+- **OPEN ISSUE:** session disconnected at 19:22:07, around 10 seconds after notification subscription; a separate no-notification baseline disconnected after 57.2 seconds. **Notification is not required for the disconnect; causal role unproven**.
 - **PENDING (hardware):** test whether intermittent `gatt.connect()` NetworkError recurs; compare with XLY95 on same phone.
 
-**Next user action:** Reconnect with **Safe connection** to [live InkLink](https://lioncitydownunder.github.io/inklink-clock-studio/) in Android Chrome, close other BLE apps/tabs, and **do nothing for 60 seconds** (do NOT enable notifications). Report when/if disconnected. Compare to the 33.5-second notification-enabled session before additional writes.
+**Next user action:** Disconnect InkLink, open the original [XLY95](https://xly95.github.io/) in the **same Android Chrome** phone, connect the same clock, leave page foreground **90–120 seconds with no user-initiated clock commands**, and report connection duration/disconnect/reconnect. If original is stable, inspect its connection and recovery logic; if not, focus on clock/Android behaviour. No speculative keepalive writes.
 
-**Next acceptance gate:** distinguish normal idle disconnect vs notification-linked disconnect using a controlled 60-second idle baseline. The two-service discovery and notification-subscription gates have already passed, but reliable long-term connection is unproven (see Test records G/H in [TEST_HISTORY.md](TEST_HISTORY.md)).
+**Next acceptance gate:** determine whether original XLY95 also disconnects during a 90–120s foreground idle session. Notifications are **not necessary** for the InkLink disconnect (Test I). Dual-service discovery and subscription already passed, but sustained reliability is unproven (see records G–I in [TEST_HISTORY.md](TEST_HISTORY.md)).
 
 ## P0 — confirm non-destructive clock controls
 
