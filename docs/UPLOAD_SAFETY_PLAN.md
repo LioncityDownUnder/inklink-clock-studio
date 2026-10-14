@@ -1,5 +1,12 @@
 # NRF- first image upload: preflight and failure recovery
 
+## User decision and trial status — 14 October 2026
+
+User accepted the described risks to **prepare** a supervised first image upload, explicitly *not* to initiate data transmission now. The new `src/first-trial-readiness.mjs` produces an on-screen list of verified and unverified gates; the Studio button only reports the gates and makes zero BLE calls. Four new tests enforce `physicalUploadEnabled:false` and `approvedToSendNow:false`, even if every gate is satisfied.
+
+**No physical upload was performed or authorized for immediate execution.** Do not interpret mock checkbox consent as real-device consent. Before any separately confirmed transmission, surface unresolved Chrome 244-byte write compatibility and unproven interrupted buffer recovery, confirm a complete known-good image and maintain manual abort/no-blind-resume behavior.
+
+
 **Status:** Proposed procedure only, **not yet approved or executed** (14 October 2026). The NRF- image-upload action remains disabled. No test payloads have been transmitted.
 
 ## What has been verified
