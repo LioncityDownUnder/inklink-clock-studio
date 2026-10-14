@@ -69,6 +69,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Test AK — built-in Clock mode clears persistent ghosting (real hardware):** after English-image ghosting, user switched to Clock mode and Chinese clock physically appeared clean. The panel is capable of clean refresh; prioritize analyzing difference between built-in clock redraw and custom-image refresh rather than asserting damaged panel. This verifies recovery of clean normal mode after a **completed** image transfer, NOT interrupted-image rollback. Do not transmit undocumented `00+cmd` EPD clear codes.
 
+**Checkpoint AL (14 Oct 2026, ghosting research):** XLY95 full-frame image upload already uses EPD `01` after BW/red +300ms; standalone `clearScreen(cmd)` is defined **without a single call site** or known safe parameter, so DO NOT call it. RXTX Clock mode restores a clean display but firmware waveform sequence unknown from JS. No safe alternate clear operation yet. Next: identify controller/firmware or consult official driver behaviour; improve English text offline while preserving clean Clock mode.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
