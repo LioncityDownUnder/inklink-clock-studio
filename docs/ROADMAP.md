@@ -11,13 +11,14 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 - **DONE (code):** detect `NRF-` vs `NRF_` names and choose their separate XLY95 implementations.
 - **DONE (code):** request EPD service `13187b10...` and RXTX service `1F10` for `NRF-`, with their respective characteristics.
 - **DONE (code):** Safe connection option, connection-stage log, no automatic commands in safe mode, retry discovery, explicit notifications.
-- **PENDING (hardware):** both NRF- services and characteristics discover successfully, GATT remains connected for at least ten seconds.
-- **PENDING (hardware):** EPD notifications successfully start without unexpected disconnect.
+- **DONE (hardware):** both NRF- EPD and RXTX services/characteristics discovered successfully; first 1.5-second idle connection check passed in Android Chrome on 14 Oct 2026 ~19:01.
+- **PENDING (hardware):** demonstrate uninterrupted BLE connection for 10–15 seconds or longer (only 1.5 seconds explicitly verified so far).
+- **PENDING (hardware):** EPD notifications successfully start without unexpected disconnect (Safe mode intentionally did not enable them during the successful 19:01 connection test).
 - **PENDING (hardware):** test whether intermittent `gatt.connect()` NetworkError recurs; compare with XLY95 on same phone.
 
-**Next user action:** Disconnect XLY95 / nRF Connect, reload [live app](https://lioncitydownunder.github.io/inklink-clock-studio/) in Android Chrome, use **Safe connection**, connect the NRF- clock, and send **full Activity Log** through service discovery.
+**Next user action:** First connection is now verified. Keep/re-establish the Safe connection on [live app](https://lioncitydownunder.github.io/inklink-clock-studio/) in Android Chrome, wait 10–15 seconds, press **1. Enable notifications** and inspect log; if successful, test **Sync date & time** once and verify the physical clock. Keep XLY95/nRF Connect disconnected.
 
-**Done when:** verified logs show EPD and RXTX service/characteristic discovery and the clock remains connected. Record environment and result in [TEST_HISTORY.md](TEST_HISTORY.md).
+**Next acceptance gate:** confirmed 10+ second stability plus a successful notification subscription. The two-service discovery gate has already passed on physical hardware (see Test record G in [TEST_HISTORY.md](TEST_HISTORY.md)).
 
 ## P0 — confirm non-destructive clock controls
 
