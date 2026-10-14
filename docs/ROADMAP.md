@@ -115,6 +115,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 - **PENDING:** create browser-mocked GATT tests per profile, including missing service, notification failure, and disconnect during request.
 - **PENDING:** ensure README and old standalone HTML downloads are not mistaken for the GitHub Pages build. The deployed `src/` modules are authoritative.
 
+**Observation AO (14 October 2026):** physical built-in clock shows battery level + temperature, and the user reports three styles cycling with repeated Clock mode presses. InkLink RXTX `E1 02`+`E2` already triggers this behavior; no new protocol needed. UI help updated. For future live-English feature research: identify whether battery/temperature telemetry can be **read** via verified GATT, and obtain photos of three clock layouts. Do not claim sensor origin, state query, or available BLE temperature/battery values before testing. Offline uploaded English picture remains static.
+
 ## P2 — enhanced clock features
 
 - **PENDING:** English screen layouts suited to actual physical resolution and red-plane capabilities.
