@@ -2,7 +2,7 @@
 
 A browser-based, English-language control panel and image designer for desk clocks compatible with the [XLY95 BLE protocol](https://github.com/XLY95/xly95.github.io). Built with plain HTML, CSS and JavaScript; no dependencies or server-side account.
 
-> **Hardware-test beta.** Updated 14 October 2026: automated tests passed and **the corrected NRF- profile successfully discovered both EPD and RXTX services/characteristics on the real clock**. The user's Activity Log passed the initial 1.5-second stable-connection check. **Longer stability, notification subscription, time sync and mode changes still need physical verification.**
+> **Hardware-test beta.** Updated 14 October 2026: correct NRF- EPD/RXTX service discovery and **EPD notification subscription are confirmed on the physical clock**. However a later session **disconnected unexpectedly after 33.5s from BLE selection** (~10s after notifications were enabled). Cause unknown. Clock time sync, mode changes and long-term BLE reliability remain unverified.
 
 ## Start here / continuing in a new chat
 
@@ -14,7 +14,7 @@ A browser-based, English-language control panel and image designer for desk cloc
 - [Roadmap](docs/ROADMAP.md) — current priorities, acceptance criteria and later features.
 - [Instructions for AI coding assistants](AGENTS.md) — how to work safely in the repo and keep documentation updated.
 
-**Next physical checkpoint:** the correct dual-service BLE connection **succeeded on the physical clock at ~19:01 on 14 October 2026**. Next check 10–15 seconds of uninterrupted connection, **Enable notifications**, then **Sync date & time** and visually verify the screen. **NRF- image upload remains deliberately disabled.**
+**Next physical checkpoint:** connection and notifications succeeded on hardware. The latest Activity Log shows an **unexpected GATT disconnect after 33.5 seconds**. Next perform a **60-second Safe-mode idle connection test WITHOUT enabling notifications or pressing commands** to see whether the same timeout occurs. **NRF- image upload remains deliberately disabled.**
 
 
 ## Device compatibility
@@ -76,16 +76,17 @@ Open `http://localhost:8000` in desktop Chrome/Edge. All program assets are loca
 
 ## Next physical-device test (current checkpoint)
 
-**Already physically confirmed:** the user's Android Chrome Activity Log at 19:01 on 14 October showed the expected `NRF-` EPD and RXTX characteristics discovered, EPD `write`/`notify`, RXTX `write`, and `connected and stable` after an initial **1.5-second** idle test in Safe mode. No notifications or commands were sent.
+**Already physically verified:** EPD+RXTX service and characteristic discovery, EPD `write`/`notify` and RXTX `write` properties; the initial 1.5-second safe idle test; and explicit `startNotifications()` success at 19:21:57 on 14 October 2026.
 
-1. With XLY95/nRF Connect BLE sessions disconnected, reconnect to the `NRF-` clock in [live InkLink](https://lioncitydownunder.github.io/inklink-clock-studio/) (Safe connection checked), if needed.
-2. Observe whether the session remains connected for **10–15 seconds**.
-3. Press **1. Enable notifications** and inspect the log for success or error.
-4. If successful and still connected, press **Sync date & time** once. Inspect the **physical clock screen** for correct time and date, not just a success toast.
-5. Optionally test Clock and Calendar modes, one at a time. Record outcomes in [TEST_HISTORY.md](docs/TEST_HISTORY.md).
-6. **Do not upload custom images to NRF- clocks yet**: that format requires further work.
+**New blocker:** the notification-enabled session disconnected unexpectedly at 19:22:07, **33.5 seconds after selecting the device**, about 10 seconds after subscriptions succeeded. It is not known whether notifications caused the disconnect, or whether the device/Android stack times out near 30 seconds regardless.
 
-**Important:** An uploaded custom image is a **static bitmap** and won't update minute-by-minute autonomously. Automatic English clock faces need periodic updates or device firmware support.
+1. Close XLY95 and nRF Connect BLE sessions. Open [live InkLink](https://lioncitydownunder.github.io/inklink-clock-studio/) in Android Chrome, foreground and keep phone awake.
+2. Connect with **Safe connection checked**. **Do NOT enable notifications, sync time, change modes or send images**.
+3. Leave connected for **60 seconds**, and note if/when GATT disconnects. Capture full Activity Log or report still connected after 60 seconds.
+4. Compare to 33.5s notification-enabled session. If needed, compare idle behaviour with XLY95 on the same browser after disconnecting InkLink.
+5. Once stability is better understood, test `DD`/`E2` time sync and confirm actual physical display, then other controls one by one.
+
+See [TEST_HISTORY.md](docs/TEST_HISTORY.md) record H and [PROJECT_HANDOFF.md](docs/PROJECT_HANDOFF.md). **NRF- image upload remains disabled** pending distinct image-transfer protocol testing.
 
 ## Legacy `NRF_` protocol summary (NOT for the user's `NRF-` clock)
 
