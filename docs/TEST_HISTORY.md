@@ -448,6 +448,14 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Open concerns:** Android Chrome acceptance of 244-byte EPD writes remains unverified; clock firmware recovery from partial frame is unknown. Clock-mode command is not proven to roll back EPD RAM. A user-facing readiness report must not conflate willingness to prepare with consent to execute. Keep image send guarded.
 
+## Test AF — first physical-upload readiness review completed (NO device writes)
+
+**14 October 2026 ~23:01 Sydney.** User supplied screenshot of Android Chrome "Review hardware trial readiness — no writes". Report confirms **126 packets / 30,504 estimated characteristic bytes** and **PASS: Packet sequence audit**. It marks selected 400×300 profile, Chrome acknowledged EPD write interface, actual 244-byte characteristic acceptance, and interrupted-image recovery as UNVERIFIED *in this run*. No Bluetooth data sent; real image upload remains disabled.
+
+**Interpretation:** The acknowledged-write interface previously passed a separate **connected** Chrome test (Test V). Its "UNVERIFIED" status here reflects that this review did not have an active NRF- connection, not a regression. Physical panel active area measured ~84×62mm, strongly consistent with common 400×300 tri-colour panels, not independently identified by part number. Actual Chrome 244-byte acceptance and interrupted image-buffer recovery remain unknown.
+
+**Next:** before any user-confirmed physical image trial, present the real risks and require an explicit start action; do not represent passing a read-only checklist as authorizing image writes. No further identical offline readiness tests are necessary.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
