@@ -432,6 +432,16 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Crucial distinction:** warning threshold is **not** a radio write timeout, device acknowledgement failure, safe disconnection, image-buffer rollback or proof a pending browser promise can be terminated. Actual `NRF-` Send to clock is STILL DISABLED. User browser validation of the stall scenario pending.
 
+## Test AD — Android Chrome mock pending-write cancellation PASSED
+
+**Date/time:** 14 October 2026 at ~22:50 Australia/Sydney. User shared the complete text log from the deployed **MOCK MODE ONLY** 4.5-second stall test and pressed Cancel while packet 25 was pending.
+
+**Log evidence:** 22:50:04 mock started for 126 image packets, 22:50:05 reached 20/126, 22:50:06 warned `MOCK packet 25 still pending after 1.1s. This is NOT a confirmed timeout or cancelled write; please wait.`, 22:50:09 `MOCK pending packet 25 resolved`, then `stopped-incomplete-or-unknown — 24/126`, with final `MOCK stopped: Mock aborted after pending write`.
+
+**Observed PASS:** warning accurately distinguished a still-pending mock write from failure; cancellation did not force resolution of the in-flight operation; when it settled, the mock stopped, **did not count packet 25 as an acknowledged completion, did not start packet 26 and did not issue mock EPD refresh**. No Bluetooth image data was transmitted. Important distinction: `24/126 completed` is an *application acknowledged count*, not proof the peripheral did or did not receive an in-flight write in a real BLE session.
+
+**Next:** no need to repeat this mock. The remaining gate is an explicitly consented and risk-reviewed real image test with Chrome 244-byte write capacity and incomplete-frame recovery still unknown; live NRF- Send to Clock remains disabled.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
