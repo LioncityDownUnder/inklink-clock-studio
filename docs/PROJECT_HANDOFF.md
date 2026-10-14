@@ -1,5 +1,8 @@
 # Project handoff — InkLink Clock Studio
 
+> **Checkpoint AE (14 Oct 2026):** User explicitly accepted the *possibility* of a supervised first physical image upload and asked to **prepare** the trial, but did NOT authorize transmitting image data immediately. Added `src/first-trial-readiness.mjs`, four safety-gate tests (68 total expected), and Studio's **Review hardware trial readiness — no writes**. Readiness report identifies browser 244-byte acceptance and incomplete-image recovery as UNVERIFIED and will never enable actual upload. `NRF-` Send to Clock stays blocked; separate in-the-moment approval is required to attempt transmission. Next: validate displayed readiness review, obtain stronger recovery evidence, then consider explicit first-trial execution consent.
+
+
 > **CHECKPOINT AC — stalled write UX (14 Oct 2026):** Added pure `src/pending-write-monitor.mjs` and warning-only mock scenario (packet 25 intentionally pending 4.5s). UI displays 'still pending' after 1s but NEVER claims a browser GATT write was cancelled/failed. If user cancels, it waits until the fake in-flight write settles, then stops further writes and skips refresh. Four monitor tests plus two integration tests (expected total **64 tests**). No real BLE adapter import/image upload. Next: user confirms mock stall and cancellation UI works, then review residual risks and separately request informed authorization before any live transfer.
 
 
