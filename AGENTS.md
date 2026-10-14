@@ -1,5 +1,10 @@
 # Project instructions for AI coding assistants and future ChatGPT sessions
 
+## Checkpoint AC — stalled-write warning only
+
+`src/pending-write-monitor.mjs` and extra tests add a warning-only observer. Mock UI has 'Packet 25 stalls for 4.5 seconds'. It should show still-pending warning after ~1s. Cancel during the wait does not abort the pending write; further image packets and refresh are suppressed once it settles. NO real BLE image uploads. Warn that a JS timer cannot forcibly cancel `writeValueWithResponse` or recover a partial e-paper buffer. Next: verify mock stall case on Android Chrome and evaluate explicit informed hardware approval.
+
+
 ## Checkpoint AB — BLE adapter not yet activated
 
 The review-only `src/ble-guarded-writer.mjs` enforces acknowledged EPD property, connection, foreground visibility, cancellation, deadline, one in-flight write and fail-closed behaviour. Eight new tests, **58 total**, CI passing. **Do not import it into live upload without explicit separate user consent and failure/recovery review.** Abort/deadline cannot forcibly cancel a pending Chrome `writeValueWithResponse`. `src/app.mjs` continues to block NRF- image uploads. Next milestone: carefully design stalled-write UI and recovery boundaries, not more mock-success claims.
