@@ -2,6 +2,7 @@ import { createDashTransferPlan } from './dash-image.mjs';
 import { simulateDashTransfer } from './dash-simulator.mjs';
 import { auditDashSequence } from './dash-preflight.mjs';
 import { describeEpdWriteCapabilities } from './ble-capabilities.mjs';
+import { createUploadRehearsal } from './upload-rehearsal.mjs';
 import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex,
   DASH_EPD_SERVICE_UUID, DASH_EPD_CHARACTERISTIC_UUID, DASH_RXTX_SERVICE_UUID,
   DASH_RXTX_CHARACTERISTIC_UUID, encodeDashTime, encodeDashMode, DASH_REFRESH } from './protocol.mjs';
@@ -627,6 +628,26 @@ function simulateDashImageOffline() {
   }
 }
 
+function rehearseDashUpload() {
+  try {
+    const canvas=$('previewCanvas');
+    const pixels=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,canvas.width,canvas.height);
+    const plan=createDashTransferPlan(pixels);
+    const assumedMtu=Number($('simMtu').value);
+    const audit=auditDashSequence(plan,{attMtu:assumedMtu});
+    const check=createUploadRehearsal(plan,audit,{assumedMtu});
+    $('dashRehearsalSummary').textContent='DRY RUN ONLY — NO DEVICE WRITES. '+
+      (check.ready?'Packet plan is internally valid for the chosen MTU assumption. ':'Rehearsal blocked: '+check.reasons.join('; ')+'. ')+
+      check.steps.map((x,i)=>(i+1)+'. '+x).join(' ')+
+      ' Browser MTU/write success and rollback are NOT verified. Upload is NOT authorized.';
+    log('NRF- dry-run rehearsal '+(check.ready?'compiled':'blocked')+
+      '. '+plan.packetCount+' packets. No Bluetooth operations.');
+  } catch(e) {
+    $('dashRehearsalSummary').textContent='Dry-run rehearsal blocked: '+(e.message||e);
+    log('Dry-run rehearsal failed: '+(e.message||e),'error');
+  }
+}
+
 function progress(percent,label){
   $('transferStatus').hidden=false;
   $('transferProgress').value=percent;
@@ -733,6 +754,7 @@ function init(){
   $('inspectDash').addEventListener('click',inspectDashImageOffline);
   $('inspectBleCapacity').addEventListener('click',inspectBleCapabilities);
   $('simulateDash').addEventListener('click',simulateDashImageOffline);
+  $('rehearseDash').addEventListener('click',rehearseDashUpload);
   $('sendImage').addEventListener('click',uploadImage);
   $('downloadPng').addEventListener('click',downloadPng);
   $('clearLog').addEventListener('click',()=>{
