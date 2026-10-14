@@ -29,6 +29,8 @@
 
 > **NEW VERIFIED HARDWARE CHECK (14 Oct 2026 ~22:03, Test V):** User ran the **read-only connected EPD capability inspector** successfully in Android Chrome. EPD write property **true**, acknowledged `writeValueWithResponse` method **true**, legacy write method **true**, write-without-response property **false**. Thus browser-side acknowledged-write capability is confirmed. **No packet was written** and Chrome's effective MTU/244-byte write acceptance remain unknown (nRF Connect reported 512 only in a separate session). Next: prepare user-approved reversible full-image trial with clear abort/restore procedure and no automatic resumption; keep NRF- image upload disabled until explicitly approved.
 
+> **LATEST USER TEST (Test X, 14 Oct ~22:15):** Android Chrome screenshot confirms **Prepare dry-run upload checklist** works and shows "Packet plan is internally valid for the chosen MTU assumption"; the eight-step safety/abort checklist rendered correctly. No device writes occurred. The UI explicitly says browser MTU/write and rollback are NOT verified; Upload NOT authorized. This concludes offline preflight/browser capability/dry-run milestones. **Next priority:** plan a user-approved, supervised physical image transfer with transparent progress, first-error abort, no blind resume, no refresh after incomplete packets, manual Clock mode as an *unproven* partial-buffer recovery attempt. Keep NRF- image upload disabled pending explicit informed consent and implementation testing.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
