@@ -1,5 +1,7 @@
 # Roadmap and next-session checklist
 
+**Checkpoint Y — transfer engine implemented but hardware DISABLED:** `src/dash-supervised-transfer.mjs` plus 8 mocked-device regression tests (46 total). Requires explicit consent and passed audit; sequential acknowledged packets with progress, AbortSignal, stop on link/write failure, EPD refresh only after complete image, no blind retry or firmware reset. This module is **not imported by live app.mjs**. Separate approval is required for any device image transfer. Next: user-visible gated adapter, operation timeout and cancellation semantics, recovery verification and manual hardware test approval.
+
 **Dry-run checklist confirmed on Android Chrome (Test X, 14 Oct ~22:15):** User screenshot shows "Packet plan is internally valid for the chosen MTU assumption" and the full 8-step abort and restoration checklist. NO BLE writes; browser actual 244-byte acceptance and image-buffer rollback remain unknown. Next: design/test explicitly gated supervised image upload implementation, retaining NRF- Send to Clock disabled until user separately approves the risk and trial.
 
 **Supervised upload DRY-RUN tooling implemented (Checkpoint W):** Browser Display Designer now generates a preflight/interruption checklist with `src/upload-rehearsal.mjs`, four offline unit tests (38 intended total). No image packets transmitted, actual upload remains blocked. Next: user checks dry-run output, then review real Chrome 244-byte write uncertainty and unproven EPD rollback before a separately approved first hardware trial.
