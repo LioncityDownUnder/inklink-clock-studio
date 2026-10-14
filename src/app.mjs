@@ -35,24 +35,34 @@ function log(message, level = 'info') {
   $('logCount').textContent = `${state.logCount} event${state.logCount === 1 ? '' : 's'}`;
 }
 
+function gattLinked() {
+  return Boolean(state.device?.gatt?.connected);
+}
 function connected() {
-  return Boolean(state.device?.gatt?.connected && state.characteristic);
+  return Boolean(gattLinked() && state.characteristic);
 }
 function updateUi() {
   const online = connected();
+  const linked = gattLinked();
   const pill = $('connectionPill');
   pill.classList.toggle('connected', online);
   pill.classList.toggle('disconnected', !online);
-  pill.innerHTML = `<span class="pill-dot"></span> ${online ? 'Connected' : 'Disconnected'}`;
-  $('deviceName').textContent = online ? (state.device.name || 'Unnamed BLE clock') : 'No clock connected';
-  $('deviceHint').textContent = online ? 'XLY95-compatible BLE service found' : ($('allDevices').checked ? 'Scanning all nearby BLE devices' : 'Scanning NRF_ clock devices only');
-  for (const button of document.querySelectorAll('[data-requires-connection]')) button.disabled = !online || state.busy;
-  $('mainConnect').disabled = online || state.busy;
+  const status = online ? 'Connected' : linked ? 'GATT linked · service pending' : 'Disconnected';
+  pill.innerHTML = '<span class="pill-dot"></span> ' + status;
+  $('deviceName').textContent = linked ? (state.device.name || 'Unnamed BLE clock') : 'No clock connected';
+  $('deviceHint').textContent = online ? 'XLY95 service & characteristic found'
+    : linked ? 'GATT linked; try service discovery again'
+      : ($('allDevices').checked ? 'Scanning all nearby BLE devices' : 'Scanning NRF-prefixed devices');
+  for (const button of document.querySelectorAll('[data-requires-connection]')) {
+    button.disabled = !online || state.busy;
+  }
+  $('mainConnect').disabled = linked || state.busy;
   $('topConnect').disabled = state.busy;
-  $('topConnect').textContent = online ? 'Disconnect clock' : 'Connect clock ↗';
-  $('disconnectBtn').disabled = !online || state.busy;
-  $('allDevices').disabled = online || state.busy;
-  $('safeConnect').disabled = online || state.busy;
+  $('topConnect').textContent = linked ? 'Disconnect clock' : 'Connect clock ↗';
+  $('disconnectBtn').disabled = !linked || state.busy;
+  $('discoverService').disabled = !linked || online || state.busy;
+  $('allDevices').disabled = linked || state.busy;
+  $('safeConnect').disabled = linked || state.busy;
   $('packetSize').disabled = state.busy;
   $('ackInterval').disabled = state.busy;
 }
@@ -132,11 +142,77 @@ async function requestClockInfoCore() {
   setConnectionStage('A9 information request sent', 'success');
 }
 
+async function discoverServiceCore() {
+  const server = state.device?.gatt;
+  if (!server?.connected) throw new Error('GATT link is no longer connected');
+  setConnectionStage('discovering XLY95 service ' + SERVICE_UUID);
+  let service = null;
+  try {
+    service = await server.getPrimaryService(SERVICE_UUID);
+  } catch (error) {
+    const message = (error.name || 'Error') + ': ' + (error.message || String(error));
+    log('getPrimaryService failed: ' + message, 'error');
+    // Some Web Bluetooth browser implementations offer getPrimaryServices()
+    // even if selecting one service by UUID failed. Read-only diagnostic.
+    if (typeof server.getPrimaryServices === 'function' && server.connected) {
+      try {
+        setConnectionStage('listing permitted GATT services');
+        const services = await server.getPrimaryServices();
+        const uuids = services.map(item => String(item.uuid || '').toLowerCase());
+        log('Permitted services: ' + (uuids.join(', ') || '(none returned)'));
+        service = services.find(item =>
+          String(item.uuid || '').toLowerCase() === SERVICE_UUID.toLowerCase()) || null;
+        if (service) log('Matched XLY95 service via getPrimaryServices()', 'success');
+      } catch (listError) {
+        log('getPrimaryServices diagnostic failed: ' +
+          (listError.name || 'Error') + ': ' + (listError.message || listError), 'error');
+      }
+    } else {
+      log('This browser does not expose getPrimaryServices() or the link already closed.');
+    }
+    if (!service) {
+      setConnectionStage('XLY95 service discovery failed', 'error');
+      throw error;
+    }
+  }
+  setConnectionStage('XLY95 service discovered', 'success');
+  setConnectionStage('discovering XLY95 characteristic ' + CHARACTERISTIC_UUID);
+  state.characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+  setConnectionStage('XLY95 characteristic discovered', 'success');
+  const props = state.characteristic.properties;
+  log('Characteristic capabilities: ' + [
+    props?.read && 'read',
+    props?.write && 'write',
+    props?.writeWithoutResponse && 'writeWithoutResponse',
+    props?.notify && 'notify'
+  ].filter(Boolean).join(', '));
+  updateUi();
+}
+
+async function retryServiceDiscovery() {
+  if (!gattLinked() || connected() || state.busy) return;
+  setBusy(true);
+  try {
+    await discoverServiceCore();
+    setConnectionStage('service and characteristic ready', 'success');
+    toast('Clock service discovered! Try Enable notifications.');
+  } catch (error) {
+    log('Retry failed: ' + (error.name || 'Error') + ': ' + (error.message || error) +
+      '; GATT still connected: ' + gattLinked(), 'error');
+    toast('Service discovery failed. See Activity log; GATT link preserved if available.', true);
+  } finally {
+    setBusy(false);
+  }
+}
+
 async function connectClock() {
-  if (connected()) return;
+  if (gattLinked()) {
+    log('Already linked over GATT. Use Retry service discovery or Disconnect.');
+    return;
+  }
   if (!navigator.bluetooth || typeof navigator.bluetooth.requestDevice !== 'function') {
-    log('This browser cannot use Web Bluetooth; open directly in Chrome or Edge.', 'error');
-    toast('Web Bluetooth unavailable: use Chrome or Edge, not an in-app browser.', true);
+    log('This browser cannot use Web Bluetooth; open in a compatible Web Bluetooth browser.', 'error');
+    toast('Web Bluetooth unavailable in this browser.', true);
     detectSupport();
     return;
   }
@@ -153,10 +229,12 @@ async function connectClock() {
   setBusy(true);
   try {
     const safeMode = $('safeConnect').checked;
+    // NRF matches both NRF_ and NRF- clock names, while preserving XLY95's
+    // filtered-device BLE permission flow instead of acceptAllDevices.
     const options = $('allDevices').checked
       ? {acceptAllDevices: true, optionalServices: [SERVICE_UUID]}
-      : {filters: [{namePrefix: 'NRF_'}], optionalServices: [SERVICE_UUID]};
-    log('Opening device picker (' + ($('allDevices').checked ? 'all BLE devices' : 'NRF_ devices') +
+      : {filters: [{namePrefix: 'NRF'}], optionalServices: [SERVICE_UUID]};
+    log('Opening picker (' + ($('allDevices').checked ? 'all BLE devices' : 'NRF name prefix') +
       '); startup mode: ' + (safeMode ? 'SAFE' : 'normal'));
     const device = await navigator.bluetooth.requestDevice(options);
     state.device = device;
@@ -166,42 +244,40 @@ async function connectClock() {
     const server = await device.gatt.connect();
     setConnectionStage('GATT connected');
     if (!server.connected) throw new Error('GATT link closed before service discovery');
-    const service = await server.getPrimaryService(SERVICE_UUID);
-    setConnectionStage('XLY95 service discovered');
-    state.characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
-    setConnectionStage('XLY95 characteristic discovered');
-    const props = state.characteristic.properties;
-    log('Characteristic capabilities: ' + [
-      props?.read && 'read', props?.write && 'write',
-      props?.writeWithoutResponse && 'writeWithoutResponse',
-      props?.notify && 'notify'
-    ].filter(Boolean).join(', '));
+    // Keep GATT open if service discovery fails; the user can retry without
+    // opening a picker or repeating pairing.
+    try {
+      await discoverServiceCore();
+    } catch (error) {
+      const msg = (error.name || 'Error') + ': ' + (error.message || error);
+      log('Service discovery failed: ' + msg +
+        '. GATT still linked: ' + gattLinked() +
+        '. If linked, tap Retry service discovery.', 'error');
+      toast('BLE linked but service discovery failed. Try Retry service discovery.', true);
+      return;
+    }
     if (!safeMode) {
       await enableNotificationsCore();
       await requestClockInfoCore();
     } else {
-      log('Safe mode: no notifications started; no A9 or other command sent.', 'success');
+      log('Safe mode: notifications disabled; no A9 or other command sent.', 'success');
     }
     setConnectionStage('idle connection test (1.5 seconds)');
     await delay(1500);
     if (!connected()) throw new Error('GATT connection ended during idle check');
     setConnectionStage('connected and stable', 'success');
-    toast('Clock connection is stable. Next, try Enable notifications.');
+    toast('Clock is connected. Try Enable notifications.');
   } catch (error) {
-    if (error.name === 'NotFoundError') {
-      log('No device selected in the Bluetooth chooser.', 'error');
-      toast('No device selected. Try scanning again.', true);
+    log('Connection failed at stage "' + state.connectionStage + '": ' +
+      (error.name || 'Error') + ': ' + (error.message || error), 'error');
+    toast(error.name === 'NotFoundError'
+      ? 'No Bluetooth device selected.'
+      : 'Connection failed; see Activity log.', true);
+    if (gattLinked()) {
+      log('GATT link remains open for diagnostics. Choose Retry service discovery.', 'info');
     } else {
-      log('Connection failed at stage "' + state.connectionStage + '": ' +
-        (error.name || 'Error') + ': ' + (error.message || error), 'error');
-      toast('Connection failed: see the Activity log for the last BLE stage.', true);
+      state.characteristic = null;
     }
-    if (state.device?.gatt?.connected) {
-      state.intentionalDisconnect = true;
-      state.device.gatt.disconnect();
-    }
-    state.characteristic = null;
-    updateUi();
   } finally {
     setBusy(false);
   }
@@ -209,7 +285,7 @@ async function connectClock() {
 
 function disconnectClock() {
   if (state.busy) return;
-  if (state.device?.gatt?.connected) {
+  if (gattLinked()) {
     state.intentionalDisconnect = true;
     state.device.gatt.disconnect();
   } else if (state.characteristic) {
@@ -491,6 +567,7 @@ function init(){
     $('template').value=btn.dataset.design;setTab('studio');renderPreview();
   });
   $('mainConnect').addEventListener('click', connectClock);
+  $('discoverService').addEventListener('click', retryServiceDiscovery);
   $('enableNotifs').addEventListener('click', testNotifications);
   $('queryInfo').addEventListener('click', testInformationRequest);
   $('checkBrowser').addEventListener('click', () => {
@@ -501,7 +578,7 @@ function init(){
     else toast('Bluetooth API is available. Close XLY95, then press Connect via Bluetooth.');
   });
   $('allDevices').addEventListener('change', () => {updateUi();log($('allDevices').checked ? 'Discovery filter: all nearby BLE devices' : 'Discovery filter: NRF_ devices only');});
-  $('topConnect').addEventListener('click',()=>connected()?disconnectClock():connectClock());
+  $('topConnect').addEventListener('click',()=>gattLinked()?disconnectClock():connectClock());
   $('disconnectBtn').addEventListener('click',disconnectClock);
   $('syncTime').addEventListener('click',syncClock);
   $('clockMode').addEventListener('click',()=>switchMode(1,'Clock mode'));
