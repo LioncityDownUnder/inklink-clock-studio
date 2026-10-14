@@ -231,13 +231,39 @@ This was the actual root cause of the persistent service-not-found errors. See [
 
 **Next step:** Physical mode-switching tests. Reconnect in Safe mode. Press **Calendar mode** once promptly after `connected and stable` and inspect both Activity Log and actual display. The source-confirmed NRF- command is `E1 01` followed by 300ms then `E2`. If successful, reconnect if necessary, press **Clock mode** once (`E1 02` then 300ms then `E2`) and confirm the built-in clock display returns. Capture errors and user confirmation. **NRF- image upload is still disabled.**
 
-## Next physical test — NRF- Clock/Calendar modes (PENDING)
+## Test record L — SUCCESS: physical Calendar/Clock modes switch both directions
 
-1. Close XLY95 and nRF Connect sessions. Open live InkLink in Android Chrome, connect to the same `NRF-` clock with Safe connection enabled.
-2. Within approximately 20 seconds of stable connection, press **Calendar mode** once (`E1 01`, then `E2`).
-3. Inspect the Activity Log and **physical display**; report whether calendar layout appeared.
-4. Reconnect if necessary, press **Clock mode** once (`E1 02`, then `E2`) and confirm the usual live clock returns.
-5. Keep image upload for NRF- disabled pending protocol implementation and separate hardware validation.
+**Date/time:** 14 October 2026, approximately 19:53 Australia/Sydney. **Environment:** Android Chrome on original `NRF-` clock, corrected InkLink Safe connection. Source of evidence: user's screenshot of Activity Log with 48 events, plus explicit user statement: **"yes clock and calendar switch passed"**. No private screenshot is committed to this public repository.
+
+**Exact visible Activity Log sequence:**
+- `19:53:05 SUCCESS Safe mode: notifications disabled; no A9 or other command sent.`
+- `19:53:05 INFO BLE stage: idle connection test (1.5 seconds)`
+- `19:53:07 SUCCESS BLE stage: connected and stable`
+- `19:53:18 INFO RXTX TX E1 01`
+- `19:53:20 INFO RXTX TX E2 — refresh`
+- `19:53:20 SUCCESS Calendar mode: command completed`
+- `19:53:38 INFO RXTX TX E1 02`
+- `19:53:39 INFO RXTX TX E2 — refresh`
+- `19:53:39 SUCCESS Clock mode: command completed`
+
+**Physically confirmed:** the user reports both calendar display and clock display switched as intended. The screenshot confirms all four source-documented RXTX writes (Calendar `E1 01` + `E2`; Clock `E1 02` + `E2`) completed in a **single BLE connection**. No disconnection or error is visible in this screenshot; it does not establish indefinite connection stability.
+
+**Major milestone:** all three core user-controlled functions have now been verified end-to-end on the clock:
+1. Time sync (`DD` payload + `E2`), confirmed by user in Test K.
+2. Switch to Calendar (`E1 01` + `E2`), confirmed here.
+3. Switch back to Clock (`E1 02` + `E2`), confirmed here.
+
+**Not yet implemented/tested:** the actual `NRF-` **image-transfer protocol**, accurate physical panel resolution/pixel packing, ability to display a custom English image, and continuous live custom layouts. The current app intentionally disables NRF- image uploads. Older legacy `NRF_` A1 packets are incompatible with this NRF- clock.
+
+**Next engineering checkpoint:** inspect the *entire* original XLY95 main `index.html` image-conversion and `sendBufferData()` implementation; derive byte-exact offline tests for packet framing, color/bitplane mapping, dimensions, and refresh sequence. Build safe source/test coverage **without sending new image data to the physical clock until the protocol, dimensions and restore path are verified**. See [BLE_PROTOCOLS.md](BLE_PROTOCOLS.md) and [ROADMAP.md](ROADMAP.md).
+
+## Next engineering work — NRF- e-paper image transfer (PENDING)
+
+1. Review source-confirmed NRF- EPD packet framing, pixel encoding, screen-driver options and image refresh commands in original XLY95 main `index.html`.
+2. Confirm the clock's actual panel resolution. XLY95 once displayed a selected **400×300 canvas**, but that is not independent hardware confirmation.
+3. Implement pure offline image-conversion and packet-encoding helpers, with deterministic tests against upstream-derived vectors and bounds/safety checks.
+4. Do **not** enable the real `Send image` button for NRF- until transfer layout, final refresh, return-to-clock mode, and a supervised test plan are validated.
+5. Retain the now-working RXTX time/Calendar/Clock controls as a regression baseline.
 
 ### Outcome template for future sessions
 
@@ -255,8 +281,8 @@ Copy and fill this in when the user reports results:
 | RXTX service/characteristic found? | **Yes (verified at 19:01)** |
 | Notifications work? | **Subscription succeeded at 19:21:57; no incoming payload verified; disconnect 10s later** |
 | Time sync affects screen? | **YES — user confirmed time was synced at 19:46:28 (Test K)** |
-| Mode controls affect screen? | Yes / No / not tested |
+| Mode controls affect screen? | **YES — user confirmed Calendar E1 01/E2 and Clock E1 02/E2 switched physically at ~19:53 (Test L)** |
 | Actual error/log excerpt | **Time sync DD/E2 succeeded 19:46:28; GATT dropped after 51.4s. Earlier idle drops: InkLink 33.5s/57.2s, XLY95 ~59s after discovery.** |
-| Next engineering action | **Verify Calendar mode E1 01/E2, then Clock mode E1 02/E2 on physical clock** |
+| Next engineering action | **Research and unit-test NRF- image conversion, 03/04 frame packets, panel dimensions, and safe refresh/restore; no physical image writes yet** |
 
 **Change history discipline:** append only verified new evidence, mark hypotheses accordingly, and update [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) current status and [ROADMAP.md](ROADMAP.md) accordingly.
