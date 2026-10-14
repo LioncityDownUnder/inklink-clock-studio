@@ -67,6 +67,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Test AJ — ghosting distribution observed:** user reports ghosting equally across entire display. Focus follow-up on global erase / waveform / refresh, without asserting root cause or sending speculative BLE clears; optionally prepare offline larger-text design. No new hardware write approved.
 
+**Test AK — built-in Clock mode clears persistent ghosting (real hardware):** after English-image ghosting, user switched to Clock mode and Chinese clock physically appeared clean. The panel is capable of clean refresh; prioritize analyzing difference between built-in clock redraw and custom-image refresh rather than asserting damaged panel. This verifies recovery of clean normal mode after a **completed** image transfer, NOT interrupted-image rollback. Do not transmit undocumented `00+cmd` EPD clear codes.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
