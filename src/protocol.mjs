@@ -4,6 +4,46 @@
  * https://github.com/XLY95/xly95.github.io (inspected 2026-10-14).
  * No firmware flashing or undocumented configuration writes are performed.
  */
+
+/**
+ * XLY95's *main index.html* uses a separate protocol for NRF- named clocks.
+ * This is different from the NRF_ legacy protocol in its standalone js.js.
+ * UUIDs and commands sourced from the public XLY95 index.html.
+ */
+export const DASH_EPD_SERVICE_UUID = '13187b10-eba9-a3ba-044e-83d3217d9a38';
+export const DASH_EPD_CHARACTERISTIC_UUID = '4b646063-6264-f3a7-8941-e65356ea82fe';
+export const DASH_RXTX_SERVICE_UUID = '00001f10-0000-1000-8000-00805f9b34fb';
+export const DASH_RXTX_CHARACTERISTIC_UUID = '00001f1f-0000-1000-8000-00805f9b34fb';
+
+/** Time packet for NRF- RXTX characteristic: DD + local epoch + year/month/day/weekday.
+ *  Unlike the legacy A3 opcode, the upstream page shifts epoch seconds by
+ *  the browser's timezone offset. Do not confuse the two device protocols.
+ */
+export function encodeDashTime(date = new Date()) {
+  if (!(date instanceof Date) || !Number.isFinite(date.getTime())) {
+    throw new TypeError('Invalid date');
+  }
+  const localSeconds = Math.round(date.getTime() / 1000) - date.getTimezoneOffset() * 60;
+  const year = date.getFullYear();
+  const week = date.getDay() || 7;
+  if (localSeconds < 0 || localSeconds > 0xffffffff || year < 0 || year > 65535) {
+    throw new RangeError('Clock time is outside supported range');
+  }
+  return Uint8Array.of(
+    0xDD,
+    (localSeconds >>> 24) & 255, (localSeconds >>> 16) & 255,
+    (localSeconds >>> 8) & 255, localSeconds & 255,
+    (year >>> 8) & 255, year & 255,
+    date.getMonth() + 1, date.getDate(), week
+  );
+}
+export function encodeDashMode(mode) {
+  if (mode !== 1 && mode !== 2) throw new RangeError('Mode must be clock (1) or calendar (2)');
+  // Upstream XLY95: e102 => clock, e101 => calendar.
+  return Uint8Array.of(0xE1, mode === 1 ? 0x02 : 0x01);
+}
+export const DASH_REFRESH = Uint8Array.of(0xE2);
+
 export const SERVICE_UUID = '32120001-0bf6-448a-9608-1b01a1a8f75c';
 export const CHARACTERISTIC_UUID = '32120002-0bf6-448a-9608-1b01a1a8f75c';
 export const COMMAND = Object.freeze({
