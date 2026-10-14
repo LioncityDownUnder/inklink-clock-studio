@@ -64,6 +64,8 @@
 
 > **CHECKPOINT AM (14 Oct 2026):** Ghosting research remains **hardware-neutral**. XLY95 public main-page source includes a 4.2-inch 400×300 preset but no explicit tested controller model IDs (`SSD1683`, `SSD1680`, `UC8176`, `UC8276`, `JD796`, `IL0398`). Actual controller remains **unknown**; absence of model strings is not proof about the PCB. Source contains unused `clearScreen(cmd)` with unknown argument; no new EPD command is safe to assume. Added `src/clock-typography.mjs` and checked-default **High-contrast English clock layout (preview only)** control. Larger black, wrapped footer in canvas/PNG; no automatic BLE writes or additional ghosting risk. Five typography tests; total **77 automated tests**. User should preview offline and share screenshot before considering any additional physical transfer. The real clock remains in clean original Chinese Clock mode.
 
+> **LATEST TEST AN — HIGH-CONTRAST PREVIEW VERIFIED (14 Oct 2026 ~23:43):** User screenshot confirms updated Android Chrome 400×300 InkLink preview: centered "SYDNEY TIME", bold black time 23:43, red date, and darker readable one-line footer "A GOOD DAY TO GET THINGS DONE"; no obvious clipping. This validates **browser rendering only**. It does not fix image-upload ghosting or prove physical screen image quality. No further BLE write observed; last verified physical state is clean original Chinese Clock mode after Test AK. Next: source-grounded controller/firmware/waveform investigation, no guessed clear commands or blind repeated uploads.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
