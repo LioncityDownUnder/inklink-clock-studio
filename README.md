@@ -14,7 +14,7 @@ A browser-based, English-language control panel and image designer for desk cloc
 - [Roadmap](docs/ROADMAP.md) — current priorities, acceptance criteria and later features.
 - [Instructions for AI coding assistants](AGENTS.md) — how to work safely in the repo and keep documentation updated.
 
-**Next engineering checkpoint:** Time, Calendar and Clock controls are **confirmed on hardware**. Begin **offline research and implementation of the separate NRF- e-paper image protocol** (pixel geometry, black/red planes, `03/04` frame offsets and safe refresh/return-to-clock). Keep the Upload Image button disabled on NRF- until validated.
+**Next engineering checkpoint (Phase 2):** Time/Calendar/Clock already physically verified. The **offline-only** NRF- bitplane/packet encoder and **Inspect encoded packets** button are now implemented (10 new tests; **19 total tests**). Inspect with 400×300 preset in Android Chrome, then verify actual panel resolution, write MTU and safe refresh/restore before any physical image transfer. **NRF- upload stays disabled.**
 
 
 ## Device compatibility
@@ -87,6 +87,16 @@ Open `http://localhost:8000` in desktop Chrome/Edge. All program assets are loca
 
 See [Project Handoff](docs/PROJECT_HANDOFF.md), [BLE Protocols](docs/BLE_PROTOCOLS.md), [Testing History](docs/TEST_HISTORY.md) and [Roadmap](docs/ROADMAP.md).
 
+### Offline image encoder — new in Phase 2
+
+The Display Designer now includes **Inspect encoded packets (offline)**. It converts the selected preview to the `NRF-` black/white and positive-red planes, reports the original XLY95 03/04 packet headers, offsets, packet count and expected EPD refresh code. **No Bluetooth connection is required and no commands are sent.**
+
+- New source: [`src/dash-image.mjs`](src/dash-image.mjs), with 7 source-derived image-size profiles, pure opaque RGB validation, row-major/reverse-column orientation, and 240-byte payload chunks plus 4-byte headers.
+- Test coverage: [`tests/dash-image.test.mjs`](tests/dash-image.test.mjs) adds 10 tests to the previous 9, all run in GitHub Actions.
+- InkLink's preview now uses pure black/white/red, which matches original XLY95's exact pixel tests. Previous muted red/dark-blue shades could produce incorrect wire data.
+- Example for **selected 400 × 300 preset**: 15,000-byte BW and 15,000-byte red planes, **126 packets**, **30,504 BLE bytes** including headers, full packet **244 bytes**, refresh command `01` (metadata only). **This is NOT proof the actual clock is 400×300 or accepts 244-byte writes.**
+- `NRF-` image uploads are **still blocked**. Independent screen/MTU/refresh/restore verification and a supervised hardware test are required first.
+
 ## Legacy `NRF_` protocol summary (NOT for the user's `NRF-` clock)
 
 **Do not use the following command table for `NRF-` devices.** The actual clock instead uses EPD service `13187b10...`, RXTX service `1F10`, and `DD`/`E1`/`E2` commands. See [BLE_PROTOCOLS.md](docs/BLE_PROTOCOLS.md) for its complete service/characteristic details.
@@ -114,8 +124,9 @@ Tests need Node.js 18+ (no installation of dependencies); these test packet enco
 
 ```bash
 node --check src/protocol.mjs
+node --check src/dash-image.mjs
 node --check src/app.mjs
-node --test tests/protocol.test.mjs
+node --test tests/*.test.mjs
 ```
 
 Project layout:
@@ -125,12 +136,13 @@ index.html            Main app
 src/styles.css        App design
 src/protocol.mjs      BLE packet encoding + image conversion
 src/app.mjs           UI, canvas, Bluetooth and transfer logic
-tests/                9 protocol unit tests
+tests/                19 protocol unit tests (legacy + NRF- image)
 AGENTS.md             Instructions for coding assistants
 docs/PROJECT_HANDOFF.md  Continuity + current status
 docs/BLE_PROTOCOLS.md    Both BLE profiles and commands
 docs/TEST_HISTORY.md     Chronological experiment log
 docs/ROADMAP.md          Prioritized next steps
+src/dash-image.mjs    Offline-only NRF- encoder and packet planner
 README.md             Project overview
 ```
 
