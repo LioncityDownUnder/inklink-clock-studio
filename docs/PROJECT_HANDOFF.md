@@ -43,6 +43,8 @@
 
 > **LATEST HARDWARE-NEUTRAL TEST (Test AA, 14 Oct 2026 ~22:30–22:31):** All THREE mock-only supervised upload scenarios passed in real Android Chrome: full `126/126` with mock refresh acknowledged; simulated packet-25 failure stopped after `24/126` and **no refresh**; manual Cancel stopped after `30/126` and **no refresh**. Thus the live browser mock UI/progress/failure/abort behavior is now user-verified. **No real BLE image writes**; physical `NRF-` upload remains disabled. Next: review separately gated BLE adapter/timeouts, visibility and recovery before requesting explicit informed permission for a supervised first real image transfer.
 
+> **LATEST USER TEST AD (14 Oct 2026 ~22:50):** Android Chrome MOCK packet-25 stall + Cancel **PASSED**. Log shows pending warning at 22:50:06 after 1.1s, mock packet 25 settled 22:50:09, then mock stopped at **24/126 counted**, with no further packets or EPD refresh. Cancellation of a pending operation does not prove the real peripheral received nothing; a settled mock write was deliberately not counted after cancellation. **No BLE image packets sent.** User has now browser-verified complete/fail/cancel/stall mock scenarios. Do not ask to repeat. Next: assess remaining real hardware upload uncertainty and seek separate explicit informed approval only if ready, while preserving disabled NRF- image-upload guard.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
