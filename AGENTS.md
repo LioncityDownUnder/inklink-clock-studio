@@ -1,5 +1,10 @@
 # Project instructions for AI coding assistants and future ChatGPT sessions
 
+## Checkpoint AB — BLE adapter not yet activated
+
+The review-only `src/ble-guarded-writer.mjs` enforces acknowledged EPD property, connection, foreground visibility, cancellation, deadline, one in-flight write and fail-closed behaviour. Eight new tests, **58 total**, CI passing. **Do not import it into live upload without explicit separate user consent and failure/recovery review.** Abort/deadline cannot forcibly cancel a pending Chrome `writeValueWithResponse`. `src/app.mjs` continues to block NRF- image uploads. Next milestone: carefully design stalled-write UI and recovery boundaries, not more mock-success claims.
+
+
 ## Checkpoint Y — guarded transfer implementation (NOT ACTIVE)
 
 `src/dash-supervised-transfer.mjs` is a separable, injection-based sequential EPD image transfer engine requiring explicit consent and a passed audit; it performs acknowledged writes via a supplied callback, emits packet progress, honours AbortSignal at write boundaries, stops immediately on rejected write or lost link, never refreshes partial image, and never auto-retries/resumes/restores. Eight mocked tests bring suite to 46. **No import or invocation from `src/app.mjs` exists and `NRF-` Send Image remains disabled.** Consent to build was not permission to send an image. Next engineer a gated UI adapter and review unrecoverable-partial-buffer risk and Chrome MTU, then ask for explicit permission for a supervised on-device trial.
