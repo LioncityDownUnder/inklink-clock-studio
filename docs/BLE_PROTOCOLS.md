@@ -133,6 +133,16 @@ For a *hypothetical* 400×300 two-plane image: 15,000 bytes per plane, 30,000 im
 
 **Next:** preserve the currently clean normal clock. Do not repeatedly upload or send unverified EPD `00+cmd`, RXTX calibration, or random refresh commands. Look for verifiable manufacturer firmware/driver information before defining a new hardware experiment. English layout/text legibility may be refined **offline** with no device changes.
 
+## Controller identification and panel ghosting — Checkpoint AM (14 Oct 2026)
+
+**Read-only source inspection:** XLY95's public `index.html` recognizes a 4.2-inch, **400×300** image-upload canvas and offers controls for EPD and RXTX characteristics. A literal search of this public page for common controller model identifiers `SSD1683`, `SSD1680`, `UC8176`, `UC8276`, `JD796`, and `IL0398` produced **no matches**. That absence means the public JavaScript **does not identify the clock's actual EPD controller**; it is NOT evidence that none of those chips is inside. The user's 3D-printed case has no manufacturer's part number. No firmware binary or controller markings were obtained.
+
+**Confirmed physical behaviour:** custom 400×300 BW+red image uploaded and rendered with persistent uniform ghosting; original Clock mode afterwards restored a perfectly clean Chinese clock. Firmware-selected waveform/erase could explain the difference, but that mechanism is **not established by the web app**. There is still no source-supported safe argument to upstream's unused `clearScreen(cmd)` helper. No speculative BLE clear/refresh commands were sent.
+
+**Offline UI improvement:** added a user-selectable, enabled-by-default **High-contrast English clock layout (preview only)**. In the browser it draws a larger dark footer over up to two lines where possible, reducing tiny grey text in the custom design. It changes local preview/PNG image bytes only; it does not cause BLE writes or fix panel ghosting. Text rendering should be reviewed in Chrome before any future separately-approved hardware image trial.
+
+**Next:** obtain verifiable hardware markings/manual/firmware documentation if practical, otherwise explicitly treat waveform/erase as unavailable and avoid guessing controller-specific opcodes.
+
 ## Software implementation map
 
 - `src/dash-image.mjs`: **offline-only** image size profiles, strict pure-colour BW/red encoding, image packet framing, and plan calculation. No BLE APIs or writes.
