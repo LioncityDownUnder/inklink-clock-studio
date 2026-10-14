@@ -1,5 +1,11 @@
 # Project instructions for AI coding assistants and future ChatGPT sessions
 
+## Current simulator milestone (14 October 2026)
+
+`src/dash-simulator.mjs` is a **pure, no-BLE** NRF- image-transfer simulator. User-facing Display Designer controls adjust assumed ATT MTU, per-packet latency and connection lifetime and report expected completion, image-vs-refresh interruption and unsafe restart caveats. Six new tests in `tests/dash-simulator.test.mjs`; suite intended total 25. 29.2 seconds for the 400×300 default is **hypothetical** (126×200ms + assumed 4s refresh), not observed throughput. The real NRF- image upload remains disabled. Continue with Android Chrome browser simulator validation and research into write size, refresh sequence and incomplete-frame recovery before supervised physical tests.
+
+
+
 **IMPORTANT: read [docs/PROJECT_HANDOFF.md](docs/PROJECT_HANDOFF.md) before working on anything in this repository.** This repository is the durable project memory for chats and coding assistants. Follow [docs/BLE_PROTOCOLS.md](docs/BLE_PROTOCOLS.md), [docs/TEST_HISTORY.md](docs/TEST_HISTORY.md), and [docs/ROADMAP.md](docs/ROADMAP.md) as needed.
 
 ## Current task and state (14 October 2026)
