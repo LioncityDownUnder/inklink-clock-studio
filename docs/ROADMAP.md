@@ -39,18 +39,20 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 ## P1 — implement correct NRF- image upload
 
-**Current active engineering checkpoint (started after Test L):** Derive byte-exact test vectors from original XLY95 `index.html`, verify actual display size and per-plane bit packing, implement `03/04` offset packets and refresh/restore sequence behind disabled upload gate; no user-device writes until safe supervised test approval.
+**Phase 2 checkpoint (Test M, implemented/offline):** Strict original-XLY95 black/white/red image packing (including reversed-x 296/212/250 presets), 03/04 offset packet planning, and a read-only Display Designer packet inspector are now coded. Ten new offline tests join the nine existing protocol tests (**19 total**, CI passing). **No hardware image writes**; real panel/MTU/refresh/restore validation is the gate to enable uploads.
 
 
-- **PENDING:** map the complete original XLY95 main-page `sendBufferData()` pipeline and image preprocessing rather than copying the legacy A1 format.
-- **PENDING:** determine exact screen resolution/driver and supported colour planes on this specific clock; XLY95 log showed canvas setting **400×300**, but this is UI configuration, not independent physical screen validation.
-- **PENDING:** implement `03/04 + colour flag + 2-byte frame offset + payload` packet generator with bounds checking; original `my_step=480` hex characters per chunk.
-- **PENDING:** check original screen/refresh commands and the full sequence required for image mode.
-- **PENDING:** add deterministic unit tests against byte-for-byte references derived from upstream and test maximum frame sizes.
+- **DONE (source/algorithm):** mapped original main-page `canvas2bytes`, `canvas2bytes_bw`, `upload_image`, and `sendBufferData`; use strict opaque pure black/white/red quantization. Independent BLE packet captures are still pending.
+- **PENDING (highest priority):** determine exact physical screen resolution/driver and supported colour planes; XLY95's selected **400×300** canvas is NOT an independent hardware measurement.
+- **DONE (offline code):** implemented `03/04 + FF/00 + 16-bit big-endian byte offset + up to 240 image bytes` packet builder in `src/dash-image.mjs`, with correct full/partial refresh metadata but **no device writes**.
+- **PARTLY DONE (source):** original XLY95 `upload_image()` finishes by sending EPD `01` for full images, `AA` for 280×100/400×180 partials; offline plan reports these codes. **PENDING** physical image mode/refresh/restore verification and negotiated 244-byte BLE write support.
+- **DONE (source-derived automated tests):** ten new cases for planes, row/column orientation, chunk headers/offsets, partial images, strict palette and 400×300/800×480 plans; **PENDING** independent captured-packet comparison and MTU validation.
 - **PENDING:** with explicit user agreement, send a simple small/blank test image first only after screen dimensions and packets are confirmed.
 - **PENDING:** enable `Send image` only after a confirmed physical transfer.
 
-**Done when:** repeated image uploads to the physical clock render correctly, without breaking the built-in live clock mode; mode can be restored.
+**Next test (no BLE needed):** In live InkLink Display Designer choose 400×300 and tap **Inspect encoded packets (offline)**. Expected 126 packets, 30,504 bytes including headers, max write 244 bytes. Report its output and confirm screen geometry separately.
+
+**Ultimate done when:** repeated, user-approved physical image uploads render correctly, without breaking built-in clock mode, with a verified restore path.
 
 ## P1 — reliability / UX and code health
 
