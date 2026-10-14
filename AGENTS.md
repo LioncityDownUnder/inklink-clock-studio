@@ -1,4 +1,8 @@
-# Project instructions for AI coding assistants and future ChatGPT sessions
+# Project instructions for AI coding assistants and future ChatGPT sessions## Checkpoint AG — first-trial interface deployed, device result PENDING
+
+The user explicitly approved preparation of a first supervised real image transfer. The live app now exposes a separate first-trial control: connect NRF- clock, verify 400×300 design, check risk acknowledgement, type `UPLOAD` and accept a native confirmation. Only then writes can start, one attempt per page session. It uses the guarded writer and supervised engine; no auto-retry or partial refresh. 72 tests passed including four fake-characteristic integration tests. **No actual physical image transfer result has been reported yet.** Chrome 244-byte acceptance and partial buffer recovery still unknown. Ask for user logs and physical display outcome rather than claiming the trial completed.
+
+
 
 ## Checkpoint AE — hardware trial preparation, not execution
 
