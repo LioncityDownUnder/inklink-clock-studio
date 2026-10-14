@@ -99,6 +99,7 @@
                 <button id="simulateDash" type="button" class="button button-secondary button-small">Simulate transfer — no Bluetooth</button>
                 <p id="dashSimulationSummary" class="fineprint" role="status" aria-live="polite">Estimates only. No packets will be transmitted.</p>
                 <p id="dashPreflightSummary" class="fineprint" role="status" aria-live="polite">Packet order / refresh audit runs when you simulate. No Bluetooth data is written.</p>
+                <div class="snapshot-note"><strong>Chrome BLE write-capability check (read-only)</strong><p>Connect to your NRF- clock, then inspect the exposed EPD characteristic. This never sends a probe packet. Browser negotiated MTU and accepted 244-byte writes cannot be verified without a real write.</p><button id="inspectBleCapacity" type="button" class="button button-secondary button-small">Inspect connected EPD capability — no writes</button><p id="bleCapacitySummary" class="fineprint" role="status" aria-live="polite">Not yet inspected.</p></div>
               </div>
             </article>
           </div>
