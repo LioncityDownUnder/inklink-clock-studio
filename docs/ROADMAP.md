@@ -52,6 +52,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Checkpoint AA (Android Chrome mock UI verified, 14 Oct 2026):** Complete mock upload at 126/126 with mock refresh, injected failure at packet 25 stopping after 24/126 without refresh, and manual cancellation stopping after 30/126 without refresh all passed per user screenshots. Development of supervised upload engine and mock UI is validated in browser, but **not on physical hardware**. Next: BLE adapter/timeout/visibility and restoration review; keep actual NRF- image writes disabled pending separate user approval.
 
+**Test AD completed — pending-write stall and cancellation VERIFIED in Android Chrome (14 Oct 2026 ~22:50):** packet 25 remained pending, warning appeared after 1.1s, it later settled, and cancellation stopped the mock transfer at 24/126 counted without refresh or packet 26. No BLE writes. Browser mock acceptance suite fully verified; next decision concerns explicit risk consent for physical image transfer, Chrome write capacity and lack of proven interrupted-image recovery. NRF- physical upload remains disabled.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
