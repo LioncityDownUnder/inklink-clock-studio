@@ -1,5 +1,7 @@
 # Project handoff — InkLink Clock Studio
 
+> **Phase 2 simulator checkpoint (14 Oct 2026):** New pure `src/dash-simulator.mjs` estimates image transfer time from current packet plan, assumed ATT MTU, per-packet latency and simulated disconnect window. Display Designer now has **Simulate transfer — no Bluetooth** with selectable MTU (23/247/512), per-packet milliseconds and idle lifetime. It reports whether framing exceeds ATT capacity or a simulated drop occurs during image data versus refresh, and advises against blind resume of partial uploads. Six new tests added (`tests/dash-simulator.test.mjs`), bringing intended total to **25**. **No physical writes enabled.** Next: confirm CI/deploy, test browser simulator, investigate actual Chrome write length and recovery/refresh sequence before real upload.
+
 > **Canonical handoff / single starting point for future chats and contributors**
 >
 > **Last consolidated:** 14 October 2026 (Australia/Sydney).
