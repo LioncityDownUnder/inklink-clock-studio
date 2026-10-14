@@ -312,6 +312,20 @@ This was the actual root cause of the persistent service-not-found errors. See [
 
 **Image transfer remains DISABLED** until panel geometry and Bluetooth write capacity/MTU are verified; never treat the screenshot alone as authorization for test writes.
 
+## Hardware BLE MTU and link timeout record P — Android nRF Connect
+
+**Date:** 14 October 2026 ~20:51–20:52, user screenshot from Nordic nRF Connect for Android on the actual NRF- clock. Screenshot remains in private conversation; do not commit device MAC address.
+
+**Observed facts:** Android app reported `Requested MTU not supported. MTU changed to: 512` twice (20:51:40.730 and 20:52:40.130). The connection log also reported a disconnect at 20:52:07.289 with `Error 8 (0x8): GATT CONN TIMEOUT`. Prior connection-parameter updates displayed 27.5ms interval, latency 10, and 3000ms supervision timeout; that supervision timeout is **not** the same as a 60-second application idle timer. nRF Connect subsequently reconnected and rediscovered services.
+
+**Inference and limitation:** The app reports an effective ATT MTU of **512 bytes** for its nRF Connect session, above the nominal **247 minimum** needed for 244-byte characteristic values (ATT Write Request payload <= MTU−3). But the wording "Requested MTU not supported" and Android platform MTU behavior mean this should be recorded as **reported by app**, not independently verified by an actual 244-byte write. In particular, **Chrome uses a separate BLE/GATT session** and may negotiate a different effective MTU. No characteristic write size has yet been validated in Chrome.
+
+**Link finding:** Error 8 identifies a **connection supervision timeout**, strengthening evidence that unexpected browser disconnects also relate to underlying link loss rather than an InkLink-only JavaScript issue. It does **not** determine why radio/link responses stopped (clock sleep, signal conditions, Android/BLE handling are still hypotheses). Do not add speculative keepalive writes.
+
+**Display measurements:** user subsequently measured visible area approximately **84 × 62 mm**, close to published active-area **84.8 × 63.6 mm** for generic 4.2-inch 400×300 tri-colour e-paper panels. This strongly supports, but does not conclusively prove, that resolution/driver.
+
+**Next engineering step:** evaluate original XLY95 main-page transfer/refresh process, duration of 126 packets, BLE write-with-response capacity as exposed via Web Bluetooth, a failure-safe disconnect/recovery/clock-mode restoration plan, and independent byte-exact image packet fixtures. **Keep actual NRF- image upload disabled** until a supervised reversible trial is defined. Never probe by sending dummy frames.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
