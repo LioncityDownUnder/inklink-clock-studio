@@ -1,5 +1,9 @@
 # Roadmap and next-session checklist
 
+**Preflight research (14 Oct 2026, Test S):** Original XLY95 transmits BW then red `03/04` image chunks through EPD acknowledged writes, waits 300 ms and sends EPD `01` (full) / `AA` (partial) refresh; it does **not** document safe resume of partial image transfers. Added offline `dash-preflight.mjs` order/offset/MTU/refresh audit and five tests, intended **30 total**; Display Designer simulation reports audit result. NRF- image upload stays disabled until browser write-size and recovery validation.
+
+
+
 **Phase 2 Q (simulation-only, 14 Oct 2026):** Implemented independent NRF- transfer simulator with MTU capacity validation, projected packet throughput, hypothetical disconnect and refresh interruption, and explicit warning not to resume partial frames. Six new offline tests; intended total **25 tests**. Browser simulation is read-only. Next: validate in Android Chrome and research actual browser write size, image refresh and failure recovery. No physical image writes.
 
 **Android Chrome simulator validation DONE (Test R, 14 Oct 2026):** MTU 512 and 55s hypothetical session: 200ms/packet => 29.2s, 126/126 packets; 600ms/packet => 79.6s, 91/126 before interruption. Both mobile screenshots match model predictions. These are not measured BLE throughput or hardware transfer results. Next: original XLY95 image refresh and recovery details, Chrome write length and safe reversible test protocol. Physical NRF- image upload remains disabled.
