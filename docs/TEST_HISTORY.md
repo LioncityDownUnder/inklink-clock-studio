@@ -484,6 +484,14 @@ Possible explanations include incomplete erasure/refresh waveform or residual im
 
 **Safety:** do not issue undocumented EPD `00+cmd`/refresh commands, guess clear parameters, or repeatedly reupload solely to see whether ghosting disappears. Investigate whether the device's manufacturer clock-mode full update (previously working) provides any documented safe clearing approach. Offline font contrast/spacing improvements can proceed separately. No new device writes in this investigation.
 
+## Test AK — normal Clock mode restores CLEAN physical screen after custom-image ghosting
+
+**14 October 2026 (user-reported direct observation).** After the first verified physical English image upload (Test AH) left persistent, display-wide ghosting (Tests AI/AJ), the user connected via InkLink and selected the previously tested **Clock mode**. **Result: the original Chinese clock face appeared CLEAN, without ghosting.** This is a successful post-custom-image restoration on the real hardware, not merely a command acknowledgment.
+
+**Supported inference:** display can achieve a clean result using built-in Clock mode; ghosting on the custom English image is not evidently permanent panel damage. A different or more thorough refresh/erase sequence is plausible but **not yet proven**. This test does NOT establish that Clock mode can safely recover a partially transmitted EPD image buffer or that sending an undocumented EPD clear command is safe.
+
+**New development priority:** read-only compare built-in mode commands (RXTX `E1 02`, `E2`) with the custom image EPD `01` refresh. Investigate verified firmware behavior or documented waveform/refresh parameters; avoid speculative EPD `00+cmd` commands. Optionally improve English footer legibility offline, but only undertake another image write with separate deliberate user approval.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
