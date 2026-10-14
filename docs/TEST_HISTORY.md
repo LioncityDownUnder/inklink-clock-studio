@@ -420,6 +420,12 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next:** Review the actual BLE adapter design for operation timeouts, cancellation between in-flight writes, browser visibility, user consent and manual Clock-mode restoration. Do NOT enable device transmission merely on the basis of the mock test results. Any first hardware trial requires separately informed and explicit approval.
 
+## Engineering checkpoint AB — isolated fail-closed BLE adapter review (NOT activated)
+
+**14 October 2026:** Added `src/ble-guarded-writer.mjs` plus eight mock tests; suite now **58 tests**. Adapter exposes a wrapper for acknowledged EPD characteristic writes with connection, foreground visibility, cancellation, operation deadline, exclusive in-flight write and post-write safety checks. A rejected GATT write permanently blocks subsequent calls. **No live app import or image upload invocation**; the existing `NRF-` Send to clock guard is unchanged.
+
+**Limit:** if Chrome's characteristic write promise hangs, neither AbortSignal nor a local timer can forcibly terminate its underlying radio operation; checks can only stop further traffic when control returns. The adapter does not independently solve actual negotiated MTU, 244-byte write acceptance, recovery of half-written e-paper buffers, or a possible indefinite pending BLE write. No live upload approved or performed. User previously confirmed 3/3 browser mock scenarios; no new physical test required yet.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
