@@ -23,6 +23,12 @@ User approved preparing and offering a first live supervised image-transfer atte
 
 **Caution:** the successful run does not prove recovery from an interrupted write, persistent long-term connectivity or safe firmware reset. For any subsequent physical EPD changes request a new supervised action; never auto-repeat.
 
+## Successful clean Clock-mode restoration (Test AK)
+
+After a **completed** custom English image upload with visible persistent ghosting, the user switched to built-in Clock mode using the previously verified controls. **The original Chinese clock face appeared clean, without ghosting.** This provides a tested route to restore a clean normal display after a successful full-image upload.
+
+**Scope restriction:** This observation does not prove that Clock mode restores an interrupted half-written EPD frame or implements a general erase/rollback protocol. The custom-image ghosting remains unresolved. The next stage should analyze the firmware's refresh behavior without sending guessed clearing commands.
+
 ## What has been verified
 
 - Actual clock accepts RXTX time sync DD/E2, Calendar E1 01/E2 and Clock E1 02/E2. Built-in Clock mode provides a **verified normal-mode command**, but is **NOT verified as a cure for a half-written EPD buffer**.
