@@ -74,7 +74,7 @@
             <div class="studio-settings">
               <article class="card settings-card"><div class="card-heading"><span class="card-icon">✎</span><div><h2>Design settings</h2><p>Choose what appears on screen</p></div></div>
                 <label for="template" class="field-label">Design type</label><select id="template" class="field"><option value="clock">English clock face</option><option value="message">Text / message board</option><option value="image">Uploaded image</option></select>
-                <label for="screenSize" class="field-label">Display size</label><select id="screenSize" class="field"><option value="4.2">4.2″ — 400 × 300 (likely yours)</option><option value="2.13">2.13″ — 122 × 250</option><option value="7.5">7.5″ — 800 × 480</option></select>
+                <label for="screenSize" class="field-label">Display size</label><select id="screenSize" class="field"><option value="4.2">400 × 300 — XLY95 preset (panel unconfirmed)</option><option value="2.13">2.13″ — 122 × 250</option><option value="7.5">7.5″ — 800 × 480</option></select>
                 <label for="colourMode" class="field-label">E-paper colour mode</label><select id="colourMode" class="field"><option value="tri">Black / white / red</option><option value="mono">Black / white</option></select><div class="form-row compact"><label class="checkbox-label"><input type="checkbox" id="imageDither" checked> Dither uploaded images for e-paper</label></div>
                 <div id="copyFields"><label for="headline" class="field-label">Heading</label><input id="headline" class="field" maxlength="60" value="SYDNEY TIME"><label for="subtitle" class="field-label">Footer text</label><input id="subtitle" class="field" maxlength="90" value="A GOOD DAY TO GET THINGS DONE"><label for="timeFormat" class="field-label">Time format</label><select id="timeFormat" class="field"><option value="24">24-hour</option><option value="12">12-hour (AM/PM)</option></select></div>
                 <div id="imageFields" class="hidden"><label for="imageInput" class="field-label">Image file</label><input id="imageInput" type="file" accept="image/*" class="field file-field"><label for="imageFit" class="field-label">Image fit</label><select id="imageFit" class="field"><option value="contain">Fit entire image</option><option value="cover">Fill display (crop edges)</option></select><p class="fineprint">Image stays in your browser. JPEG, PNG and other supported image formats are converted locally.</p></div>
@@ -88,6 +88,12 @@
               <div class="snapshot-note"><strong>Important:</strong> An uploaded clock design is a static snapshot; it will not tick after you close the app. To restore the device's live clock, use <em>Clock mode</em> under Overview.</div>
               <div class="transfer-status" id="transferStatus" hidden><div class="progress-meta"><strong id="transferLabel">Preparing image…</strong><span id="transferPct">0%</span></div><progress id="transferProgress" value="0" max="100"></progress></div>
               <div class="preview-actions"><button id="downloadPng" class="button button-secondary">↓ Download PNG</button><button id="sendImage" class="button button-primary" data-requires-connection disabled>Send to clock <span aria-hidden="true">↗</span></button></div>
+              <div class="snapshot-note" role="region" aria-label="Offline NRF- packet inspection">
+                <strong>NRF- transfer inspector (offline only)</strong>
+                <p>Generate the black/red bitplanes and original XLY95 03/04 packet headers from this preview. This never contacts Bluetooth or writes to the clock. NRF- image upload stays disabled.</p>
+                <button id="inspectDash" type="button" class="button button-secondary button-small">Inspect encoded packets (offline)</button>
+                <p id="dashPacketSummary" class="fineprint" role="status" aria-live="polite">Choose a design and click Inspect. This does not send data.</p>
+              </div>
             </article>
           </div>
         </section>
