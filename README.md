@@ -1,5 +1,11 @@
 # InkLink Studio — English BLE E-Paper Clock App
 
+### Offline protocol preflight (no BLE writes)
+
+The transfer simulator also audits source-confirmed **BW → red packet order**, byte-offset continuity, assumed `ATT MTU - 3` write capacity, per-packet size and final refresh command. XLY95 sends EPD acknowledged writes, waits **300 ms** after planes, and sends EPD refresh `01` (full) or `AA` (partial). This is **not** the clock-mode RXTX `E2` command. There is no documented safe resumption of a half-written frame. `src/dash-preflight.mjs` adds five deterministic tests; total automated tests intended **30**. The physical image-upload feature remains disabled.
+
+
+
 A browser-based, English-language control panel and image designer for desk clocks compatible with the [XLY95 BLE protocol](https://github.com/XLY95/xly95.github.io). Built with plain HTML, CSS and JavaScript; no dependencies or server-side account.
 
 > **Hardware-tested clock controls (14 October 2026):** The real NRF- clock successfully responds to time sync (`DD` + `E2`), Calendar mode (`E1 01` + `E2`), and Clock mode (`E1 02` + `E2`). The user explicitly confirmed each on the physical device; the mode changes were logged at 19:53:20 and 19:53:39. **NRF- custom image upload is not yet implemented or device-validated**. BLE can disconnect after around a minute on both InkLink and original XLY95; the underlying cause is unproven.
