@@ -110,7 +110,19 @@
                   <div class="preview-actions"><button id="mockUploadStart" type="button" class="button button-secondary button-small">Start MOCK transfer</button><button id="mockUploadCancel" type="button" class="button button-outline button-small" disabled>Cancel MOCK transfer</button></div>
                   <progress id="mockUploadProgress" value="0" max="100" style="width:100%"></progress>
                   <p id="mockUploadResult" class="fineprint" role="status" aria-live="polite">Waiting for mock transfer. Real NRF- image upload remains disabled.</p>
-                  <div id="mockUploadEvents" class="fineprint" role="log" aria-live="polite" style="max-height:160px;overflow:auto"></div><div class="snapshot-note"><strong>First physical-upload trial: readiness review only</strong><p>You agreed to prepare a supervised trial. This reports unresolved conditions but does not authorize transmission or enable the real upload button.</p><button id="reviewTrialReadiness" type="button" class="button button-secondary button-small">Review hardware trial readiness — no writes</button><p id="trialReadinessSummary" class="fineprint" role="status" aria-live="polite">Not yet reviewed. No device image upload is enabled.</p></div>
+                  <div id="mockUploadEvents" class="fineprint" role="log" aria-live="polite" style="max-height:160px;overflow:auto"></div><div class="snapshot-note"><strong>First physical-upload trial: readiness review only</strong><p>You agreed to prepare a supervised trial. This reports unresolved conditions but does not authorize transmission or enable the real upload button.</p><button id="reviewTrialReadiness" type="button" class="button button-secondary button-small">Review hardware trial readiness — no writes</button><p id="trialReadinessSummary" class="fineprint" role="status" aria-live="polite">Not yet reviewed. No device image upload is enabled.</p>
+                <div class="snapshot-note" role="region" aria-label="First real image upload">
+                  <strong>FIRST LIVE IMAGE UPLOAD — ONE ATTEMPT ONLY</strong>
+                  <p>This is a real transfer, not a mock. Connect the NRF- clock, select 400 × 300, and inspect the exact preview before continuing. The active panel profile and Chrome 244-byte write acceptance remain unverified. A disconnect may leave an incomplete image; Clock mode is not guaranteed to repair it. The page will not retry automatically.</p>
+                  <label><input id="liveUploadRisk" type="checkbox"> I accept that this first transfer will send real image data and that recovery of an interrupted image is unverified.</label>
+                  <div class="form-row compact"><label for="liveUploadConfirmText">Type UPLOAD to unlock</label>
+                    <input id="liveUploadConfirmText" autocomplete="off" inputmode="text" placeholder="UPLOAD" style="max-width:180px">
+                  </div>
+                  <div class="preview-actions"><button id="liveUploadStart" class="button button-primary button-small" type="button" disabled>Start single real image transfer</button><button id="liveUploadCancel" class="button button-outline button-small" type="button" disabled>Request STOP</button></div>
+                  <progress id="liveUploadProgress" max="100" value="0" style="width:100%"></progress>
+                  <p id="liveUploadStatus" class="fineprint" role="status" aria-live="polite">No physical image data has been sent by this page session. A final native confirmation appears before any transmission.</p>
+                  <div id="liveUploadEvents" class="fineprint" role="log" aria-live="polite" style="max-height:180px;overflow:auto"></div>
+                </div></div>
                 </div></div></div>
               </div>
             </article>
