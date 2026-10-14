@@ -143,6 +143,14 @@ For a *hypothetical* 400×300 two-plane image: 15,000 bytes per plane, 30,000 im
 
 **Next:** obtain verifiable hardware markings/manual/firmware documentation if practical, otherwise explicitly treat waveform/erase as unavailable and avoid guessing controller-specific opcodes.
 
+## Firmware UI discoveries — observation AO (14 October 2026)
+
+User physically observes **battery level and a temperature indication** in the built-in Chinese live clock. Temperature source is **unknown** (could be onboard sensor, firmware hardware or another source); BLE-readable values and GATT Battery Service presence are **NOT verified**. No numeric telemetry is received or decoded by InkLink. Never confuse numbers visually displayed on the panel with data provided to a web BLE client.
+
+User also physically observes **three built-in Clock mode face styles**, cycling on **successive Clock mode button presses**. InkLink currently sends **the same** RXTX `E1 02` command followed by `E2` for each click. Treat the three-style cycling as firmware-maintained state, NOT as proof of separate style-setting or readback opcodes. The same mode action was earlier shown to restore a clean screen after custom-image ghosting. Avoid unexplained extra mode commands.
+
+Safe future research: photograph each layout and look for manufacturer-documented characteristic read/notify interfaces for battery or temperature. Avoid writing guessed BLE requests or attempting undocumented firmware configuration. The static English custom-image upload currently cannot display continuously updated on-device telemetry.
+
 ## Software implementation map
 
 - `src/dash-image.mjs`: **offline-only** image size profiles, strict pure-colour BW/red encoding, image packet framing, and plan calculation. No BLE APIs or writes.
