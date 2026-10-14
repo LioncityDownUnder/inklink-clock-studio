@@ -61,6 +61,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Checkpoint AG, first physical trial interface available:** After user approval, the separate single-attempt 400×300 NRF- upload path is gated by risk confirmation, typed `UPLOAD`, native confirmation and guarded acknowledged writes. Four fake-characteristic integration/wiring tests added (72 tests); release deployed. No actual image result yet. Next: deliberate user-initiated attempt, record Activity Log, physical display photo and any failure; do not assume success or automatically retry.
 
+**Milestone AH (14 Oct 2026): FIRST LIVE NRF- IMAGE UPLOAD SUCCESS:** 126/126 EPD packets, refresh acknowledged in 9.3s, and real photo shows English tri-colour 400×300 image physically rendered. The 244-byte Chrome write unknown is resolved **for this session**. **Remaining defect: prominent ghosting from Chinese clock, small/pixelated footer, static face does not tick.** P1 shifts to researching safe full-refresh/clear and improved design; potential `clearScreen(cmd)` exists upstream but must NOT be sent before understanding supported argument and device effects. Restore-to-live clock after image not yet retested. Do not assume image-buffer rollback or durable BLE stability verified.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
