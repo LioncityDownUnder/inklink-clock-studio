@@ -9,6 +9,10 @@ User accepted the described risks to **prepare** a supervised first image upload
 
 **Status:** Proposed procedure only, **not yet approved or executed** (14 October 2026). The NRF- image-upload action remains disabled. No test payloads have been transmitted.
 
+## Trial enablement update (14 October 2026)
+
+User approved preparing and offering a first live supervised image-transfer attempt. The app now has a separate user-confirmed one-attempt flow that is not started automatically. It requires the connected NRF- clock, a 400×300 validated offline plan, a risk checkbox, typed `UPLOAD`, and a final confirmation. The guarded adapter checks connection, foreground visibility, cancellation and a 48-second scheduling budget; it never automatically retries or resumes. An in-flight write cannot be force-cancelled. Acknowledged refresh is not proof of a correctly updated display. **No physical image upload has yet been observed.** The Chrome write-size and incomplete-image recovery remain unverified. The user must decide to start the attempt in their own browser.
+
 ## What has been verified
 
 - Actual clock accepts RXTX time sync DD/E2, Calendar E1 01/E2 and Clock E1 02/E2. Built-in Clock mode provides a **verified normal-mode command**, but is **NOT verified as a cure for a half-written EPD buffer**.
