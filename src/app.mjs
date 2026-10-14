@@ -4,6 +4,7 @@ import { auditDashSequence } from './dash-preflight.mjs';
 import { describeEpdWriteCapabilities } from './ble-capabilities.mjs';
 import { createUploadRehearsal } from './upload-rehearsal.mjs';
 import { runMockSupervisedTransfer } from './mock-transfer-runner.mjs';
+import { prepareFirstHardwareTrial } from './first-trial-readiness.mjs';
 import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex,
   DASH_EPD_SERVICE_UUID, DASH_EPD_CHARACTERISTIC_UUID, DASH_RXTX_SERVICE_UUID,
   DASH_RXTX_CHARACTERISTIC_UUID, encodeDashTime, encodeDashMode, DASH_REFRESH } from './protocol.mjs';
@@ -729,6 +730,29 @@ function cancelMockUpload() {
   }
 }
 
+function reviewFirstHardwareTrial() {
+  try {
+    const canvas=$('previewCanvas');
+    const image=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,canvas.width,canvas.height);
+    const plan=createDashTransferPlan(image);
+    const audit=auditDashSequence(plan,{attMtu:Number($('simMtu').value)});
+    const report=prepareFirstHardwareTrial({
+      plan,audit,
+      panelProfileConfirmed:false,
+      acknowledgedWriteAvailable:connected() && state.profile==='dash' && Boolean(state.characteristic?.properties?.write),
+      browserWriteSizeVerified:false,
+      recoveryVerified:false
+    });
+    $('trialReadinessSummary').textContent='PREPARATION ONLY — no Bluetooth data sent. '+
+      report.proposedPackets+' packets / '+report.proposedBytes+' estimated characteristic bytes. '+
+      report.checks.map(c=>(c.passed?'PASS: ':'UNVERIFIED: ')+c.name).join(' | ')+
+      '. Physical upload remains disabled. '+report.statement;
+    log('First hardware trial readiness reviewed only. No writes, no upload authorization.');
+  }catch(error){
+    $('trialReadinessSummary').textContent='Trial preparation blocked: '+(error.message||error)+'. No Bluetooth writes.';
+  }
+}
+
 function progress(percent,label){
   $('transferStatus').hidden=false;
   $('transferProgress').value=percent;
@@ -838,6 +862,7 @@ function init(){
   $('rehearseDash').addEventListener('click',rehearseDashUpload);
   $('mockUploadStart').addEventListener('click',startMockUpload);
   $('mockUploadCancel').addEventListener('click',cancelMockUpload);
+  $('reviewTrialReadiness').addEventListener('click',reviewFirstHardwareTrial);
   $('sendImage').addEventListener('click',uploadImage);
   $('downloadPng').addEventListener('click',downloadPng);
   $('clearLog').addEventListener('click',()=>{
