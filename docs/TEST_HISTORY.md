@@ -540,6 +540,19 @@ Built new `src/gatt-diagnostics.mjs` to list browser-permitted GATT services and
 
 The live page now has explicit opt-in **Inspect GATT services & standard values — no writes**. Six fake-characteristic tests ensure standard decoding and never writing, target **83 total tests**. This is **software only**; no actual battery or temperature GATT observation yet. User must connect NRF- clock in Safe mode, tap inspector, and report text. Firmware screens showed `3.9V` and `21°C`; do not represent a battery-percent characteristic or a temperature sensor as discovered before seeing real output.
 
+## Test AR — first actual GATT battery and service inventory (15 October 2026 ~00:15 Sydney)
+
+**USER SCREENSHOT verified, read-only:** InkLink's opt-in GATT inspector enumerated **4 Chrome-permitted services** on the user's connected NRF- clock:
+
+1. **0000221f-0000-1000-8000-00805f9b34fb** → characteristic **0000331f-0000-1000-8000-00805f9b34fb** with properties **read, write, notify**. This is a likely proprietary device-specific pathway, but the value/format is UNKNOWN and was not read.
+2. **00001f10-0000-1000-8000-00805f9b34fb** → characteristic **00001f1f-0000-1000-8000-00805f9b34fb** with **write** property only.
+3. **13187b10-eba9-a3ba-044e-83d3217d9a38** → characteristic **4b646063-6264-f3a7-8941-e65356ea82fe** with **write, notify**.
+4. **Battery Service 0000180f-0000-1000-8000-00805f9b34fb** → **Battery Level 00002a19-0000-1000-8000-00805f9b34fb**, properties **read, notify**. A genuine standard read reported **0%**.
+
+**Critical interpretation:** Physical clock photographs previously show **3.9V**, not a battery percentage. Battery Level **0% may be default/placeholder, incorrectly calibrated or valid at that moment**, so it must not be presented as a verified state of charge. The clock remained operational. No standard Environmental Sensing Service **0x181A** was visible in this browser report; this cannot disprove the internally displayed **21°C** sensor reading. The read-only inspector explicitly logged no writes, commands or notification setup.
+
+**Next:** investigate **0x221F / 0x331F**, the only newly identified proprietary readable characteristic, starting with documentation/source lookup. Consider adding a **separate, opt-in bounded readValue-only raw hex inspector**, disabled by default; absolutely NO guessed commands, writes, or auto-notification subscriptions. A read may theoretically have device-specific side effects, which must be considered before an actual test. Preserve raw bytes without inventing temperature/voltage meanings.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
