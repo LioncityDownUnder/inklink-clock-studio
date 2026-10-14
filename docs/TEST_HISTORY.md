@@ -1,6 +1,6 @@
 # Testing and investigation history
 
-**Evidence log started:** 14 October 2026 (Sydney local time). This records the sequence **before** the corrected NRF- dual-service implementation was tried on real hardware. Use it to avoid repeating failed hypotheses. Each entry is a summary of user-reported screenshots/logs; screenshots themselves are not committed to a public repository.
+**Evidence log started:** 14 October 2026 (Sydney local time). This documents earlier failures and the successful first physical test with the corrected NRF- two-service profile. Use it to avoid repeating failed hypotheses. Each entry is a summary of user-reported screenshots/logs; screenshots themselves are not committed to a public repository.
 
 ## Date: 14 October 2026 — initial device and app
 
@@ -95,16 +95,42 @@ This was the actual root cause of the persistent service-not-found errors. See [
 - `92ce7220...`: updated project README with both protocols.
 - Last checked Actions run for the source update: https://github.com/LioncityDownUnder/inklink-clock-studio/actions/runs/38531754437 — **success**, with syntax checks, 9 protocol unit tests and GitHub Pages deployment.
 
-**IMPORTANT HARDWARE STATUS:** None of the user's screenshots so far demonstrates that the **corrected** dual-profile InkLink has successfully connected to the physical clock. Test A–D screenshots predate the corrected service and characteristic selection. **Do not infer live success from the Actions pass.**
+**HARDWARE STATUS UPDATE:** The corrected dual-profile build was subsequently verified on the physical clock in **Test record G** at 19:01. Both services/characteristics and the initial 1.5-second idle check passed. Command writes and notifications are still unverified.
 
-## Planned next test: Pending, record outcome below
+## Test record G — CORRECTED NRF- dual-service connection confirmed on physical hardware (SUCCESS)
 
-**Date/time:** TBD. **Browser:** Android Chrome. **Hardware:** same NRF- desk clock.
-1. Close XLY95 and nRF Connect BLE sessions, reload live InkLink.
-2. Leave Safe connection checked; connect `NRF-6CD319`.
-3. Capture service stages. For a successful connection, both EPD `13187b10`/`4b646063` and RXTX `1F10`/`1F1F` should be discovered and UI should remain connected for at least ten seconds.
-4. Only after that, test Enable notifications, time sync and clock/calendar modes individually. Confirm *physical screen effect* instead of relying only on a successful Web Bluetooth write.
-5. Record screenshot-derived log excerpts, whether XLY95 works on same phone, and result here. Do not commit private screenshots or Bluetooth MAC address.
+**Date:** 14 October 2026, approximately 19:01 Australia/Sydney.
+
+**Evidence:** User-provided Android screenshot of the InkLink Activity Log (19 connection events, final visible log rows at 19:01:06–19:01:07). The screenshot is not uploaded to this public repository. This observation follows the dual-profile implementation and successful GitHub Pages deployment; it is **the first confirmed physical connection with the corrected NRF- profile**.
+
+**Observed SUCCESS entries (transcribed from screenshot):**
+
+- `BLE stage: NRF- RXTX characteristic discovered`
+- `Protocol profile: NRF- EPD + RXTX (XLY95 main page)`
+- `EPD capabilities: write, notify`
+- `RXTX write capability: true`
+- `Safe mode: notifications disabled; no A9 or other command sent.`
+- `BLE stage: idle connection test (1.5 seconds)`
+- `BLE stage: connected and stable`
+
+**Conclusions confirmed on user's real hardware:**
+
+- InkLink's corrected `NRF-` profile discovers its two required GATT services and characteristics successfully. The RXTX characteristic was found; the app reports EPD `write`/`notify` and RXTX `write` as available.
+- The initial **1.5-second** idle stability check passed (after service discovery). **No ten-second or longer stability observation has yet been provided.**
+- In Safe mode, the app did not start notifications or write a clock command. Therefore notifications, DD/E2 time sync, E1/E2 clock/calendar mode and on-screen effects remain **UNTESTED**.
+- This resolves the **wrong UUID / missing service** blocker for the corrected build in this test, not all BLE reliability or screen control milestones.
+
+**Next requested check:** With the same Android Chrome session and correct clock, leave it connected for 10–15 seconds to confirm longer stability. Then press `1. Enable notifications`; wait and capture the log. If that succeeds, press `Sync date & time` once and visually confirm the physical clock changes to the right local date/time. Test built-in Clock/Calendar modes separately afterward. Do not upload an image to `NRF-` yet.
+
+## Next physical test — notifications and controlled clock writes (PENDING)
+
+**Date/time:** TBD. **Browser:** Android Chrome. **Hardware:** same NRF- desk clock. Initial connection success already observed in Test record G; do not reclassify it as untested.
+
+1. If still connected, observe the connection remains stable for 10–15 seconds; otherwise reconnect in Safe mode. Do not open XLY95 or nRF Connect simultaneously.
+2. Press **1. Enable notifications** and wait several seconds. Capture success/error log.
+3. If still connected, press **Sync date & time** once and verify the actual screen's local time/date. The app sends DD payload and E2 on RXTX.
+4. Optionally test the built-in **Clock mode** and **Calendar mode** buttons one at a time, checking the actual display.
+5. Record any new errors and the verified device changes below; do not upload an image (unsupported for NRF-).
 
 ### Outcome template for future sessions
 
@@ -112,14 +138,14 @@ Copy and fill this in when the user reports results:
 
 | Field | Result |
 | --- | --- |
-| Date / build commit | TBD |
+| Date / build commit | 2026-10-14, corrected dual-profile build, latest specific source commit TBD |
 | Browser / OS | Android Chrome / exact version if known |
 | Device advertised name | NRF-... |
 | XLY95 works in same browser? | Yes / No / not tested |
-| BLE picker found device? | Yes / No |
-| `gatt.connect()` success? | Yes / No |
-| EPD service/characteristic found? | Yes / No |
-| RXTX service/characteristic found? | Yes / No |
+| BLE picker found device? | **Yes (verified at 19:01)** |
+| `gatt.connect()` success? | **Yes (verified at 19:01)** |
+| EPD service/characteristic found? | **Yes (verified at 19:01)** |
+| RXTX service/characteristic found? | **Yes (verified at 19:01)** |
 | Notifications work? | Yes / No / not tested |
 | Time sync affects screen? | Yes / No / not tested |
 | Mode controls affect screen? | Yes / No / not tested |
