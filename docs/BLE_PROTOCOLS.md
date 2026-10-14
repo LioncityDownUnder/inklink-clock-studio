@@ -81,29 +81,29 @@ Before implementing NRF- image upload, derive byte-exact test vectors from the o
 
 ## Offline NRF- image encoder — implemented but **NOT sent to hardware**
 
-**14 Oct 2026, Phase 2 development checkpoint.** Source inspection of original XLY95 main \`index.html\` identified the byte-order and transfer format. InkLink now has an **offline-only** encoder in [\`src/dash-image.mjs\`](../src/dash-image.mjs) with 10 source-derived unit tests in [\`tests/dash-image.test.mjs\`](../tests/dash-image.test.mjs). The display designer offers an **Inspect encoded packets (offline)** button; it makes no BLE writes. The actual NRF- **Send to clock** route remains blocked by the explicit guard in \`src/app.mjs\`.
+**14 Oct 2026, Phase 2 development checkpoint.** Source inspection of original XLY95 main `index.html` identified the byte-order and transfer format. InkLink now has an **offline-only** encoder in [`src/dash-image.mjs`](../src/dash-image.mjs) with 10 source-derived unit tests in [`tests/dash-image.test.mjs`](../tests/dash-image.test.mjs). The display designer offers an **Inspect encoded packets (offline)** button; it makes no BLE writes. The actual NRF- **Send to clock** route remains blocked by the explicit guard in `src/app.mjs`.
 
-**Pixel encoding source:** \`canvas2bytes()\`, \`canvas2bytes_bw()\`, \`upload_image()\`.
+**Pixel encoding source:** `canvas2bytes()`, `canvas2bytes_bw()`, `upload_image()`.
 
 - Pixels are encoded **MSB first**, 8 pixels/byte, no per-row padding on supported profiles (all dimensions yield an exact multiple of 8 pixels).
 - **BW plane:** bit 1 only if **all three RGB components are nonzero** in XLY95's original code. In the new encoder, pixels must first be quantized to **opaque pure black (0,0,0), white (255,255,255) or red (255,0,0)**; then BW bit 1 means **white**.
-- **Red plane:** bit 1 when RGB is (R>0,G=0,B=0) — **positive red mask**, not the **inverted red plane** from legacy \`NRF_\`. On a red pixel the BW bit is 0.
+- **Red plane:** bit 1 when RGB is (R>0,G=0,B=0) — **positive red mask**, not the **inverted red plane** from legacy `NRF_`. On a red pixel the BW bit is 0.
 - **400×300, 800×480, 280×100, 400×180:** row-major left-to-right then top-to-bottom.
-- **296×128, 212×128, 250×128:** XLY95 calls \`canvas2bytes_bw()\`, iterating **columns right-to-left**, and within each column **top-to-bottom**. Do not treat these as the same row-major layout.
+- **296×128, 212×128, 250×128:** XLY95 calls `canvas2bytes_bw()`, iterating **columns right-to-left**, and within each column **top-to-bottom**. Do not treat these as the same row-major layout.
 - **212×128 and 250×128:** upstream uploads **only BW**, no red plane. Other supported sizes send BW then red.
 - InkLink's e-paper canvas quantizer was changed to output exact black/white/red; its previous dark-blue/muted-red shades would have been misclassified by the original image encoder.
 - If the image contains other RGB shades, transparency or red on a mono-only profile, the new encoder **throws instead of silently producing incorrect bytes**.
 
-**Packet framing source:** \`sendBufferData(value, type)\`.
+**Packet framing source:** `sendBufferData(value, type)`.
 
-\`\`\`text
+```text
 byte 0       : 0x03 normally, 0x04 for exactly 3500 or 9000 bytes/plane
 byte 1       : 0xFF for BW; 0x00 for red
 bytes 2–3    : big-endian zero-based byte offset in the plane
 bytes 4–243  : up to 240 image-data bytes (final packet may be shorter)
-\`\`\`
+```
 
-Source uses \`my_step=480\` hex **characters**, which equals **240 binary data bytes per packet**, with a **244-byte full characteristic write** including header. Partial 280×100 (3500 bytes per plane) and 400×180 (9000 bytes per plane) use opcode \`04\`; others use \`03\`. Upstream final EPD write is \`0xAA\` for the small/partial image modes (width 280 or height 180), or \`0x01\` for full images. The offline plan only **reports** that command; **it does not transmit or refresh**.
+Source uses `my_step=480` hex **characters**, which equals **240 binary data bytes per packet**, with a **244-byte full characteristic write** including header. Partial 280×100 (3500 bytes per plane) and 400×180 (9000 bytes per plane) use opcode `04`; others use `03`. Upstream final EPD write is `0xAA` for the small/partial image modes (width 280 or height 180), or `0x01` for full images. The offline plan only **reports** that command; **it does not transmit or refresh**.
 
 For a *hypothetical* 400×300 two-plane image: 15,000 bytes per plane, 30,000 image bytes, **126 characteristic writes** and **30,504 total transmitted bytes** including headers, with a maximum **244-byte** write. This is **not evidence that the user's actual screen is 400×300**, or that Android/clock negotiate an MTU sufficient for 244-byte writes. Original XLY95 displayed a **selected 400×300 canvas**, not independent physical panel measurement.
 
