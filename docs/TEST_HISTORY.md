@@ -504,6 +504,14 @@ Possible explanations include incomplete erasure/refresh waveform or residual im
 
 Implemented `src/clock-typography.mjs` and checkbox `High-contrast English clock layout (preview only)` in Display Designer. The clock preview and downloaded PNG now allow a larger, black, 1–2-line footer. It does NOT add any new BLE operation or attempt ghosting repair. Five new offline tests bring suite to **77**. Review the layout on Android Chrome; no need to touch the physical clock.
 
+## Test AN — Android Chrome high-contrast English preview PASSED
+
+**14 October 2026 ~23:43 Sydney, screenshot supplied by user.** The live 400×300 canvas shows "SYDNEY TIME", large bold black **23:43**, clear red **WEDNESDAY 14 OCTOBER 2026**, and darker, more legible footer **A GOOD DAY TO GET THINGS DONE**, fitting on a single line. No overlapping text or obvious layout clipping appears in the screenshot. This verifies the updated browser preview, **not** hardware e-paper contrast, panel ghosting repair or a second image upload.
+
+**Hardware state:** Last observed real display was clean original Chinese Clock mode after restoration (Test AK). No new BLE image write is requested or evidenced by this screenshot. High-contrast option only changes preview and any *future separately confirmed* image. The root cause of persistent ghosting during custom-image mode is still unknown.
+
+**Next:** keep clean clock mode; investigate verified full-screen erase/refresh from actual firmware/controller evidence before further physical image experiments. Do not ask user to repeat successful preview test.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
