@@ -1,5 +1,11 @@
 # InkLink Studio — English BLE E-Paper Clock App
 
+### Read-only EPD write-capability inspection
+
+Connect to the `NRF-` clock, then select **Inspect connected EPD capability — no writes** in Display Designer. This reads browser-side characteristic properties and method availability only; it never calls a BLE characteristic read or write. **Chrome Web Bluetooth does not provide a negotiated ATT MTU value**, so an MTU of 512 reported by nRF Connect in a separate connection does *not* guarantee Chrome can send 244-byte image packets. The physical image-upload action remains disabled.
+
+
+
 ### Offline protocol preflight (no BLE writes)
 
 The transfer simulator also audits source-confirmed **BW → red packet order**, byte-offset continuity, assumed `ATT MTU - 3` write capacity, per-packet size and final refresh command. XLY95 sends EPD acknowledged writes, waits **300 ms** after planes, and sends EPD refresh `01` (full) or `AA` (partial). This is **not** the clock-mode RXTX `E2` command. There is no documented safe resumption of a half-written frame. `src/dash-preflight.mjs` adds five deterministic tests; total automated tests intended **30**. The physical image-upload feature remains disabled.
