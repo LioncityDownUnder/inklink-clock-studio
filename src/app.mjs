@@ -3,6 +3,7 @@ import { simulateDashTransfer } from './dash-simulator.mjs';
 import { auditDashSequence } from './dash-preflight.mjs';
 import { describeEpdWriteCapabilities } from './ble-capabilities.mjs';
 import { inspectGattReadOnly, TELEMETRY_SERVICES } from './gatt-diagnostics.mjs';
+import { readRaw331fOnce } from './raw-331f-read.mjs';
 import { createUploadRehearsal } from './upload-rehearsal.mjs';
 import { runMockSupervisedTransfer } from './mock-transfer-runner.mjs';
 import { prepareFirstHardwareTrial } from './first-trial-readiness.mjs';
@@ -82,6 +83,7 @@ function updateUi() {
   $('disconnectBtn').disabled = !linked || state.busy;
   $('queryInfo').disabled = !online || state.busy || state.profile === 'dash';
   $('inspectGattServices').disabled = !linked || state.busy;
+  $('inspectRaw331f').disabled = !online || state.profile!=='dash' || state.busy || raw331fAttempted;
   $('sendImage').disabled = !online || state.busy || state.profile === 'dash';
   $('discoverService').disabled = !linked || online || state.busy;
   $('allDevices').disabled = linked || state.busy;
@@ -567,6 +569,42 @@ function downloadPng() {
   log('Exported current display as PNG');
 }
 
+// Unknown proprietary GATT value: one manual attempt per page session, no retries.
+let raw331fAttempted=false;
+async function inspectRaw331f(){
+  if(raw331fAttempted || state.busy)return;
+  if(!connected() || state.profile!=='dash'){
+    $('raw331fSummary').textContent='Connect to the NRF- clock in Safe mode first.';
+    return;
+  }
+  if(!confirm('ONE RAW PROPRIETARY GATT READ (0x331F)\n\n'+
+      'The meaning of this value is unknown. We will attempt exactly one standard readValue(), '+
+      'display at most the first 64 bytes in hex, and send NO write commands or subscriptions.\n\n'+
+      'Even a read on proprietary firmware is not guaranteed to be side-effect-free. '+
+      'Do you want to attempt this ONE read now?'))return;
+  raw331fAttempted=true;
+  setBusy(true);
+  $('raw331fSummary').textContent='Single 331F read pending. No writes or notification setup.';
+  try{
+    const report=await readRaw331fOnce({
+      server:state.device.gatt,consent:true,isConnected:()=>gattLinked()
+    });
+    $('raw331fSummary').textContent=
+      'Raw 0x331F read completed; returned '+report.returnedLength+' bytes. '+
+      'Showing '+report.displayedLength+(report.truncated?' (truncated to 64)':'')+
+      ':\n'+report.hex+'\n'+report.interpretation+
+      '\nNo writes, subscriptions, or follow-up reads.';
+    log('Single proprietary 331F raw read completed, '+report.returnedLength+' byte(s). No decoding.', 'success');
+  }catch(error){
+    $('raw331fSummary').textContent='Single 331F read unsuccessful: '+(error.message||error)+
+      '. No retries performed, no writes.';
+    log('Single 331F raw read stopped: '+(error.message||error),'error');
+  }finally{
+    setBusy(false);
+    $('inspectRaw331f').disabled=true;
+  }
+}
+
 async function inspectConnectedGatt() {
   if(state.busy)return;
   if(!gattLinked()){
@@ -1040,6 +1078,7 @@ function init(){
   $('inspectDash').addEventListener('click',inspectDashImageOffline);
   $('inspectBleCapacity').addEventListener('click',inspectBleCapabilities);
   $('inspectGattServices').addEventListener('click',inspectConnectedGatt);
+  $('inspectRaw331f').addEventListener('click',inspectRaw331f);
   $('simulateDash').addEventListener('click',simulateDashImageOffline);
   $('rehearseDash').addEventListener('click',rehearseDashUpload);
   $('mockUploadStart').addEventListener('click',startMockUpload);
