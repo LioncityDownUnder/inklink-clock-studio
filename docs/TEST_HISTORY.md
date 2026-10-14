@@ -184,13 +184,43 @@ This was the actual root cause of the persistent service-not-found errors. See [
 - **XLY95 reliably stays connected 90–120+s:** compare its connection lifecycle/notification handling, BLE write/keepalive behavior, and error/reconnect handling with InkLink. Do not add speculative keepalive writes without protocol evidence.
 - **Original site reconnects silently:** distinguish a true uninterrupted connection from a UI that automatically reconnects. Check status/log if available.
 
-## Next physical test — compare idle connection in original XLY95 (PENDING)
+## Test record J — original XLY95 ALSO disconnects after approximately one minute (cross-site confirmation)
 
-1. Disconnect InkLink completely. On **the same Android Chrome phone**, open https://xly95.github.io/ .
-2. Select the same physical `NRF-` clock and connect, then **do not send any time, display-mode or image commands**.
-3. Keep original site foreground with display awake for **90–120 seconds**. Note XLY95 connection status/log at 30s, 60s and 120s if feasible.
-4. Report whether it remains connected at 120s, disconnects and at what time, or automatically reconnects. A screenshot of the status/log is helpful.
-5. If original stays connected significantly longer, inspect its GATT connect and recovery sequence; otherwise compare Android/device inactivity behavior. Keep control tests and image upload separate.
+**Date:** 14 October 2026, approximately 19:37–19:38 Sydney. **Hardware and client:** same `NRF-` clock, same Android Chrome phone, original https://xly95.github.io/ main-page BLE controller. Screenshot provided by user; not copied to this public GitHub repository.
+
+**Evidence from XLY95's own on-page log (translated from Chinese):**
+
+- `19:36:53 画布尺寸已更新为：400x300` — canvas selection was set to 400×300. **This is an on-page setting, NOT independent physical screen identification.**
+- `19:37:03 正在链接: NRF-6CD319` — beginning connection.
+- `19:37:07 > 找到GATT服务器` — GATT server found.
+- `19:37:08 > epdService 找到可用服务` — EPD service discovered.
+- `19:37:08 > epdCharacteristic 服务已连接` — EPD characteristic connected.
+- `19:37:08 > rxtxService 找到串口服务` — RXTX service discovered.
+- `19:37:08 > rxtxCharacteristic 串口服务已连接` — RXTX characteristic connected.
+- `19:38:07 链接已断开.` — connection disconnected.
+
+**Measured outcome:** connection remained up for about **59 seconds after service/characteristic discovery** (19:37:08 to 19:38:07), or ~64 seconds from beginning the connection attempt (19:37:03). Original XLY95 also disconnected with no user-initiated time, display-mode or image command during the idle observation, per user report.
+
+**Comparison with InkLink:**
+
+| Site/test | Notifications | BLE session ending | Result |
+|---|---|---|---|
+| InkLink H | Enabled successfully | 33.5s after device selection | Unrequested disconnection |
+| InkLink I | Safe mode; no notifications or commands | 57.2s after device selection | Unrequested disconnection |
+| **XLY95 J** | XLY95 normally enables EPD notifications during connection | **~59s after service discovery** | Disconnected, per original site's own log |
+
+**Interpretation (bounded):** These results make the disconnection **unlikely to be a bug unique to InkLink**, since the original vendor/community web UI experiences it on the same clock and browser. A normal peripheral idle timeout or power-saving behaviour is plausible; Android/BLE stack behaviour and radio instability are also plausible. **Do not claim an exact 60-second built-in timer or confirmed cause.** XLY95 did not visibly reconnect during the screenshot; that does not establish it never reconnects automatically.
+
+**Engineering decision:** Do not introduce speculative keepalive messages or rework InkLink's working BLE service selection merely to suppress an unproven timeout. For the current goal—configuring the clock—an approximately one-minute window may be sufficient. Move to testing **one user-initiated, already source-verified clock time command** promptly after connecting (and then the clock/calendar commands), with visual confirmation on the physical display. Separately research idle lifetime/reconnection only if ongoing sessions are required for future live dashboards.
+
+## Next physical test — InkLink RXTX time sync while connected (PENDING)
+
+1. Close/disconnect XLY95 and nRF Connect. Open the [InkLink web app](https://lioncitydownunder.github.io/inklink-clock-studio/) in the same Android Chrome browser.
+2. Keep **Safe connection** enabled, connect to the `NRF-` clock, wait for `connected and stable`.
+3. **Within about 20 seconds**, press **Sync date & time once** (this is a manual, deliberate `DD` time packet followed by `E2` refresh on the verified RXTX characteristic).
+4. Confirm InkLink Activity Log reports the write(s) succeeded. Confirm physically that the clock's time/date is correct; if already correct, note whether there is visible update and that result is less conclusive.
+5. Capture log and physical effect. Do not infer success solely from a BLE write acknowledgment.
+6. If successful, separately test Clock/Calendar mode switching using `E1 02` or `E1 01` followed by `E2` with a new BLE connection if needed. **No NRF- image upload**.
 
 ### Outcome template for future sessions
 
@@ -201,7 +231,7 @@ Copy and fill this in when the user reports results:
 | Date / build commit | 2026-10-14, corrected dual-profile build, latest specific source commit TBD |
 | Browser / OS | Android Chrome / exact version if known |
 | Device advertised name | NRF-... |
-| XLY95 works in same browser? | Yes / No / not tested |
+| XLY95 works in same browser? | **Yes; correct services connected at ~19:37:08; disconnected at ~19:38:07 in idle test** |
 | BLE picker found device? | **Yes (verified at 19:01)** |
 | `gatt.connect()` success? | **Yes (verified at 19:01)** |
 | EPD service/characteristic found? | **Yes (verified at 19:01)** |
@@ -209,7 +239,7 @@ Copy and fill this in when the user reports results:
 | Notifications work? | **Subscription succeeded at 19:21:57; no incoming payload verified; disconnect 10s later** |
 | Time sync affects screen? | Yes / No / not tested |
 | Mode controls affect screen? | Yes / No / not tested |
-| Actual error/log excerpt | **33.5s with notifications (19:22:07); 57.2s without notifications/commands (19:31:07)** |
-| Next engineering action | **Compare idle connection on original XLY95 on same phone for 90–120 seconds** |
+| Actual error/log excerpt | **InkLink: 33.5s with notifications; 57.2s without. XLY95: disconnected ~59s after service discovery.** |
+| Next engineering action | **Test manual DD/E2 time sync promptly after InkLink connects; verify actual clock display** |
 
 **Change history discipline:** append only verified new evidence, mark hypotheses accordingly, and update [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) current status and [ROADMAP.md](ROADMAP.md) accordingly.
