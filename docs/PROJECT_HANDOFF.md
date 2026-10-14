@@ -66,6 +66,8 @@
 
 > **LATEST TEST AN — HIGH-CONTRAST PREVIEW VERIFIED (14 Oct 2026 ~23:43):** User screenshot confirms updated Android Chrome 400×300 InkLink preview: centered "SYDNEY TIME", bold black time 23:43, red date, and darker readable one-line footer "A GOOD DAY TO GET THINGS DONE"; no obvious clipping. This validates **browser rendering only**. It does not fix image-upload ghosting or prove physical screen image quality. No further BLE write observed; last verified physical state is clean original Chinese Clock mode after Test AK. Next: source-grounded controller/firmware/waveform investigation, no guessed clear commands or blind repeated uploads.
 
+> **LATEST OBSERVATION AO — BATTERY/TEMPERATURE + THREE CLOCK STYLES:** User reports firmware's original Chinese live-clock screen displays battery level and temperature (possibly onboard temperature sensor, not proven). The Clock mode control **cycles among three distinct built-in visual styles with each press**. Existing repeated RXTX `E1 02` + `E2` works; the cycling is an observed firmware behavior, not evidence of three independently addressable style commands. No BLE telemetry for battery or temperature has been demonstrated, and English uploaded image remains a static canvas snapshot. Updated Overview copy; no protocol change or hardware test. Potential future features: safely research battery/temperature BLE readouts, document photos of all three screen variants, distinguish static upload vs live firmware clock.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
