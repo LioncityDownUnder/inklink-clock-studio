@@ -153,15 +153,44 @@ This was the actual root cause of the persistent service-not-found errors. See [
 4. If needed, run an equivalent idle test on XLY95 in the **same Android Chrome** (disconnect InkLink first), observing whether the site stays connected. Do not alter firmware.
 5. Only after clarifying stability, test DD/E2 time sync, checking physical clock display. `NRF-` image upload remains disabled.
 
-## Next physical test — Safe-mode idle connection, without notifications (PENDING)
+## Test record I — Safe-mode idle GATT disconnect at 57.2 seconds, WITHOUT notifications
 
-**Goal:** Separate baseline connection timeout from a potential notification-related disconnect.
+**Date/time:** 14 October 2026, approximately 19:30–19:31 Australia/Sydney. **Environment:** Android Chrome, NRF- clock, corrected dual-profile InkLink, user screenshot of 20 events. No screenshot or MAC address is stored in this public repository.
 
-1. Reconnect physical `NRF-` clock in Android Chrome with **Safe connection checked**; close XLY95/nRF Connect.
-2. Leave the page in the foreground and **do not press any buttons**, including Enable notifications, for **60 seconds**.
-3. Report whether GATT stays linked. If it disconnects, share the exact duration and log entries. If it survives 60 seconds, record that as a positive observation.
-4. If necessary, repeat with notifications enabled and/or compare with XLY95 in the same browser, changing only one factor at a time.
-5. Do not send keepalive packets speculatively, reset firmware, or upload images.
+**Exact relevant visible log sequence:**
+- `19:30:12 INFO RXTX write capability: true`
+- `19:30:12 SUCCESS Safe mode: notifications disabled; no A9 or other command sent.`
+- `19:30:12 INFO BLE stage: idle connection test (1.5 seconds)`
+- `19:30:14 SUCCESS BLE stage: connected and stable`
+- `19:31:07 ERROR Unexpected GATT disconnect after 57.2s. Last completed stage: connected and stable. Web Bluetooth does not expose a device disconnect reason.`
+
+**Comparison against Test H (notifications):**
+
+| Experiment | Subscription / outbound commands | Measured GATT lifetime from device selection | Outcome |
+| --- | --- | --- | --- |
+| Test H at 19:21–19:22 | EPD `startNotifications()` succeeded; no control command evidenced | **33.5 seconds** | Unexpected disconnect |
+| Test I at 19:30–19:31 | **Safe mode: no notifications and no commands** | **57.2 seconds** | Unexpected disconnect |
+
+**Confirmed conclusions:**
+1. An unexpected disconnect **also occurs without `startNotifications()`**. Therefore notifications are **not a necessary condition** for the drop. Their potential influence on connection duration cannot be inferred from two trials.
+2. Safe-mode GATT survived about **57.2 seconds from selection**, much longer than the earlier initial 1.5-second stability check. This is evidence of a working connection but **not sustained reliability**.
+3. Disconnection was logged as unrequested; the browser does not reveal the radio/firmware disconnect reason. No notification payload, DD/E2 time sync, or mode setting has yet been verified.
+4. A fixed 30s or 60s timeout, firmware sleep policy, Android Chrome bug, radio-link instability, and Bluetooth conflict remain **hypotheses**, not confirmed causes.
+
+**Next highest-value experiment:** Use **original XLY95 main website in the same Android Chrome/browser**, disconnect InkLink first, connect the exact same `NRF-` clock, **do not press time/mode/image controls**, keep tab foreground and phone awake for **90–120 seconds**, and report whether XLY95 remains connected or disconnects. This changes the website implementation while holding device/phone conditions similar. XLY95 subscribes to notifications during connect, so it is not a perfectly identical condition; record the distinction.
+
+**Interpretation:**
+- **XLY95 also disconnects at around 30–60s:** supports a clock/Android/link-level idle disconnect hypothesis rather than an InkLink-specific software fault, but repeat trials before attributing cause.
+- **XLY95 reliably stays connected 90–120+s:** compare its connection lifecycle/notification handling, BLE write/keepalive behavior, and error/reconnect handling with InkLink. Do not add speculative keepalive writes without protocol evidence.
+- **Original site reconnects silently:** distinguish a true uninterrupted connection from a UI that automatically reconnects. Check status/log if available.
+
+## Next physical test — compare idle connection in original XLY95 (PENDING)
+
+1. Disconnect InkLink completely. On **the same Android Chrome phone**, open https://xly95.github.io/ .
+2. Select the same physical `NRF-` clock and connect, then **do not send any time, display-mode or image commands**.
+3. Keep original site foreground with display awake for **90–120 seconds**. Note XLY95 connection status/log at 30s, 60s and 120s if feasible.
+4. Report whether it remains connected at 120s, disconnects and at what time, or automatically reconnects. A screenshot of the status/log is helpful.
+5. If original stays connected significantly longer, inspect its GATT connect and recovery sequence; otherwise compare Android/device inactivity behavior. Keep control tests and image upload separate.
 
 ### Outcome template for future sessions
 
@@ -180,7 +209,7 @@ Copy and fill this in when the user reports results:
 | Notifications work? | **Subscription succeeded at 19:21:57; no incoming payload verified; disconnect 10s later** |
 | Time sync affects screen? | Yes / No / not tested |
 | Mode controls affect screen? | Yes / No / not tested |
-| Actual error/log excerpt | **Unexpected GATT disconnect after 33.5s, 19:22:07** |
-| Next engineering action | **60-second Safe-mode idle baseline without notifications** |
+| Actual error/log excerpt | **33.5s with notifications (19:22:07); 57.2s without notifications/commands (19:31:07)** |
+| Next engineering action | **Compare idle connection on original XLY95 on same phone for 90–120 seconds** |
 
 **Change history discipline:** append only verified new evidence, mark hypotheses accordingly, and update [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) current status and [ROADMAP.md](ROADMAP.md) accordingly.
