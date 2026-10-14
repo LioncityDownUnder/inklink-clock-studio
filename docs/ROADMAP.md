@@ -59,6 +59,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Test AF (14 Oct ~23:01):** Android Chrome no-write first-hardware-trial readiness review executed: packet audit PASS, 126 packets/30,504 bytes. EPD characteristic marked unverified in disconnected review, but earlier connected Test V passed. Real Chrome 244-byte write acceptance and recovery of interrupted images remain unknown. No transfer authorized or performed; avoid repeating offline review.
 
+**Checkpoint AG, first physical trial interface available:** After user approval, the separate single-attempt 400×300 NRF- upload path is gated by risk confirmation, typed `UPLOAD`, native confirmation and guarded acknowledged writes. Four fake-characteristic integration/wiring tests added (72 tests); release deployed. No actual image result yet. Next: deliberate user-initiated attempt, record Activity Log, physical display photo and any failure; do not assume success or automatically retry.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
