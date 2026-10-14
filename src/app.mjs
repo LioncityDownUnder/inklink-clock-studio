@@ -52,7 +52,7 @@ function updateUi() {
   $('deviceName').textContent = linked ? (state.device.name || 'Unnamed BLE clock') : 'No clock connected';
   $('deviceHint').textContent = online ? 'XLY95 service & characteristic found'
     : linked ? 'GATT linked; try service discovery again'
-      : ($('allDevices').checked ? 'Scanning all nearby BLE devices' : 'Scanning NRF_ devices (exact XLY95 filter)');
+      : ($('allDevices').checked ? 'Scanning all nearby BLE devices' : 'Scanning NRF- and NRF_ devices');
   for (const button of document.querySelectorAll('[data-requires-connection]')) {
     button.disabled = !online || state.busy;
   }
@@ -231,17 +231,17 @@ async function connectClock() {
   setBusy(true);
   try {
     const safeMode = $('safeConnect').checked;
-    // Original XLY95 intentionally filters NRF_ (underscore), not NRF-
-    // (hyphen). Keep exact discovery by default to avoid selecting an
-    // unrelated Nordic BLE peripheral. Broad scan remains optional.
+    // Accept both NRF_ and NRF- device name formats as reported by the user.
+    // XLY95's inspected source uses NRF_; the user's working device uses NRF-.
+    // Bluetooth service authorization is requested explicitly for both.
     const options = $('allDevices').checked
       ? {acceptAllDevices: true, optionalServices: [SERVICE_UUID]}
-      : {filters: [{namePrefix: 'NRF_'}], optionalServices: [SERVICE_UUID]};
-    log('Opening picker (' + ($('allDevices').checked ? 'all BLE devices' : 'NRF_ name prefix (XLY95 exact)') +
+      : {filters: [{namePrefix: 'NRF-'}, {namePrefix: 'NRF_'}], optionalServices: [SERVICE_UUID]};
+    log('Opening picker (' + ($('allDevices').checked ? 'all BLE devices' : 'NRF- or NRF_ names') +
       '); startup mode: ' + (safeMode ? 'SAFE' : 'normal'));
     const device = await navigator.bluetooth.requestDevice(options);
-    if (device.name && !device.name.startsWith('NRF_')) {
-      log('Selected ' + device.name + ' does not match original XLY95 NRF_ filter. This may be a different BLE device. Verify its exact name on XLY95.', 'error');
+    if (device.name && !device.name.startsWith('NRF-') && !device.name.startsWith('NRF_')) {
+      log('Selected ' + device.name + ' is outside the typical NRF clock name patterns; confirm it matches the device seen on XLY95.');
     }
     state.device = device;
     state.connectionStartedAt = performance.now();
