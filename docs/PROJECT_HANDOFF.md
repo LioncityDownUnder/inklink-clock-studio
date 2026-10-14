@@ -4,9 +4,9 @@
 >
 > **Last consolidated:** 14 October 2026 (Australia/Sydney).
 >
-> **Status:** GitHub Pages site deployed and automated tests passing. **The newly implemented NRF- Bluetooth profile has NOT yet been validated on the physical clock.** Do not describe the issue as fixed until an actual device test succeeds.
+> **Status:** GitHub Pages deployed, automated tests passing, and **the corrected NRF- EPD+RXTX two-service connection was confirmed on the user's physical clock on 14 October 2026 at approximately 19:01 Sydney time**. The 1.5-second idle connection test passed. Notifications, time sync, display mode changes, and 10+ second reliability remain untested.
 >
-> **Next action:** Use the deployed site in Android Chrome with the physical NRF- clock, close all other BLE connections, leave Safe connection enabled, connect, and confirm discovery of both EPD and RXTX services. Obtain the Activity Log before deciding what to change.
+> **Next action:** On the same Android Chrome device, keep/re-establish Safe connection, verify it remains linked for 10–15 seconds, press **1. Enable notifications** and inspect the log; if successful, perform **Sync date & time** and verify the physical screen. Keep NRF- image transfer disabled.
 
 ## Canonical links
 
@@ -66,7 +66,8 @@ More exact wire-level details, source references and caveats are in [BLE_PROTOCO
 6. Incorrectly focused on `NRF-` vs `NRF_` names as evidence of a wrong peripheral. User confirmed XLY95 itself selects `NRF-XXXXXX`. Corrected that assumption and supports both names.
 7. User installed nRF Connect and provided service list showing 13187b10..., 1F10 and 221F, **not** 32120001... .
 8. Inspected XLY95 `index.html` (rather than standalone `js.js`) and confirmed its `NRF-` name filter; EPD service/characteristic; RXTX service/characteristic; 2-channel connect; `DD`, `E1`, `E2` operations.
-9. Added automatic profile selection in `src/app.mjs` and protocol-specific helpers in `src/protocol.mjs`, new tests, app safety guard disabling NRF- image uploads, and corrected README. GitHub Actions finished successfully with **9 protocol tests**. **No subsequent screenshot or physical-device confirmation of this new dual-profile build has been received yet.**
+9. Added automatic profile selection in `src/app.mjs` and protocol-specific helpers in `src/protocol.mjs`, new tests, app safety guard disabling NRF- image uploads, and corrected README. GitHub Actions finished successfully with **9 protocol tests**.
+10. **New first hardware SUCCESS at approximately 19:01 on 14 Oct:** user Activity Log confirmed `NRF- RXTX characteristic discovered`, `Protocol profile: NRF- EPD + RXTX (XLY95 main page)`, `EPD capabilities: write, notify`, `RXTX write capability: true`, and `BLE stage: connected and stable` after the 1.5-second idle test. In Safe mode, **no notifications and no writes were sent**. Details in [TEST_HISTORY.md](TEST_HISTORY.md), Test record G.
 
 See [TEST_HISTORY.md](TEST_HISTORY.md) for more precise evidence and how to interpret old logs.
 
@@ -83,18 +84,20 @@ See [TEST_HISTORY.md](TEST_HISTORY.md) for more precise evidence and how to inte
 
 ## EXACT next test / acceptance checkpoint
 
-1. Using the **Android phone with Chrome**, close XLY95 and nRF Connect sessions and disconnect the clock there (only one active BLE controller).
-2. Reload https://lioncitydownunder.github.io/inklink-clock-studio/ (check latest GitHub Actions if stale). Leave **Safe connection checked** and **Show all nearby BLE devices unchecked**.
-3. Connect to **NRF-6CD319** (or same physical device if advertisement suffix changed). Record Activity Log.
-4. **First success criterion:** Log shows discovered `13187b10...` EPD service and `4b646063...` characteristic, then `1F10` RXTX service and `1F1F` RXTX characteristic; UI remains connected for 10+ seconds. An initial momentary GATT connection alone is not enough.
-5. If successful, click **Enable notifications** and confirm success or log failure. Then click **Sync date & time** and verify the physical screen/time really changes. Optionally test built-in clock/calendar mode, one at a time.
-6. If any stage fails, **do not guess**. Preserve Activity Log including earlier lines, note device/browser, exact error and stage; compare to XLY95 in the same Chrome browser.
-7. **Do not test Upload Image on NRF-** until new encoding is implemented and reviewed. Do not flash or erase firmware.
+**CONNECTION MILESTONE REACHED (observed 14 Oct 2026 ~19:01):** Android InkLink logs confirm EPD and RXTX characteristic discovery and correct `NRF-` profile. The initial 1.5-second stable check passed with no startup commands. This is **measured device evidence**, not merely CI/source testing. The user has **not** yet confirmed longer connection duration, notification subscription, or a successful physical time/mode change.
+
+1. If the existing Android Chrome session remains connected, observe 10–15 seconds of stability. If not, close XLY95/nRF Connect sessions, reload live InkLink, keep **Safe connection checked**, and reconnect to the same `NRF-` clock.
+2. Press **1. Enable notifications** only. Wait a few seconds and inspect the Activity Log for `notifications enabled` or a precise error.
+3. If still connected, press **Sync date & time** once. This writes `DD` local time payload plus `E2` to RXTX. Check the physical screen for correct local time/date; an acknowledged write alone isn't proof.
+4. Optionally test Clock/Calendar mode buttons one by one and confirm actual screen response.
+5. If anything fails, share the **full log near the failure**, including preceding BLE stages. Record results in `TEST_HISTORY.md`. Do not send image uploads to `NRF-` yet.
+
+**Acceptance:** 10+ second stable connection, successful notification subscription, and visibly correct physical time or mode change. Do not conflate the already confirmed first 1.5-second connection with acceptance of all controls.
 
 ## Remaining work, in order
 
-P0. Verify proper 2-service connection on actual `NRF-` hardware, using safe mode.
-P0. Verify notifications and clock time/mode writes on actual hardware without changing unrelated settings.
+P0. **DONE (physical):** Correct NRF- EPD and RXTX services/characteristics discovered and initial 1.5-second Safe connection stable on 14 Oct at 19:01. **Still pending:** 10+ second stability.
+P0. **NEXT:** Verify notification subscription and clock time/mode writes on actual hardware, one operation at a time.
 P1. Implement `NRF-` image upload using upstream page's EPD framing, plane conversions and its supported display dimensions; add offline unit tests / byte-for-byte references before using hardware. Keep uploads disabled until validated.
 P1. Fix any UI or connection regressions found by device logs, and keep the two profiles separate.
 P2. Identify exact physical display geometry, implement accurate English designs and optional display-related controls.
@@ -109,7 +112,7 @@ Give the next assistant this repository and tell it **to read this handoff first
 
 Suggested message to paste:
 
-> Continue my InkLink Clock Studio project at https://github.com/LioncityDownUnder/inklink-clock-studio . Read docs/PROJECT_HANDOFF.md, docs/BLE_PROTOCOLS.md, docs/TEST_HISTORY.md, docs/ROADMAP.md and AGENTS.md from the current main branch before making changes. We have an NRF- e-paper desk clock; the old 32120001 protocol was wrong for this model. The correct XLY95 index.html protocol (13187b10 EPD service + 1F10 RXTX service) is implemented but has not yet been tested on hardware. Help me perform the next safe Android Chrome connection test and update both the code and handoff documentation as we go.
+> Continue my InkLink Clock Studio project at https://github.com/LioncityDownUnder/inklink-clock-studio . Read docs/PROJECT_HANDOFF.md, docs/BLE_PROTOCOLS.md, docs/TEST_HISTORY.md, docs/ROADMAP.md and AGENTS.md from the current main branch before making changes. We have an NRF- e-paper desk clock; the old 32120001 protocol was wrong for this model. The correct XLY95 index.html protocol (13187b10 EPD service + 1F10 RXTX service) is implemented and its first physical connection succeeded at about 19:01 on 14 Oct 2026. Help me test 10+ second connection stability, notifications, and physical time sync; update GitHub documentation as we go.
 
 ## Rules for future project updates
 
