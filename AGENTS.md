@@ -1,5 +1,10 @@
 # Project instructions for AI coding assistants and future ChatGPT sessions
 
+## Checkpoint AE — hardware trial preparation, not execution
+
+User agreed to consider/prepare supervised first physical image transfer and acknowledged its risks; this was explicitly not permission to send image bytes. `src/first-trial-readiness.mjs` and Studio's read-only readiness review show outstanding browser MTU/244-byte write acceptance and interrupted-buffer recovery. Four new tests (68 total expected). `src/app.mjs` still contains the `NRF-` upload-disabled guard. Do not activate actual image transfer without a separate explicit user directive after reviewing outstanding risks.
+
+
 ## Checkpoint AC — stalled-write warning only
 
 `src/pending-write-monitor.mjs` and extra tests add a warning-only observer. Mock UI has 'Packet 25 stalls for 4.5 seconds'. It should show still-pending warning after ~1s. Cancel during the wait does not abort the pending write; further image packets and refresh are suppressed once it settles. NO real BLE image uploads. Warn that a JS timer cannot forcibly cancel `writeValueWithResponse` or recover a partial e-paper buffer. Next: verify mock stall case on Android Chrome and evaluate explicit informed hardware approval.
