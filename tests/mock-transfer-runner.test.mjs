@@ -23,3 +23,28 @@ test('invalid failure numbers rejected before mock writes',async()=>{
  await assert.rejects(runMockSupervisedTransfer({...defaults,failAtPacket:0}),RangeError);
  await assert.rejects(runMockSupervisedTransfer({...defaults,delayMs:-1}),RangeError);
 });
+
+test('mock stalled packet reports pending warning without claiming it was cancelled',async()=>{
+ const statuses=[];
+ const result=await runMockSupervisedTransfer({
+   ...defaults,stallAtPacket:2,stallDurationMs:1600,
+   onPendingStatus:x=>statuses.push(x.status)
+ });
+ assert.equal(result.completed,3);
+ assert.ok(statuses.includes('stalled-warning'));
+ assert.ok(statuses.includes('resolved'));
+ assert.ok(!statuses.includes('timeout-completed'));
+});
+test('mock cancellation during stalled write waits until fake write settles',async()=>{
+ const ctl=new AbortController();
+ const states=[];
+ await assert.rejects(runMockSupervisedTransfer({
+   ...defaults,stallAtPacket:1,stallDurationMs:1600,signal:ctl.signal,
+   onPendingStatus:x=>{
+     states.push(x.status);
+     if(x.status==='stalled-warning')ctl.abort();
+   }
+ }),/aborted|cancel/i);
+ assert.ok(states.includes('stalled-warning'));
+ assert.ok(states.includes('resolved'));
+});
