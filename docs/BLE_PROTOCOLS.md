@@ -178,6 +178,12 @@ User ran InkLink's explicit read-only GATT inspector on their real NRF- clock in
 
 The firmware's physically displayed **3.9V** cannot be converted to accurate percent from this single read. Battery GATT 0% is an *observed raw value*, not independently verified charge state (possibly placeholder). Standard environmental service `181A` was not in the Chrome-authorized returned service list, but this does **not** establish whether the firmware internally reads a temperature sensor. The existing inspector DID NOT read any proprietary characteristic or perform any write/notification setup. Proprietary `331F` is a promising future candidate, but no safe decoder or side effects established. Next review public XLY95 source for usages of `221F` and `331F` before requesting a controlled raw read.
 
+## Test AR follow-up — source lookup for readable 221F / 331F characteristic
+
+The public XLY95 `index.html` includes the `0000221f-...` UUID **once**, solely in the `optionalServices` list passed to `navigator.bluetooth.requestDevice()`. It contains **no literal `331f` match** and no use of a characteristic belonging to service 221F. The page explicitly connects the distinct `1F10/1F1F` RXTX and `13187b10/4b646063` EPD services instead. Therefore the XLY95 JavaScript provides **no identified semantics, safe read protocol, or telemetry decoder** for 221F/331F.
+
+Recommendation: before any 331F value inspection, clearly label it an unknown proprietary read and require a separate deliberate single-read consent. Do not auto-read unknown values, subscribe to notifications, or infer temperature/voltage from the output.
+
 ## Software implementation map
 
 - `src/dash-image.mjs`: **offline-only** image size profiles, strict pure-colour BW/red encoding, image packet framing, and plan calculation. No BLE APIs or writes.
