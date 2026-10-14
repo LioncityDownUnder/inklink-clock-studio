@@ -48,6 +48,8 @@
 
 > **LATEST USER TEST AD (14 Oct 2026 ~22:50):** Android Chrome MOCK packet-25 stall + Cancel **PASSED**. Log shows pending warning at 22:50:06 after 1.1s, mock packet 25 settled 22:50:09, then mock stopped at **24/126 counted**, with no further packets or EPD refresh. Cancellation of a pending operation does not prove the real peripheral received nothing; a settled mock write was deliberately not counted after cancellation. **No BLE image packets sent.** User has now browser-verified complete/fail/cancel/stall mock scenarios. Do not ask to repeat. Next: assess remaining real hardware upload uncertainty and seek separate explicit informed approval only if ready, while preserving disabled NRF- image-upload guard.
 
+> **LATEST READINESS TEST AF (14 Oct 2026 ~23:01):** User confirmed deployed Android Chrome first physical-upload **read-only** readiness report: 126 packets / 30,504 total characteristic bytes, packet sequence audit PASS. 400×300 panel ID, EPD interface (in this *disconnected* run), Chrome 244-byte write acceptance and interrupted-image recovery shown UNVERIFIED. Earlier connected Test V **did** confirm Chrome acknowledged EPD write interface; this is not a regression. No BLE data sent; real NRF- upload still disabled. Next: review residual risk and explicitly distinguish trial preparation consent from final device-write authorization.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
