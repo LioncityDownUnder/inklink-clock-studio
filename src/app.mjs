@@ -1,3 +1,4 @@
+import { createDashTransferPlan } from './dash-image.mjs';
 import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex,
   DASH_EPD_SERVICE_UUID, DASH_EPD_CHARACTERISTIC_UUID, DASH_RXTX_SERVICE_UUID,
   DASH_RXTX_CHARACTERISTIC_UUID, encodeDashTime, encodeDashMode, DASH_REFRESH } from './protocol.mjs';
@@ -493,7 +494,9 @@ function quantize(canvas, useDither) {
     const red=tri && r>160 && r>g && r>b;
     const luminance=.299*r+.587*g+.114*b;
     const delta=useDither?(pattern[(y%4)*4+(x%4)]-7.5)*8:0;
-    const v=red?[211,82,67]:(luminance>=140+delta?[255,255,255]:[19,29,42]);
+    // Match NRF- source canvas2bytes() exact RGB tests: saturated red, pure black/white.
+    // Dark blue and muted red would be mis-encoded by that source implementation.
+    const v=red?[255,0,0]:(luminance>=140+delta?[255,255,255]:[0,0,0]);
     rgb[i]=v[0];rgb[i+1]=v[1];rgb[i+2]=v[2];rgb[i+3]=255;
   }
   ctx.putImageData(data,0,0);
@@ -539,6 +542,38 @@ function downloadPng() {
   a.download=`eink-${getScreen().width}x${getScreen().height}-${$('template').value}.png`;
   document.body.appendChild(a);a.click();a.remove();
   log('Exported current display as PNG');
+}
+
+function inspectDashImageOffline() {
+  if ($('template').value === 'image' && !state.loadedImage) {
+    toast('Choose an image file before inspecting its encoding.', true);
+    return;
+  }
+  try {
+    const canvas=$('previewCanvas');
+    const ctx=canvas.getContext('2d', {willReadFrequently:true});
+    const image=ctx.getImageData(0,0,canvas.width,canvas.height);
+    const plan=createDashTransferPlan(image);
+    const first=plan.packets[0], last=plan.packets.at(-1);
+    const header=arr=>bytesToHex(arr.subarray(0,4)).match(/.{2}/g).join(' ').toUpperCase();
+    const msg='Offline NRF- packet inspection: '+plan.profile.name+
+      ' · '+plan.packetCount+' packets'+
+      ' · BW '+plan.bwBytes.toLocaleString()+' bytes'+
+      ' · Red '+plan.redBytes.toLocaleString()+' bytes'+
+      ' · '+plan.transmissionBytes.toLocaleString()+' total BLE bytes (including headers)'+
+      ' · max packet '+plan.maxPacketBytes+' bytes'+
+      ' · first header '+header(first)+
+      ' · last header '+header(last)+
+      ' · EPD refresh '+plan.refreshCommand[0].toString(16).toUpperCase().padStart(2,'0')+
+      '. No Bluetooth data was transmitted.';
+    $('dashPacketSummary').textContent=msg;
+    log(msg, 'success');
+    toast('Offline packet plan generated. Nothing sent to clock.');
+  } catch (e) {
+    $('dashPacketSummary').textContent='Offline inspection unavailable: '+(e.message||e);
+    log('Offline image inspection: '+(e.message||e),'error');
+    toast('Offline inspection failed: '+(e.message||e),true);
+  }
 }
 
 function progress(percent,label){
@@ -644,6 +679,7 @@ function init(){
   $('syncTime').addEventListener('click',syncClock);
   $('clockMode').addEventListener('click',()=>switchMode(1,'Clock mode'));
   $('calendarMode').addEventListener('click',()=>switchMode(2,'Calendar mode'));
+  $('inspectDash').addEventListener('click',inspectDashImageOffline);
   $('sendImage').addEventListener('click',uploadImage);
   $('downloadPng').addEventListener('click',downloadPng);
   $('clearLog').addEventListener('click',()=>{
