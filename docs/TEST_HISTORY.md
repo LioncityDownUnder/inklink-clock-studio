@@ -366,6 +366,12 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next milestone:** validate Android Chrome's actual GATT write capacity and develop a safe interrupted-upload restoration plan, preferably by researching read-only device capabilities and documented XLY95 behavior. No experimental payloads or uploads until risks/rollback path are understood and user expressly approves a supervised trial.
 
+## Engineering checkpoint U — Chrome capability inspection without packet writes
+
+**14 October 2026, engineering change, device validation pending.** Added pure `src/ble-capabilities.mjs` plus 4 tests. Display Designer now offers **Inspect connected EPD capability — no writes**. The report reads properties of the existing `NRF-` EPD characteristic and detects presence of the browser's `writeValueWithResponse` method; it never calls any GATT write/read operations or sends a packet. The browser API does not expose a trustworthy numeric negotiated ATT MTU to JavaScript, so read-only inspection cannot prove that 244-byte EPD writes will work. MTU 512 from nRF Connect was negotiated/reported in a different Android connection.
+
+**Next test:** User connects clock in Safe mode, navigates to Display Designer, taps the read-only capability inspector and shares the reported result. Do not send synthetic 244-byte probes. Recovery from an interrupted image remains unverified; original XLY95 has no confirmed mid-frame resume/rollback command.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
