@@ -44,6 +44,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Acceptance gate PASSED:** User confirmed physical time, calendar and clock mode controls at 19:46–19:53 (records K/L in [TEST_HISTORY.md](TEST_HISTORY.md)). Long-term BLE stability remains unproven but current commands work inside the available session. Next P1 validation is byte-accurate NRF- image framing before any device write.
 
+**Checkpoint AA (Android Chrome mock UI verified, 14 Oct 2026):** Complete mock upload at 126/126 with mock refresh, injected failure at packet 25 stopping after 24/126 without refresh, and manual cancellation stopping after 30/126 without refresh all passed per user screenshots. Development of supervised upload engine and mock UI is validated in browser, but **not on physical hardware**. Next: BLE adapter/timeout/visibility and restoration review; keep actual NRF- image writes disabled pending separate user approval.
+
 ## P0 — confirm non-destructive clock controls
 
 - **DONE (code):** NRF- DD + local-adjusted time + E2 encoding from XLY95 main index.html.
