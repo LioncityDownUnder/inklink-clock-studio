@@ -52,7 +52,7 @@ function updateUi() {
   $('deviceName').textContent = linked ? (state.device.name || 'Unnamed BLE clock') : 'No clock connected';
   $('deviceHint').textContent = online ? 'XLY95 service & characteristic found'
     : linked ? 'GATT linked; try service discovery again'
-      : ($('allDevices').checked ? 'Scanning all nearby BLE devices' : 'Scanning NRF-prefixed devices');
+      : ($('allDevices').checked ? 'Scanning all nearby BLE devices' : 'Scanning NRF_ devices (exact XLY95 filter)');
   for (const button of document.querySelectorAll('[data-requires-connection]')) {
     button.disabled = !online || state.busy;
   }
@@ -231,14 +231,18 @@ async function connectClock() {
   setBusy(true);
   try {
     const safeMode = $('safeConnect').checked;
-    // NRF matches both NRF_ and NRF- clock names, while preserving XLY95's
-    // filtered-device BLE permission flow instead of acceptAllDevices.
+    // Original XLY95 intentionally filters NRF_ (underscore), not NRF-
+    // (hyphen). Keep exact discovery by default to avoid selecting an
+    // unrelated Nordic BLE peripheral. Broad scan remains optional.
     const options = $('allDevices').checked
       ? {acceptAllDevices: true, optionalServices: [SERVICE_UUID]}
-      : {filters: [{namePrefix: 'NRF'}], optionalServices: [SERVICE_UUID]};
-    log('Opening picker (' + ($('allDevices').checked ? 'all BLE devices' : 'NRF name prefix') +
+      : {filters: [{namePrefix: 'NRF_'}], optionalServices: [SERVICE_UUID]};
+    log('Opening picker (' + ($('allDevices').checked ? 'all BLE devices' : 'NRF_ name prefix (XLY95 exact)') +
       '); startup mode: ' + (safeMode ? 'SAFE' : 'normal'));
     const device = await navigator.bluetooth.requestDevice(options);
+    if (device.name && !device.name.startsWith('NRF_')) {
+      log('Selected ' + device.name + ' does not match original XLY95 NRF_ filter. This may be a different BLE device. Verify its exact name on XLY95.', 'error');
+    }
     state.device = device;
     state.connectionStartedAt = performance.now();
     device.addEventListener('gattserverdisconnected', onDisconnect);
