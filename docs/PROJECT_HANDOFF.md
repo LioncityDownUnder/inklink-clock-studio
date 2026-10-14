@@ -1,5 +1,8 @@
 # Project handoff — InkLink Clock Studio
 
+> **CHECKPOINT AC — stalled write UX (14 Oct 2026):** Added pure `src/pending-write-monitor.mjs` and warning-only mock scenario (packet 25 intentionally pending 4.5s). UI displays 'still pending' after 1s but NEVER claims a browser GATT write was cancelled/failed. If user cancels, it waits until the fake in-flight write settles, then stops further writes and skips refresh. Four monitor tests plus two integration tests (expected total **64 tests**). No real BLE adapter import/image upload. Next: user confirms mock stall and cancellation UI works, then review residual risks and separately request informed authorization before any live transfer.
+
+
 > **CHECKPOINT AB (14 Oct 2026):** Review-only guarded BLE writer implemented in `src/ble-guarded-writer.mjs` with eight tests (**58 total**), separate from live app. Requires acknowledged characteristic; guards against disconnect, background tab, cancellation, expired deadline and concurrent writes; rechecks after resolved writes, blocks permanently after rejected write. **Not imported by live `src/app.mjs` and no hardware image writes permitted.** An in-flight `writeValueWithResponse` cannot be forcibly cancelled if unresolved, so deadline is a stop-scheduling condition, not a hard browser write timeout. Next: inspect UI gating and stalled-write recovery semantics before any expressly authorized physical image test.
 
 
