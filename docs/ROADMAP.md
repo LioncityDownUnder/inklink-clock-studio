@@ -121,6 +121,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Checkpoint AQ — read-only battery/temperature discovery staged:** browser opt-in GATT inspector implemented with exact standard battery-percent and environmental-temperature parsing, no proprietary reads/writes. Standard 180F/181A/1809 service permissions requested on connection; actual hardware services and values **not yet known**. Six offline tests (83 expected total). Next user action: connect `NRF-` clock Safe mode, tap GATT diagnostics and share report. Do not make the clock display or BLE image write for this diagnostic.
 
+**Test AR (15 Oct 2026, real BLE):** 4 GATT services observed; Battery Service 180F / Battery Level 2A19 reads **0%** (not validated charge level; clock physically showed 3.9V previously). No standard 181A environmental sensing observed. Proprietary 221F service with 331F **read, write, notify** is a candidate for controlled investigation; other proprietary 1F10/1F1F write-only and custom 13187b10/4b646063 write-notify. Avoid inferred meanings. Next: inspect original XLY95 code for 221F/331F use; consider opt-in single read with bounded hex capture, no speculative BLE write probes.
+
 ## P2 — enhanced clock features
 
 - **PENDING:** English screen layouts suited to actual physical resolution and red-plane capabilities.
