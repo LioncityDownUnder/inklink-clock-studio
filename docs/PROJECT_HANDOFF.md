@@ -4,9 +4,9 @@
 >
 > **Last consolidated:** 14 October 2026 (Australia/Sydney).
 >
-> **Status:** GitHub Pages deployed; corrected NRF- EPD/RXTX discovery, notification subscription, and **DD/E2 time synchronisation physically CONFIRMED**. On 14 Oct 2026 at 19:46:27–28 the actual Android Chrome clock accepted DD local-time packet and E2 refresh; the user explicitly confirmed the clock's time was synced. The session later unexpectedly disconnected 51.4s after device selection, consistent with earlier idle disconnects also observed on original XLY95. **Calendar/Clock mode effects and NRF- image transfer are still unverified**.
+> **Status:** Core NRF- BLE control milestone **COMPLETE on real hardware (14 Oct 2026)**: EPD/RXTX discovery, notification subscription, DD/E2 time sync (confirmed at ~19:46), **Calendar mode E1 01 + E2 (confirmed at 19:53:20)**, and **Clock mode E1 02 + E2 (confirmed at 19:53:39)**. The user explicitly confirmed both display modes switched correctly. The clock has previously disconnected while idle after ~33–57 seconds, also reproduced on original XLY95, but mode switching succeeded in a single connection. **NRF- image upload remains disabled/unimplemented and is the next development priority.**
 >
-> **Next action:** On Android Chrome, reconnect InkLink to the NRF- clock in Safe mode. Within ~20s after stable connection press **Calendar mode** once, confirm visible physical calendar layout and the `E1 01` + `E2` activity log. Then, reconnect if necessary and press **Clock mode** once (`E1 02` + `E2`) to restore usual clock display. No NRF- image upload or speculative keepalive.
+> **Next action:** **Begin source analysis/offline development of proper NRF- e-paper image upload** using original XLY95 main `index.html` EPD pipeline, not legacy `A1`. Establish actual display geometry, black/red planes and `03/04` frame offset packet/refresh/restore logic; develop pure tests first. **Do not send experimental images to physical hardware or enable NRF- Upload Image until safe transfer and restore are verified.**
 
 ## Canonical links
 
@@ -72,6 +72,7 @@ More exact wire-level details, source references and caveats are in [BLE_PROTOCO
 12. **New Safe-mode idle baseline at 19:30–19:31:** no notifications or commands, stable at 19:30:14, then **unexpected GATT disconnect after 57.2 seconds** at 19:31:07. Confirms the disconnect can happen WITHOUT notification subscription. A fixed timeout or cause remains unknown. See Test record I in [TEST_HISTORY.md](TEST_HISTORY.md).
 13. **Cross-site XLY95 comparison at 19:37–19:38 (Test J):** original XLY95 main site on same Android Chrome selected the same NRF-6CD319 clock, discovered GATT/EPD/RXTX at 19:37:07–08, and logged disconnection at 19:38:07 (**~59 seconds after services connected**). No manual control commands during idle test. This is strong evidence that the ~1-minute disconnect is **not caused solely by InkLink**, but peripheral/Android idle cause remains a hypothesis. Source site's selected canvas indicated 400×300; that is **not** independent confirmation of panel resolution.
 14. **FIRST VERIFIED CLOCK CONTROL at 19:46–19:47 (Test K):** after stable BLE, InkLink logged `RXTX TX DD 6A CF DC 13 07 EA 0A 0E 03` at 19:46:27, `RXTX TX E2` refresh and `Time sync: command completed` at 19:46:28. **User independently confirmed 'time is synced'.** GATT later unexpectedly disconnected after 51.4s from selection. Mode switching is next; image upload remains disabled.
+15. **FIRST VERIFIED DISPLAY MODE CONTROL at 19:53 (Test L):** screenshot shows Calendar `RXTX TX E1 01` at 19:53:18 + `E2` and success at 19:53:20; then Clock `RXTX TX E1 02` at 19:53:38 + `E2` and success at 19:53:39. User explicitly confirmed **both modes switched on the physical clock**. All three core controls are hardware-verified. Image upload is next, cautiously.
 
 See [TEST_HISTORY.md](TEST_HISTORY.md) for more precise evidence and how to interpret old logs.
 
@@ -86,24 +87,31 @@ See [TEST_HISTORY.md](TEST_HISTORY.md) for more precise evidence and how to inte
 - English screen preview and PNG export. Legacy image transfer remains behind legacy profile. **NRF- image upload intentionally blocked** until its distinct image framing is implemented.
 - Unit tests use `node --test tests/protocol.test.mjs`; GitHub Actions also checks JS syntax and deploys to Pages after tests.
 
-## EXACT next test / acceptance checkpoint
+## CURRENT MILESTONE AND EXACT NEXT ENGINEERING CHECKPOINT
 
-**CURRENT HARDWARE MILESTONE (14 October ~19:46):** InkLink successfully changed the physical clock's displayed time using the **correct NRF- RXTX `DD` time payload then `E2` refresh**. The screenshot logs both writes and successful completion, and user explicitly confirmed **"time is synced"**. BLE services, GATT characteristics, and notification subscription were verified earlier. A later GATT idle disconnect after **51.4 seconds** is consistent with both InkLink and XLY95 idle observations and **does not negate time-sync success**.
+**Core BLE clock control on hardware — VERIFIED COMPLETE on 14 October 2026.**
 
-**Next experiment — test builtin display modes:**
-1. Disconnect the original XLY95/nRF Connect BLE sessions, open InkLink in **Android Chrome** and connect to `NRF-` in **Safe connection** mode.
-2. Within ~20 seconds of `connected and stable`, press **Calendar mode** once. Code sends `E1 01`, waits 300ms, then `E2` on RXTX. Verify activity log and actual calendar appearance.
-3. Connect again if needed and press **Clock mode** once, using `E1 02` then `E2`. Confirm clock face is restored and automatically updates.
-4. Record observed physical display effect (not only GATT write acknowledgments), plus any disconnect and logs in `TEST_HISTORY.md`.
-5. **NRF- image upload remains disabled** until different `03/04` image transfer protocol, actual display resolution, and safe refresh sequence have been implemented and tested. The XLY95 page's selected 400×300 canvas is not physical proof.
-6. Do not add speculative keepalive messages; vendor XLY95 also disconnects after around a minute of idle BLE time.
+- Service discovery: corrected `NRF-` EPD and RXTX services/characteristics on actual clock.
+- Notification subscription: succeeded on actual hardware (incoming payload decoding remains a separate future task).
+- Time sync: `DD` + `E2` succeeded and user confirmed physical time updated (~19:46).
+- Calendar display: `E1 01` then `E2` succeeded and user confirmed visible switch (~19:53:20).
+- Clock display restore: `E1 02` then `E2` succeeded and user confirmed visible switch back (~19:53:39).
+- BLE idle disconnects (~33.5s, 57.2s, 51.4s InkLink; ~59s after service discovery on XLY95) remain known but **do not prevent ordinary control commands**. Cause is unknown; avoid speculative keepalives.
 
-**Verified:** EPD/RXTX discovery, notifications subscription, **real hardware time sync**. **Pending:** calendar and clock modes; accurate custom image upload; long-term BLE connection reliability and cause of idle disconnections.
+**Next priority: `NRF-` image upload (P1), NOT firmware flashing.**
+
+1. Inspect XLY95's main `index.html` image conversion through EPD frame packets and refresh/restore, including any controller-specific paths. Distinguish this from the older standalone `js.js` legacy `NRF_` packets.
+2. Determine actual panel pixel dimensions and black/red plane orientation/mapping; the XLY95 screenshot's **400×300 selected canvas** is NOT independent proof of physical display dimensions.
+3. Implement source-grounded image encoding and chunking (`03/04`, colour flags, 2-byte offsets) with byte-exact offline unit tests. Check payload sizes and browser write support.
+4. Keep **`NRF-` Upload Image DISABLED** until full transfer, display refresh, and safe return to clock mode are verified. Do not test uncontrolled transfers.
+5. When prepared, request user participation for a supervised image trial and record the physical outcome; preserve known-working RXTX clock controls.
+
+**Verified hardware controls:** Time/Calendar/Clock. **Pending:** safe English custom image upload, panel identification, always-live custom faces, long-term connection behavior.
 
 ## Remaining work, in order
 
 P0. **DONE (physical):** Correct NRF- EPD and RXTX characteristics discovered, EPD notifications enabled. Cross-site idle comparison **done**: XLY95 also disconnected ~59s after services connected. Cause of roughly one-minute disconnections unknown; don't add speculative keepalive.
-P0. **DONE (physical):** DD/E2 time sync updated the actual clock (user confirmed ~19:46:28). **NEXT:** verify E1/E2 calendar and clock mode switch effects on physical screen separately.
+P0. **DONE (physical):** DD/E2 time sync, E1 01/E2 Calendar mode and E1 02/E2 Clock mode all worked on actual clock (user confirmed 19:46–19:53). **NEXT P1:** NRF- image format analysis and offline tests.
 P1. Implement `NRF-` image upload using upstream page's EPD framing, plane conversions and its supported display dimensions; add offline unit tests / byte-for-byte references before using hardware. Keep uploads disabled until validated.
 P1. Fix any UI or connection regressions found by device logs, and keep the two profiles separate.
 P2. Identify exact physical display geometry, implement accurate English designs and optional display-related controls.
@@ -118,7 +126,7 @@ Give the next assistant this repository and tell it **to read this handoff first
 
 Suggested message to paste:
 
-> Continue my InkLink Clock Studio project at https://github.com/LioncityDownUnder/inklink-clock-studio . Read docs/PROJECT_HANDOFF.md, docs/BLE_PROTOCOLS.md, docs/TEST_HISTORY.md, docs/ROADMAP.md and AGENTS.md from the current main branch before making changes. We have an NRF- e-paper desk clock; the old 32120001 protocol was wrong for this model. The correct XLY95 index.html protocol (13187b10 EPD service + 1F10 RXTX service) connects to the physical clock. Notifications enabled at 19:21:57. Idle GATT sessions disconnected in InkLink (33.5s / 57.2s) and original XLY95 (~59s after EPD/RXTX discovery). Time sync with DD + E2 succeeded at 19:46:28 and user confirmed the clock's time updated; GATT disconnected later after 51.4s. Next: confirm Calendar mode (E1 01 + E2) then Clock mode (E1 02 + E2) physically, one at a time; keep image upload disabled. Update GitHub docs with results.
+> Continue my InkLink Clock Studio project at https://github.com/LioncityDownUnder/inklink-clock-studio . Read docs/PROJECT_HANDOFF.md, docs/BLE_PROTOCOLS.md, docs/TEST_HISTORY.md, docs/ROADMAP.md and AGENTS.md from the current main branch before making changes. We have an NRF- e-paper desk clock; the old 32120001 protocol was wrong for this model. The correct XLY95 index.html protocol (13187b10 EPD service + 1F10 RXTX service) connects to the physical clock. Notifications enabled at 19:21:57. Idle GATT sessions disconnected in InkLink (33.5s / 57.2s) and original XLY95 (~59s after EPD/RXTX discovery). Core control milestone complete: physical clock time sync (DD/E2), Calendar switch (E1 01/E2), and Clock restore (E1 02/E2) all confirmed by user on 14 Oct 2026. Next: inspect XLY95's NRF- EPD image conversion, dimensions and 03/04 framed packets, develop offline unit tests; do not enable actual image upload until safe transfer/restore verified. Update GitHub docs with results.
 
 ## Rules for future project updates
 
