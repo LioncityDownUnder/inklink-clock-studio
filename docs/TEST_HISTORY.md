@@ -456,6 +456,10 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next:** before any user-confirmed physical image trial, present the real risks and require an explicit start action; do not represent passing a read-only checklist as authorizing image writes. No further identical offline readiness tests are necessary.
 
+## Checkpoint AG — approved first supervised hardware trial, not yet executed
+
+**14 October 2026.** User explicitly approved proceeding toward the first real image upload. Added a separate one-attempt, user-confirmed interface for 400×300 NRF- images, with connected-device check, risk acknowledgement, typed confirmation, native confirmation, sequential acknowledged writes, progress log and stop request. On failure no refresh, retry or automatic restoration. Four integration tests use fake characteristics (72 automated tests total). The production code deployed successfully, but **no hardware image-transfer result has been reported**. Chrome 244-byte write acceptance and interrupted-image recovery remain uncertain. Await the user's deliberate action and physical observation.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
