@@ -1,5 +1,11 @@
 # InkLink Studio — English BLE E-Paper Clock App
 
+### Supervised transfer engine — built, not activated
+
+A separate `src/dash-supervised-transfer.mjs` implements sequential acknowledged EPD writes, per-packet progress, a 300 ms pre-refresh delay, AbortSignal cancellation between writes, disconnection/error stops and no refresh on incomplete images. Eight mocked-device tests are included (46 automated tests total). **The live web app does not invoke this transfer engine, and physical `NRF-` image uploads remain disabled**. The user approved development only, not transmitting an image. Actual Chrome 244-byte writes, recovery and supervised approval remain outstanding.
+
+
+
 ### Supervised image upload rehearsal (offline only)
 
 Click **Prepare dry-run upload checklist** in Display Designer to build an ordered no-write checklist for the current image, audit/assumed MTU and failure-handling steps. It never connects or writes, and **does not authorize** an actual upload. Four additional unit tests bring the suite to 38 tests. The `NRF-` live Send to Clock control remains disabled until explicitly approved and the interruption recovery risks are understood. Read [Upload Safety Plan](docs/UPLOAD_SAFETY_PLAN.md).
