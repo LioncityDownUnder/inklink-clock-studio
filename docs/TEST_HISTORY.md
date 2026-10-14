@@ -300,6 +300,18 @@ This was the actual root cause of the persistent service-not-found errors. See [
 
 **Next safe user check:** In nRF Connect for Android (with InkLink/XLY95 disconnected), connect to the same clock, open the device ⋮ menu, choose **Request MTU**, request **247** if permitted, and inspect the connection log for the **negotiated/updated MTU**. Do not write characteristics or flash firmware. Record the returned MTU and any error. Follow up separately with a photo/model of the clock's back or packaging (hide serial/MAC) to confirm physical panel size. Do not enable image upload yet.
 
+## Hardware identification record O — front photo of unlabelled 3D-printed enclosure
+
+**Date:** 14 October 2026. User supplied a full straight-on physical-device photograph and explained that the surrounding white frame is **3D printed and has no model label**. The photograph remains in the private conversation and is NOT committed to this public repository.
+
+**Directly visible:** landscape recessed e-paper display, approximately 4:3 aspect ratio, with visually distinct black large digital time numerals, red date lettering, monochrome Chinese weekday/lunar/solar-term labels, moon symbol, battery voltage icon and temperature. The pixel grid cannot be counted reliably from this photograph; the PCB and panel rear are not visible.
+
+**Evidence strength:** the aspect ratio and black/white/red output are **consistent with** a 4.2-inch 400×300 tri-colour e-paper panel, and original XLY95 selected a 400×300 canvas preset. However this does **not prove** the exact panel resolution, manufacturer, display driver or orientation. Generic 4.2-inch 400×300 B/W/R panel datasheets report an **active area of 84.8 × 63.6 mm** (e.g. https://www.mouser.com/datasheet/2/744/4_2inch_e_paper_b_specification-1488179.pdf ). This is a **comparison reference, not an identification of the installed hardware**.
+
+**Next safe hardware check (no disassembly/firmware):** ask user to measure the **visible active display area** (not outer 3D-printed frame) in millimetres. Around 85 × 64 mm would support the 4.2-inch 400×300 hypothesis. A non-matching physical area would motivate a search for an alternative display size. Cross-check later against original XLY95 device-specific settings and nRF Connect Device Information (0x180A) if populated. Do not infer resolution from measurements alone.
+
+**Image transfer remains DISABLED** until panel geometry and Bluetooth write capacity/MTU are verified; never treat the screenshot alone as authorization for test writes.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
