@@ -29,6 +29,7 @@ jobs:
           node --check src/dash-simulator.mjs
           node --check src/dash-preflight.mjs
           node --check src/ble-capabilities.mjs
+          node --check src/gatt-diagnostics.mjs
           node --check src/upload-rehearsal.mjs
           node --check src/dash-supervised-transfer.mjs
           node --check src/mock-transfer-runner.mjs
