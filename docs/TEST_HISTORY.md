@@ -478,6 +478,12 @@ Read-only upstream investigation: XLY95 `index.html` contains `clearScreen(cmd)`
 
 Possible explanations include incomplete erasure/refresh waveform or residual image persistence when changing from built-in clock to custom image; neither is verified. Next: read-only research into precise driver/full refresh and safe recovery, then perhaps redesign the tiny footer for legibility. No more physical writes without a new user-approved test.
 
+## Test AJ — ghosting reportedly uniform across full display
+
+**14 October 2026 (user follow-up).** After the first physically successful English upload and several minutes of waiting, user reports ghosting **appears equally across the entire screen**, rather than being concentrated around the old large Chinese clock digits. This is a qualitative observation, not a measured optical-uniformity test. It prioritises investigating **full-panel erase / refresh waveform / residual charge or inadequate pigment transitions** over fixing only the old-digit region. Ghosting from prior image remains visible and the current English face is a static image. The actual root cause is not yet identified.
+
+**Safety:** do not issue undocumented EPD `00+cmd`/refresh commands, guess clear parameters, or repeatedly reupload solely to see whether ghosting disappears. Investigate whether the device's manufacturer clock-mode full update (previously working) provides any documented safe clearing approach. Offline font contrast/spacing improvements can proceed separately. No new device writes in this investigation.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
