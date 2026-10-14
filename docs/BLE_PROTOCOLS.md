@@ -162,6 +162,12 @@ The display of **3.9V** is a voltage indicator, **not a verified charge percenta
 
 **Nuance:** some faint older 7-segment images appear on the dashboard/full-calendar photographs, so native style transitions may also ghost. Earlier user testimony that large-clock restoration cleaned the display remains valid for that observed state, but there is no evidence of a universally ghost-free waveform. No additional BLE commands in this checkpoint.
 
+## Checkpoint AQ — read-only GATT characteristic/telemetry probe
+
+After the three native clock face photos showed `3.9V` battery voltage and `21°C`, InkLink added opt-in browser GATT service inventory. It lists only Chrome-authorized services and their characteristic metadata; it reads only standardized **Battery Service** `0000180f-0000-1000-8000-00805f9b34fb` / **Battery Level** `00002a19-0000-1000-8000-00805f9b34fb` (one-byte 0–100%) and **Environmental Sensing** `0000181a-0000-1000-8000-00805f9b34fb` / **Temperature** `00002a6e-0000-1000-8000-00805f9b34fb` (int16 signed little endian hundredths Celsius), if `read` permitted. It authorizes standard Health Thermometer service 1809 to inspect its characteristics but deliberately does not parse 2A1C (IEEE-11073 Float with flags) in this checkpoint. The inspection makes **no characteristic writes**, no custom read probes, no notifications, and no screen changes.
+
+No hardware telemetry discovered yet. A blank permitted-service list may be due to firmware implementation or Web Bluetooth authorization; never infer absence of a built-in temperature/voltage measurement from a blank standard GATT result. Even a Battery Level reading is percent, **not** the on-screen 3.9V voltage; conversion would be unjustified.
+
 ## Software implementation map
 
 - `src/dash-image.mjs`: **offline-only** image size profiles, strict pure-colour BW/red encoding, image packet framing, and plan calculation. No BLE APIs or writes.
