@@ -398,6 +398,16 @@ The web Display Designer now exposes a **Simulate transfer — no Bluetooth** bu
 
 **Next:** Deliberately design a supervised full-image test with progress, cancellation, first-error abort and manual restoration controls, but retain hardware upload disabled until user reviews risks and provides **separate explicit authorization**. Do not run dummy probe packets or assume clock-mode restoration is a verified image-buffer rollback.
 
+## Engineering checkpoint Y — supervised transfer ENGINE tested with mocks, NOT activated
+
+**14 October 2026.** Added `src/dash-supervised-transfer.mjs`, a hardware-independent stateful transfer routine that accepts only an injected acknowledged-write callback and checks connection/cancellation at packet boundaries. It requires `consent:true` and offline audit pass, transmits sequential BW/red frames under caller control, waits 300ms and writes the EPD refresh **only after all image writes resolve**. No blind resume, automatic retry, reconnect, reset or mode restoration. It reports progress and acknowledges that successful refresh write does **not** prove actual pixels appeared.
+
+**Tests:** Eight mocked transfer tests cover missing consent, failed audit, ordered writes + refresh, packet rejection, GATT loss, AbortSignal before subsequent packets, abort after full image before refresh, and invalid inputs. GitHub Actions full suite now totals **46 tests**. None are real device writes.
+
+**Hardware boundary:** `src/app.mjs` does **not** import/call the engine; `NRF-` upload UI is still explicitly disabled. Risks remain: Chrome 244-byte write acceptance, ~1-minute supervision timeout, image-driver geometry, safe restoration of a partially written EPD frame, and the fact that in-flight Web Bluetooth writes cannot be forcibly cancelled mid-promise. No physical image upload authorization was given—the user approved **building** the feature only.
+
+**Next:** test a separately gated UI adapter and deliberate consent/cancellation flow, without activating a real write path until explicit informed user approval.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
