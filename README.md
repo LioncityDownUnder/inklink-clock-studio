@@ -33,13 +33,13 @@ python -m http.server 8000
 
 Open `http://localhost:8000` in desktop Chrome/Edge. All program assets are local. No npm install needed.
 
-**Option C — GitHub Pages**
+**Option C — GitHub Pages (this repository)**
 
-1. Create a repository in your GitHub account (e.g., `english-eink-clock`).
-2. Upload `index.html` and the `src` directory to the repository root, preserving the structure.
-3. In repository **Settings → Pages**, choose **Deploy from a branch**, `main`, `/ (root)` and save.
-4. Open the HTTPS address GitHub Pages provides, e.g. `https://YOUR-USERNAME.github.io/english-eink-clock/`.
-5. Use Chrome/Edge to connect. Device pairing requires a click and browser permission every time it is requested.
+1. Open [Settings → Pages](https://github.com/LioncityDownUnder/inklink-clock-studio/settings/pages).
+2. Set **Build and deployment → Source** to **GitHub Actions** (one-time repository setup).
+3. The `.github/workflows/deploy.yml` workflow tests and publishes the app on each push to `main`. If the first workflow ran before Pages was enabled, visit [Actions](https://github.com/LioncityDownUnder/inklink-clock-studio/actions) and manually run **Test and deploy InkLink Studio** via **Run workflow**.
+4. Once the deployment reports success, open **https://lioncitydownunder.github.io/inklink-clock-studio/** in Chrome/Edge (desktop) or compatible Chrome on Android. The URL is not live until Pages setup and deployment succeed.
+5. For Bluetooth, disconnect any other app using the clock, click Connect, and accept the browser device permission prompt.
 
 ## Browser compatibility
 
