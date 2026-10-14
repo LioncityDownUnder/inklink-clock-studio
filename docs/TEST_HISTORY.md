@@ -213,14 +213,31 @@ This was the actual root cause of the persistent service-not-found errors. See [
 
 **Engineering decision:** Do not introduce speculative keepalive messages or rework InkLink's working BLE service selection merely to suppress an unproven timeout. For the current goal—configuring the clock—an approximately one-minute window may be sufficient. Move to testing **one user-initiated, already source-verified clock time command** promptly after connecting (and then the clock/calendar commands), with visual confirmation on the physical display. Separately research idle lifetime/reconnection only if ongoing sessions are required for future live dashboards.
 
-## Next physical test — InkLink RXTX time sync while connected (PENDING)
+## Test record K — SUCCESS: InkLink time sync physically updates the clock
 
-1. Close/disconnect XLY95 and nRF Connect. Open the [InkLink web app](https://lioncitydownunder.github.io/inklink-clock-studio/) in the same Android Chrome browser.
-2. Keep **Safe connection** enabled, connect to the `NRF-` clock, wait for `connected and stable`.
-3. **Within about 20 seconds**, press **Sync date & time once** (this is a manual, deliberate `DD` time packet followed by `E2` refresh on the verified RXTX characteristic).
-4. Confirm InkLink Activity Log reports the write(s) succeeded. Confirm physically that the clock's time/date is correct; if already correct, note whether there is visible update and that result is less conclusive.
-5. Capture log and physical effect. Do not infer success solely from a BLE write acknowledgment.
-6. If successful, separately test Clock/Calendar mode switching using `E1 02` or `E1 01` followed by `E2` with a new BLE connection if needed. **No NRF- image upload**.
+**Date/time:** 14 October 2026, 19:46–19:47 Australia/Sydney; user's Android Chrome on the same `NRF-` clock, with Safe connection. Evidence: user Activity Log screenshot (24 events), plus **explicit user confirmation: "time is synced"**. Do not store their screenshot in this public repository.
+
+**Observed log lines (exact data):**
+- `19:46:17 INFO BLE stage: idle connection test (1.5 seconds)`
+- `19:46:19 SUCCESS BLE stage: connected and stable`
+- `19:46:27 INFO RXTX TX DD 6A CF DC 13 07 EA 0A 0E 03 (XLY95 NRF- local-time format)`
+- `19:46:28 INFO RXTX TX E2 — refresh`
+- `19:46:28 SUCCESS Time sync: command completed`
+- `19:47:07 ERROR Unexpected GATT disconnect after 51.4s. Last completed stage: connected and stable. Web Bluetooth does not expose a device disconnect reason.`
+
+**Confirmed on actual hardware:** the `NRF-` RXTX `DD` 10-byte local-time write followed by `E2` refresh was accepted by the browser's BLE writes, and **the user confirmed the clock's displayed time was successfully synchronised**. This is the first end-to-end physical clock-control success, exceeding earlier service-discovery-only milestones. Date payload bytes `07 EA 0A 0E 03` encode year 2026, October 14, weekday 3 (Wednesday). The user did not explicitly report detailed weekday/date display verification; don't infer more than time sync.
+
+**Separate idle-link finding:** The later unexpected disconnection at 51.4s after selection is consistent with earlier InkLink 33.5s / 57.2s and original XLY95 ~59s-after-discovery disconnections. This is **not** proof that the time command caused a disconnect or of a fixed timeout. Device idle/reconnection behaviour remains to be analysed separately if needed for ongoing dashboards.
+
+**Next step:** Physical mode-switching tests. Reconnect in Safe mode. Press **Calendar mode** once promptly after `connected and stable` and inspect both Activity Log and actual display. The source-confirmed NRF- command is `E1 01` followed by 300ms then `E2`. If successful, reconnect if necessary, press **Clock mode** once (`E1 02` then 300ms then `E2`) and confirm the built-in clock display returns. Capture errors and user confirmation. **NRF- image upload is still disabled.**
+
+## Next physical test — NRF- Clock/Calendar modes (PENDING)
+
+1. Close XLY95 and nRF Connect sessions. Open live InkLink in Android Chrome, connect to the same `NRF-` clock with Safe connection enabled.
+2. Within approximately 20 seconds of stable connection, press **Calendar mode** once (`E1 01`, then `E2`).
+3. Inspect the Activity Log and **physical display**; report whether calendar layout appeared.
+4. Reconnect if necessary, press **Clock mode** once (`E1 02`, then `E2`) and confirm the usual live clock returns.
+5. Keep image upload for NRF- disabled pending protocol implementation and separate hardware validation.
 
 ### Outcome template for future sessions
 
@@ -237,9 +254,9 @@ Copy and fill this in when the user reports results:
 | EPD service/characteristic found? | **Yes (verified at 19:01)** |
 | RXTX service/characteristic found? | **Yes (verified at 19:01)** |
 | Notifications work? | **Subscription succeeded at 19:21:57; no incoming payload verified; disconnect 10s later** |
-| Time sync affects screen? | Yes / No / not tested |
+| Time sync affects screen? | **YES — user confirmed time was synced at 19:46:28 (Test K)** |
 | Mode controls affect screen? | Yes / No / not tested |
-| Actual error/log excerpt | **InkLink: 33.5s with notifications; 57.2s without. XLY95: disconnected ~59s after service discovery.** |
-| Next engineering action | **Test manual DD/E2 time sync promptly after InkLink connects; verify actual clock display** |
+| Actual error/log excerpt | **Time sync DD/E2 succeeded 19:46:28; GATT dropped after 51.4s. Earlier idle drops: InkLink 33.5s/57.2s, XLY95 ~59s after discovery.** |
+| Next engineering action | **Verify Calendar mode E1 01/E2, then Clock mode E1 02/E2 on physical clock** |
 
 **Change history discipline:** append only verified new evidence, mark hypotheses accordingly, and update [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) current status and [ROADMAP.md](ROADMAP.md) accordingly.
