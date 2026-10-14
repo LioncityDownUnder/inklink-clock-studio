@@ -6,7 +6,7 @@
 >
 > **Status:** Core NRF- BLE control milestone **COMPLETE on real hardware (14 Oct 2026)**: EPD/RXTX discovery, notification subscription, DD/E2 time sync (confirmed at ~19:46), **Calendar mode E1 01 + E2 (confirmed at 19:53:20)**, and **Clock mode E1 02 + E2 (confirmed at 19:53:39)**. The user explicitly confirmed both display modes switched correctly. The clock has previously disconnected while idle after ~33–57 seconds, also reproduced on original XLY95, but mode switching succeeded in a single connection. **NRF- image upload remains disabled/unimplemented and is the next development priority.**
 >
-> **Next action:** **Begin source analysis/offline development of proper NRF- e-paper image upload** using original XLY95 main `index.html` EPD pipeline, not legacy `A1`. Establish actual display geometry, black/red planes and `03/04` frame offset packet/refresh/restore logic; develop pure tests first. **Do not send experimental images to physical hardware or enable NRF- Upload Image until safe transfer and restore are verified.**
+> **Next action:** **The first Phase 2 offline-only image encoder and packet inspector are implemented** and all 19 tests pass (10 new). On Android Chrome try **Inspect encoded packets (offline)** using the selected 400×300 preset; expect 126 packets / 30,504 total BLE bytes. This validates source-derived encoding, NOT the physical panel size or a successful image upload. Verify physical panel geometry, MTU/write size and safe refresh/restore before sending anything. The NRF- upload remains disabled.
 
 ## Canonical links
 
@@ -20,8 +20,8 @@
 - Experiment/history evidence: [TEST_HISTORY.md](TEST_HISTORY.md)
 - Prioritized next work: [ROADMAP.md](ROADMAP.md)
 - Agent orientation: [../AGENTS.md](../AGENTS.md)
-- Current application files: [../src/app.mjs](../src/app.mjs), [../src/protocol.mjs](../src/protocol.mjs), [../index.html](../index.html)
-- Automated tests: [../tests/protocol.test.mjs](../tests/protocol.test.mjs)
+- Current app files: [../src/app.mjs](../src/app.mjs), [../src/protocol.mjs](../src/protocol.mjs), [../src/dash-image.mjs](../src/dash-image.mjs), [../index.html](../index.html)
+- Automated tests: [../tests/protocol.test.mjs](../tests/protocol.test.mjs) and [../tests/dash-image.test.mjs](../tests/dash-image.test.mjs) (19 cases)
 - Deployment workflow: [../.github/workflows/deploy.yml](../.github/workflows/deploy.yml)
 
 ## Goal and scope
@@ -73,6 +73,7 @@ More exact wire-level details, source references and caveats are in [BLE_PROTOCO
 13. **Cross-site XLY95 comparison at 19:37–19:38 (Test J):** original XLY95 main site on same Android Chrome selected the same NRF-6CD319 clock, discovered GATT/EPD/RXTX at 19:37:07–08, and logged disconnection at 19:38:07 (**~59 seconds after services connected**). No manual control commands during idle test. This is strong evidence that the ~1-minute disconnect is **not caused solely by InkLink**, but peripheral/Android idle cause remains a hypothesis. Source site's selected canvas indicated 400×300; that is **not** independent confirmation of panel resolution.
 14. **FIRST VERIFIED CLOCK CONTROL at 19:46–19:47 (Test K):** after stable BLE, InkLink logged `RXTX TX DD 6A CF DC 13 07 EA 0A 0E 03` at 19:46:27, `RXTX TX E2` refresh and `Time sync: command completed` at 19:46:28. **User independently confirmed 'time is synced'.** GATT later unexpectedly disconnected after 51.4s from selection. Mode switching is next; image upload remains disabled.
 15. **FIRST VERIFIED DISPLAY MODE CONTROL at 19:53 (Test L):** screenshot shows Calendar `RXTX TX E1 01` at 19:53:18 + `E2` and success at 19:53:20; then Clock `RXTX TX E1 02` at 19:53:38 + `E2` and success at 19:53:39. User explicitly confirmed **both modes switched on the physical clock**. All three core controls are hardware-verified. Image upload is next, cautiously.
+16. **Phase 2 OFFLINE image R&D (Test M):** created `src/dash-image.mjs` and 10 new encoder/packet unit tests for the separate NRF- EPD protocol. Exact black/white/red preview palette, row-major and reverse-column encodings, 03/04 + flag + 16-bit byte offset + 240 data packets and read-only 400×300 transfer planning. Studio **Inspect encoded packets (offline)** runs without BLE. Existing 9 + new 10 = 19 CI tests. **No NRF- image data has been written to the clock**.
 
 See [TEST_HISTORY.md](TEST_HISTORY.md) for more precise evidence and how to interpret old logs.
 
@@ -89,30 +90,25 @@ See [TEST_HISTORY.md](TEST_HISTORY.md) for more precise evidence and how to inte
 
 ## CURRENT MILESTONE AND EXACT NEXT ENGINEERING CHECKPOINT
 
-**Core BLE clock control on hardware — VERIFIED COMPLETE on 14 October 2026.**
+**P0 physically complete:** working EPD/RXTX connection, notification subscription, DD/E2 time sync, E1 01/E2 Calendar and E1 02/E2 Clock mode, verified by user on 14 Oct 2026. Similar ~one-minute BLE idle disconnections observed on InkLink and original XLY95 (underlying cause unknown).
 
-- Service discovery: corrected `NRF-` EPD and RXTX services/characteristics on actual clock.
-- Notification subscription: succeeded on actual hardware (incoming payload decoding remains a separate future task).
-- Time sync: `DD` + `E2` succeeded and user confirmed physical time updated (~19:46).
-- Calendar display: `E1 01` then `E2` succeeded and user confirmed visible switch (~19:53:20).
-- Clock display restore: `E1 02` then `E2` succeeded and user confirmed visible switch back (~19:53:39).
-- BLE idle disconnects (~33.5s, 57.2s, 51.4s InkLink; ~59s after service discovery on XLY95) remain known but **do not prevent ordinary control commands**. Cause is unknown; avoid speculative keepalives.
+**P1 Phase 2 implemented OFFLINE ONLY:**
+- New [`src/dash-image.mjs`](../src/dash-image.mjs) reproduces XLY95 black/white and positive red bitplanes, distinct reverse-column orientation on 296/212/250 presets and 03/04 + flag + BE offset + up-to-240-byte image chunks.
+- The preview palette is now **pure opaque black, white, saturated red**, not the old dark blue/muted red which upstream encoder would misclassify.
+- New [`tests/dash-image.test.mjs`](../tests/dash-image.test.mjs) contains 10 offline tests, bringing the automated protocol test count to **19**; CI covers new module syntax.
+- Display Designer has **Inspect encoded packets (offline)** with an image/packet report. It does **not** transmit, require BLE, or enable NRF- image writes.
 
-**Next priority: `NRF-` image upload (P1), NOT firmware flashing.**
+**Next user/browser check:** select the 400×300 XLY95 canvas preset in Display Designer, click **Inspect encoded packets (offline)** in Android Chrome and report the summary/errors. A 400×300 two-plane plan has **two 15,000-byte planes, 126 packets, 30,504 BLE bytes including 4-byte headers, max write 244 bytes**. **The selected 400×300 canvas is NOT independent confirmation of your clock's panel resolution.**
 
-1. Inspect XLY95's main `index.html` image conversion through EPD frame packets and refresh/restore, including any controller-specific paths. Distinguish this from the older standalone `js.js` legacy `NRF_` packets.
-2. Determine actual panel pixel dimensions and black/red plane orientation/mapping; the XLY95 screenshot's **400×300 selected canvas** is NOT independent proof of physical display dimensions.
-3. Implement source-grounded image encoding and chunking (`03/04`, colour flags, 2-byte offsets) with byte-exact offline unit tests. Check payload sizes and browser write support.
-4. Keep **`NRF-` Upload Image DISABLED** until full transfer, display refresh, and safe return to clock mode are verified. Do not test uncontrolled transfers.
-5. When prepared, request user participation for a supervised image trial and record the physical outcome; preserve known-working RXTX clock controls.
+**Open before physical image upload:** identify actual screen pixel geometry, controller, plane orientation, write MTU (244-byte frames), transfer time vs ~one-minute idle disconnects, final EPD refresh/clock restoration, and independent test vectors. Keep **NRF- Send to clock disabled** until these are resolved and an explicitly supervised trial is planned.
 
-**Verified hardware controls:** Time/Calendar/Clock. **Pending:** safe English custom image upload, panel identification, always-live custom faces, long-term connection behavior.
+**Verified physically:** Time, Calendar and Clock control. **Implemented offline only:** image bitplanes/packets. **Still unverified:** live image rendering or continuous English face, panel dimensions, BLE write size and durable image transfer.
 
 ## Remaining work, in order
 
 P0. **DONE (physical):** Correct NRF- EPD and RXTX characteristics discovered, EPD notifications enabled. Cross-site idle comparison **done**: XLY95 also disconnected ~59s after services connected. Cause of roughly one-minute disconnections unknown; don't add speculative keepalive.
-P0. **DONE (physical):** DD/E2 time sync, E1 01/E2 Calendar mode and E1 02/E2 Clock mode all worked on actual clock (user confirmed 19:46–19:53). **NEXT P1:** NRF- image format analysis and offline tests.
-P1. Implement `NRF-` image upload using upstream page's EPD framing, plane conversions and its supported display dimensions; add offline unit tests / byte-for-byte references before using hardware. Keep uploads disabled until validated.
+P0. **DONE (physical):** DD/E2 time sync and E1/E2 Calendar/Clock controls verified on clock (19:46–19:53). **P1 image bitplanes and offline packet encoder now implemented/tested; browser inspector and hardware geometry/MTU validation next.**
+P1. **IN PROGRESS:** Offline XLY95 NRF- frame encoder and 10 tests implemented; physical panel dimensions, independent payload validation, BLE MTU/write length, refresh/restore and supervised transfer remain PENDING. Keep uploads disabled until validated.
 P1. Fix any UI or connection regressions found by device logs, and keep the two profiles separate.
 P2. Identify exact physical display geometry, implement accurate English designs and optional display-related controls.
 P3. Explore scheduling, reliable reconnects, weather/calendar data; recognize browsers need to stay open or another gateway is needed for live feeds.
