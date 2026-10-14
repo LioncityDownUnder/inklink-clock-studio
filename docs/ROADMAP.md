@@ -1,5 +1,8 @@
 # Roadmap and next-session checklist
 
+**Checkpoint AB — guarded BLE adapter review DONE in isolation:** `src/ble-guarded-writer.mjs`, eight mock tests (58 total). Rechecks connection, foreground visibility, cancellation, deadline and serialization around each acknowledged write; stops future traffic after failure. **Important:** cannot forcibly cancel a stuck in-flight Web Bluetooth write. Not imported into live app and NRF- image-upload remains disabled. Next: design non-misleading stalled-write UX and manual restoration/informed-consent boundary, then request separate permission for a physical upload.
+
+
 **Checkpoint Y — transfer engine implemented but hardware DISABLED:** `src/dash-supervised-transfer.mjs` plus 8 mocked-device regression tests (46 total). Requires explicit consent and passed audit; sequential acknowledged packets with progress, AbortSignal, stop on link/write failure, EPD refresh only after complete image, no blind retry or firmware reset. This module is **not imported by live app.mjs**. Separate approval is required for any device image transfer. Next: user-visible gated adapter, operation timeout and cancellation semantics, recovery verification and manual hardware test approval.
 
 **Dry-run checklist confirmed on Android Chrome (Test X, 14 Oct ~22:15):** User screenshot shows "Packet plan is internally valid for the chosen MTU assumption" and the full 8-step abort and restoration checklist. NO BLE writes; browser actual 244-byte acceptance and image-buffer rollback remain unknown. Next: design/test explicitly gated supervised image upload implementation, retaining NRF- Send to Clock disabled until user separately approves the risk and trial.
