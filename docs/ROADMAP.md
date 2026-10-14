@@ -117,6 +117,8 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 
 **Observation AO (14 October 2026):** physical built-in clock shows battery level + temperature, and the user reports three styles cycling with repeated Clock mode presses. InkLink RXTX `E1 02`+`E2` already triggers this behavior; no new protocol needed. UI help updated. For future live-English feature research: identify whether battery/temperature telemetry can be **read** via verified GATT, and obtain photos of three clock layouts. Do not claim sensor origin, state query, or available BLE temperature/battery values before testing. Offline uploaded English picture remains static.
 
+**Test AP (three user photos):** all 3 firmware-clock layouts physically verified: giant digits, split analog/digital + calendar, full Chinese lunar-month calendar. Firm visual evidence of **3.9V battery voltage**, **21°C**, lunar information and solar-term labels. Source of telemetry and BLE accessibility remain unverified. Faint ghosts of prior large digits can be seen in some non-primary native layouts, so do not generalise Test AK's clean Clock mode to all native transitions. App helper copy updated only. Future step: read-only identify clock's GATT services/characteristics; prioritize ability to access voltage and temperature if supported.
+
 ## P2 — enhanced clock features
 
 - **PENDING:** English screen layouts suited to actual physical resolution and red-plane capabilities.
