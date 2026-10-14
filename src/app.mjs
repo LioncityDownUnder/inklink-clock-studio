@@ -52,6 +52,12 @@ function updateUi() {
   const status = online ? 'Connected' : linked ? 'GATT linked · service pending' : 'Disconnected';
   pill.innerHTML = '<span class="pill-dot"></span> ' + status;
   $('deviceName').textContent = linked ? (state.device.name || 'Unnamed BLE clock') : 'No clock connected';
+  $('protocolNote').textContent = online && state.profile === 'dash'
+    ? 'NRF- profile active: correct EPD and RXTX services found. Time and clock/calendar controls available; image upload disabled pending separate packet encoding.'
+    : online && state.profile === 'legacy'
+      ? 'Legacy NRF_ profile active. Clock controls and A1-format image upload are available.'
+      : linked ? 'GATT linked. Checking the clock\'s BLE services…'
+        : 'NRF- clocks use a different XLY95 protocol from NRF_ clocks. Safe connection is recommended.';
   $('deviceHint').textContent = online ? (state.profile === 'dash' ? 'NRF- EPD + RXTX services found' : 'Legacy XLY95 service found')
     : linked ? 'GATT linked; try service discovery again'
       : ($('allDevices').checked ? 'Scanning all nearby BLE devices' : 'Scanning NRF- and NRF_ devices');
