@@ -13,14 +13,14 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 - **DONE (code):** Safe connection option, connection-stage log, no automatic commands in safe mode, retry discovery, explicit notifications.
 - **DONE (hardware):** both NRF- EPD and RXTX services/characteristics discovered successfully; first 1.5-second idle connection check passed in Android Chrome on 14 Oct 2026 ~19:01.
 - **DONE (hardware, observation only):** two physical BLE sessions: **33.5 seconds** after selection with notifications, **57.2 seconds** in Safe mode without notifications or commands; both unexpectedly disconnected.
-- **OPEN ISSUE (hardware):** GATT disconnected unexpectedly **both with notifications enabled (33.5s after selection) and with Safe mode/no notifications/no commands (57.2s)**. The latter proves notifications aren't required for the disconnect. Cause remains undetermined; compare to XLY95 on the same phone.
+- **DONE (hardware comparison):** original XLY95 on the same Android Chrome also disconnected at ~19:38:07, **~59 seconds after EPD/RXTX services were discovered**; this makes an InkLink-exclusive timeout less likely. Cause is still unknown; no confirmed fixed one-minute timeout.
 - **DONE (hardware):** EPD `startNotifications()` succeeded at 19:21:57 on Android Chrome. No incoming notification payload has been observed.
 - **OPEN ISSUE:** session disconnected at 19:22:07, around 10 seconds after notification subscription; a separate no-notification baseline disconnected after 57.2 seconds. **Notification is not required for the disconnect; causal role unproven**.
-- **PENDING (hardware):** test whether intermittent `gatt.connect()` NetworkError recurs; compare with XLY95 on same phone.
+- **PENDING (hardware):** test whether intermittent `gatt.connect()` NetworkError recurs. XLY95 connects to same device, but both applications also disconnect after around a minute of idle time.
 
-**Next user action:** Disconnect InkLink, open the original [XLY95](https://xly95.github.io/) in the **same Android Chrome** phone, connect the same clock, leave page foreground **90–120 seconds with no user-initiated clock commands**, and report connection duration/disconnect/reconnect. If original is stable, inspect its connection and recovery logic; if not, focus on clock/Android behaviour. No speculative keepalive writes.
+**Next user action:** XLY95 comparison completed. Disconnect original XLY95, connect [live InkLink](https://lioncitydownunder.github.io/inklink-clock-studio/) in Android Chrome with **Safe connection**, then **within ~20 seconds after stable connection** click **Sync date & time** once. Report Activity Log and actual physical clock date/time. Do not add speculative keepalives or attempt NRF- image upload.
 
-**Next acceptance gate:** determine whether original XLY95 also disconnects during a 90–120s foreground idle session. Notifications are **not necessary** for the InkLink disconnect (Test I). Dual-service discovery and subscription already passed, but sustained reliability is unproven (see records G–I in [TEST_HISTORY.md](TEST_HISTORY.md)).
+**Next acceptance gate:** physical DD/E2 time write successful and clock display accurately reflects the local date/time. XLY95's ~one-minute idle disconnect comparison is recorded in [TEST_HISTORY.md](TEST_HISTORY.md), record J. Do not mistake BLE write acknowledgment for visible success. Long-running connection reliability is still unproven.
 
 ## P0 — confirm non-destructive clock controls
 
@@ -38,7 +38,7 @@ Legend: **DONE (code)** = implemented and source/automated-tested; **DONE (hardw
 ## P1 — implement correct NRF- image upload
 
 - **PENDING:** map the complete original XLY95 main-page `sendBufferData()` pipeline and image preprocessing rather than copying the legacy A1 format.
-- **PENDING:** determine exact screen resolution/driver and supported colour planes on this specific clock; do not infer from photograph or default 400×300.
+- **PENDING:** determine exact screen resolution/driver and supported colour planes on this specific clock; XLY95 log showed canvas setting **400×300**, but this is UI configuration, not independent physical screen validation.
 - **PENDING:** implement `03/04 + colour flag + 2-byte frame offset + payload` packet generator with bounds checking; original `my_step=480` hex characters per chunk.
 - **PENDING:** check original screen/refresh commands and the full sequence required for image mode.
 - **PENDING:** add deterministic unit tests against byte-for-byte references derived from upstream and test maximum frame sizes.
