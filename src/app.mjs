@@ -1,5 +1,6 @@
 import { createDashTransferPlan } from './dash-image.mjs';
 import { simulateDashTransfer } from './dash-simulator.mjs';
+import { auditDashSequence } from './dash-preflight.mjs';
 import { SERVICE_UUID, CHARACTERISTIC_UUID, COMMAND, SCREEN_SIZES, encodeTime, commandPacket, packImage, imagePackets, bytesToHex,
   DASH_EPD_SERVICE_UUID, DASH_EPD_CHARACTERISTIC_UUID, DASH_RXTX_SERVICE_UUID,
   DASH_RXTX_CHARACTERISTIC_UUID, encodeDashTime, encodeDashMode, DASH_REFRESH } from './protocol.mjs';
@@ -584,6 +585,10 @@ function simulateDashImageOffline() {
     const canvas=$('previewCanvas');
     const pixels=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,canvas.width,canvas.height);
     const plan=createDashTransferPlan(pixels);
+    const audit=auditDashSequence(plan,{attMtu:Number($('simMtu').value)});
+    $('dashPreflightSummary').textContent=audit.passed
+      ? 'Offline sequence audit PASS: '+audit.verifiedPacketCount+' ordered packets, '+audit.verifiedImageBytes+' image bytes; '+audit.sourceOrder+'. No BLE writes.'
+      : 'Offline sequence audit BLOCKED: '+audit.failures.slice(0,3).join('; ')+'. No BLE writes.';
     const result=simulateDashTransfer(plan,{
       mtu:Number($('simMtu').value),
       millisecondsPerPacket:Number($('simPacketMs').value),
@@ -600,6 +605,7 @@ function simulateDashImageOffline() {
     $('dashSimulationSummary').textContent=msg;
     log(msg,result.feasibleWithinScenario?'info':'error');
   } catch(e) {
+    $('dashPreflightSummary').textContent='Offline sequence audit unavailable: '+(e.message||e);
     $('dashSimulationSummary').textContent='Simulation unavailable: '+(e.message||e);
     log('Offline simulation: '+(e.message||e),'error');
   }
