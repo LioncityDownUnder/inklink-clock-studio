@@ -534,6 +534,12 @@ The user's built-in **Clock mode has THREE distinct presentation styles**, and *
 
 **Implementation:** changed Overview's Clock-mode helper text to name the photo-confirmed style sequence. There are no new BLE commands, chip detection claims or physical uploads. User photos are evidence in current conversation and are **not uploaded to this public GitHub repository**. Investigate refresh across all three native transitions, but do not assume an undocumented EPD clear operation.
 
+## Checkpoint AQ — optional read-only GATT diagnostics implemented (device test PENDING)
+
+Built new `src/gatt-diagnostics.mjs` to list browser-permitted GATT services and characteristic properties. It only calls `readValue()` for exact registered standard service/characteristic combinations: Battery Service 180F Battery Level 2A19 (percent) and Environmental Sensing 181A Temperature 2A6E (signed int16 in hundredths °C). Health Thermometer 1809 metadata may be inventoried but 2A1C temperature measurement is **not** guessed or decoded. Unrecognized proprietary characteristics are not read, written or subscribed to. A missing standard service or Chrome authorization cannot prove the physical clock has no sensor. Device picker optionally includes these standard services.
+
+The live page now has explicit opt-in **Inspect GATT services & standard values — no writes**. Six fake-characteristic tests ensure standard decoding and never writing, target **83 total tests**. This is **software only**; no actual battery or temperature GATT observation yet. User must connect NRF- clock in Safe mode, tap inspector, and report text. Firmware screens showed `3.9V` and `21°C`; do not represent a battery-percent characteristic or a temperature sensor as discovered before seeing real output.
+
 ## Next engineering work — confirm MTU, real panel dimensions and restore behavior (PENDING)
 
 1. **MTU test (non-image, no attribute writes):** Disconnect InkLink and XLY95. Open nRF Connect on Android; connect the NRF- clock; device ⋮ → Request MTU → 247; view the log and report what the device negotiated. A value below 247 means an ordinary 244-byte Write Request cannot fit in that nRF Connect session. Even 247 or greater there does **not** guarantee Chrome negotiated as much.
