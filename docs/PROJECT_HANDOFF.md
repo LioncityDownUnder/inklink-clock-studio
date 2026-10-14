@@ -60,6 +60,8 @@
 
 > **LATEST TEST AK — CLEAN RESTORATION CONFIRMED:** Following first live English image upload (126/126 packets, 9.3s) and persistent uniform ghosting, user selected **Clock mode** in InkLink; the physical Chinese clock face returned **clean, without ghosting**. Thus normal-mode restoration is now **verified after a completed custom-image upload**. This does NOT prove recovery of a partial EPD buffer or the underlying difference in full refresh behavior. Prioritize safely researching built-in refresh/erase sequences against EPD image refresh `01`. **No speculative clear commands or repeated uploads.** User's current screen is original clean Chinese Clock mode.
 
+> **Checkpoint AL — READ-ONLY source audit for persistent ghosting (14 Oct 2026):** User-confirmed clean built-in Clock mode after custom English image (Test AK) contrasts with uniform persistent ghosting from a successful image upload. New upstream XLY95 main `index.html` audit: the full image path already uses BW→red→300ms→EPD `01`; `clearScreen(cmd)` is **defined but never invoked**, and its EPD `00+cmd` argument is undocumented. Browser `clear_canvas()` does not touch physical clock. Clean RXTX Clock mode likely uses firmware-internal e-paper handling, **not observable from public JS**. No safe extra refresh/erase command identified; no new BLE writes sent. Keep device in clean Clock mode; investigate controller/firmware evidence before hardware refresh experiments. See `docs/BLE_PROTOCOLS.md` ghosting investigation.
+
 ## Canonical links
 
 - Repository: https://github.com/LioncityDownUnder/inklink-clock-studio
