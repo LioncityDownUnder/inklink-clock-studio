@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {wrapFooterText,getClockLayout} from '../src/clock-typography.mjs';
 test('large footer wraps into readable two lines',()=>{
- assert.deepEqual(wrapFooterText('A GOOD DAY TO GET THINGS DONE',29,2),['A GOOD DAY TO GET THINGS','DONE']);
+ assert.deepEqual(wrapFooterText('A GOOD DAY TO GET THINGS DONE',28,2),['A GOOD DAY TO GET THINGS','DONE']);
 });
 test('short footer stays on one line',()=>{
  assert.deepEqual(wrapFooterText('SYDNEY',29,2),['SYDNEY']);
