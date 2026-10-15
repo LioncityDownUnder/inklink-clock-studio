@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>InkLink XLY95 Offline Packet Simulator</title>
+<style>body{font:16px system-ui;max-width:780px;margin:2rem auto;padding:0 1rem;background:#f8fafc;color:#0f172a}label{display:block;margin:1rem 0}input,select,button,textarea{font:inherit;padding:.5rem}button{background:#0f766e;color:white;border:0;border-radius:6px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#e2e8f0;padding:1rem;border-radius:8px}</style>
+<h1>InkLink · XLY95 Offline Packet Simulator</h1>
+<p><strong>SAFE MODE:</strong> No Bluetooth code, device connection, or hardware writes.</p>
+<label>Image bytes (hex) <textarea id="hex" rows="4" style="width:95%">00 FF 55 AA 12 34 56 78</textarea></label>
+<label>Packet length including 2-byte header <input id="length" type="number" min="3" max="512" value="20"></label>
+<label>Plane <select id="plane"><option value="bw">Black / white</option><option value="secondary">Secondary</option></select></label>
+<label>Number of writes without response before one with response <input id="interval" type="number" min="0" max="1000" value="0"></label>
+<button id="run">Simulate offline</button><pre id="output" aria-live="polite"></pre>
+<p><small>Derived from XLY95's writeImage() framing. Input packet size and pacing are simulations, not discovered device settings. A5 is shown only as the intended completion command.</small></p>
+<script>
+'use strict';
+function simulate(hex, packetLength, plane, interval) {
+  if(!Number.isInteger(packetLength)||packetLength<3||packetLength>512)throw Error('Packet length must be 3–512');
+  if(!Number.isInteger(interval)||interval<0||interval>1000)throw Error('Counter must be 0–1000');
+  const clean=hex.replace(/\s+/g,'');
+  if(!clean||clean.length%2||!/^[0-9a-f]+$/i.test(clean))throw Error('Enter an even number of hex digits');
+  const bytes=Uint8Array.from(clean.match(/../g).map(x=>parseInt(x,16)));
+  const chunkSize=packetLength-2, packets=[]; let remaining=interval;
+  for(let offset=0;offset<bytes.length;offset+=chunkSize){
+    const flag=(plane==='bw'?0x0f:0)|(offset===0?0:0xf0);
+    const withResponse=remaining===0;
+    packets.push({bytes:[0xa1,flag,...bytes.slice(offset,offset+chunkSize)],withResponse});
+    if(withResponse)remaining=interval;else remaining--;
+  }
+  return {packets,chunkSize,inputBytes:bytes.length,completion:[0xa5]};
+}
+const fmt=a=>a.map(x=>x.toString(16).toUpperCase().padStart(2,'0')).join(' ');
+document.getElementById('run').onclick=()=>{
+ const out=document.getElementById('output');
+ try{
+  const r=simulate(document.getElementById('hex').value,Number(document.getElementById('length').value),document.getElementById('plane').value,Number(document.getElementById('interval').value));
+  out.textContent='Input bytes: '+r.inputBytes+'\nImage packets: '+r.packets.length+'\nPayload bytes per packet: '+r.chunkSize+'\n\n'+r.packets.map((p,i)=>String(i+1).padStart(3)+' ['+(p.withResponse?'with response':'without response')+'] '+fmt(p.bytes)).join('\n')+'\n\nCompletion command: '+fmt(r.completion)+'\nNo hardware acknowledgement is simulated.';
+ }catch(e){out.textContent='Error: '+e.message}
+};
+document.getElementById('run').click();
+</script></html>
