@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>XLY95 Encoding Tests</title><style>body{font:16px system-ui;max-width:780px;margin:3rem auto;padding:0 1rem}pre{background:#f1f5f9;padding:1rem;white-space:pre-wrap}</style><h1>XLY95 Image Encoding — Offline Tests</h1><p>Read-only reference checks derived from XLY95 js.js processImageData(). No Bluetooth APIs.</p><pre id="results"></pre><script>
+'use strict';
+function encodeBW(width,height,rgba){const stride=Math.ceil(width/8),out=new Uint8Array(stride*height);for(let y=0;y<height;y++)for(let x=0;x<width;x++){const i=(y*width+x)*4,gray=Math.round(.299*rgba[i]+.587*rgba[i+1]+.114*rgba[i+2]);if(gray>=140)out[y*stride+(x>>3)]|=1<<(7-(x%8));}return out;}
+function encodeTwoPlanes(width,height,rgba){const stride=Math.ceil(width/8),n=stride*height,bw=new Uint8Array(n),red=new Uint8Array(n);for(let y=0;y<height;y++)for(let x=0;x<width;x++){const i=(y*width+x)*4,r=rgba[i],g=rgba[i+1],b=rgba[i+2],gray=Math.floor(.299*r+.587*g+.114*b),pos=y*stride+(x>>3),bit=1<<(7-(x%8));if(gray>=140)bw[pos]|=bit;if(!(r>160&&r>g&&r>b))red[pos]|=bit;}return Uint8Array.from([...bw,...red]);}
+const tests=[];function test(name,actual,expected){const ok=JSON.stringify([...actual])===JSON.stringify(expected);tests.push((ok?'PASS':'FAIL')+' '+name+' — got '+[...actual].map(x=>x.toString(16).padStart(2,'0')).join(' '));}
+function pixels(...rgb){return Uint8Array.from(rgb.flatMap(([r,g,b])=>[r,g,b,255]));}
+test('BW black/white MSB',encodeBW(2,1,pixels([0,0,0],[255,255,255])),[0x40]);
+test('BW threshold 139/140',encodeBW(2,1,pixels([139,139,139],[140,140,140])),[0x40]);
+test('BW rows padded independently',encodeBW(1,2,pixels([255,255,255],[0,0,0])),[0x80,0]);
+test('Dual plane white/red/black',encodeTwoPlanes(3,1,pixels([255,255,255],[255,0,0],[0,0,0])),[0x80,0xa0]);
+document.getElementById('results').textContent=tests.join('\n')+'\n\n'+tests.filter(x=>x.startsWith('PASS')).length+'/'+tests.length+' passed';
+</script></html>
